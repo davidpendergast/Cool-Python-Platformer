@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import pygame,phys_objects,drawing,gamestate
 pygame.init()
 
