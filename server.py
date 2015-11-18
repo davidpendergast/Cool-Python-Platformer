@@ -3,7 +3,7 @@ import socket
 import threading
 import SocketServer
 
-SERVER_IP   = "127.0.0.1"
+SERVER_IP   = "ec2-52-34-39-179.us-west-2.compute.amazonaws.com"
 SERVER_PORT = 50069
 
 lock = threading.Lock()
