@@ -3,27 +3,28 @@ import socket
 import threading
 import SocketServer
 
+SERVER_IP   = "127.0.0.1"
+SERVER_PORT = 50069
+
 lock = threading.Lock()
 users = {}
-
 
 class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         lock.acquire()
         try:
+            # format: {'user': .., 'level': .., 'pos: (.., ..)}
             data = json.loads(self.request[0].strip())
+            users[data['user']] = data
 
             sendback = []
-            if data['user'] in users:
-                for ghost in users[data['level']]:
-                    if ghost['user'] is not data['user']
-                        sendback.append(ghost)
-                users
-            else
-                users[data['level']] = [data]
-                
+            for user in users:
+                if user is not data['user'] \
+                  and users[user]['level'] is data['level']:
+                    sendback.append(users[user])
+
             socket = self.request[1]
-            socket.sendto(json.dumps(sendback, self.client_address)
+            socket.sendto(json.dumps(sendback), self.client_address)
         finally:
             lock.release()
 
@@ -31,25 +32,19 @@ class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
 class ThreadedUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
     pass
 
-
-def client(ip, port, message):
+def send(user, level, position):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        sock.connect((ip, port))
-        sock.sendall(message)
-        response = sock.recv(1024)
-        print "Received: {}".format(response)
+        sock.connect((SERVER_IP, SERVER_PORT))
+        sock.sendall(json.dumps({'user': user, 'level': level, 'position': position}))
+        return json.loads(sock.recv(1024))
     finally:
         sock.close()
-
-
-def form_message(uid, level, pos):
-    return json.dumps({'user': user, 'level': level, 'pos': pos})
+        return {}
 
 
 if __name__ == "__main__":
-    HOST, PORT = 'localhost', 0
-    server = ThreadedUDPServer((HOST, PORT), ThreadedUDPHandler)
+    server = ThreadedUDPServer((SERVER_IP, SERVER_PORT), ThreadedUDPHandler)
     ip, port = server.server_address
 
     server_thread = threading.Thread(target=server.serve_forever)
@@ -58,12 +53,6 @@ if __name__ == "__main__":
     server_thread.start()
 
     print "Server started at {} {}".format(ip, port)
-    print "Server loop running in thread:", server_thread.name
-
-    client(ip, port, "Hello World 1")
-    client(ip, port, "Hello World 2")
-    client(ip, port, "Hello World 3")
-
     raw_input("Press Enter to kill server")
 
     server.shutdown()
