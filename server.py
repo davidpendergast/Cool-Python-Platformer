@@ -3,11 +3,12 @@ import socket
 import threading
 import SocketServer
 
-SERVER_IP   = "ec2-52-34-39-179.us-west-2.compute.amazonaws.com"
+SERVER_IP = "52.32.142.217"
 SERVER_PORT = 50069
 
 lock = threading.Lock()
 users = {}
+
 
 class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
@@ -32,19 +33,25 @@ class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
 class ThreadedUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
     pass
 
+
 def send(user, level, position):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        sock.connect((SERVER_IP, SERVER_PORT))
-        sock.sendall(json.dumps({'user': user, 'level': level, 'position': position}))
-        return json.loads(sock.recv(1024))
-    finally:
-        sock.close()
-        return {}
+    sock.connect((SERVER_IP, SERVER_PORT))
+    sock.sendall(json.dumps({
+        'user': user,
+        'level': level,
+        'position': position}))
+    r = json.loads(sock.recv(1024))
+    sock.close()
+    return r
+
+
+def _SET_SERVER_IP(server):
+    SERVER_IP = server
 
 
 if __name__ == "__main__":
-    server = ThreadedUDPServer((SERVER_IP, SERVER_PORT), ThreadedUDPHandler)
+    server = ThreadedUDPServer(('0.0.0.0', SERVER_PORT), ThreadedUDPHandler)
     ip, port = server.server_address
 
     server_thread = threading.Thread(target=server.serve_forever)
