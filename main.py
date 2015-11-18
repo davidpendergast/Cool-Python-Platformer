@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 import pygame,phys_objects,drawing,gamestate
+import server
+import random
+
+PLAYER_ID = random.randint(0, 10000)
+
 pygame.init()
 
 size = (320*2,240*2)
@@ -114,8 +119,13 @@ while still_running:
 	pusher.solve_collisions(group)
 	rf_fixer.solve_rfs(group)
 	
+	ghost_list = server.send(PLAYER_ID, game.level_num, actor.rect.center)
+	ghosts = []
+	for ghost in ghost_list:
+		ghosts.append(phys_objects.Ghost(ghost['position'][0], ghost['position'][1]))
+
 	drawer.update_camera(actor, size[0], size[1])
-	drawer.draw(screen, group)
+	drawer.draw(screen, group + ghosts)
 	game.draw_gui(screen)
 	pygame.display.flip()
 	clock.tick(FPS)

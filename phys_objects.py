@@ -581,6 +581,16 @@ class CustomPath(Path):
 	def step(self, dt):
 		self.t += dt
 		return (eval(self.x_fun), eval(self.y_fun))#lol don't worry about this
-	
-		
-		
+
+
+class Ghost(pygame.sprite.Sprite):
+	def __init__(self, x, y, color=(200,128,128)):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.Surface((24,32))
+		self.color = color
+		self.border_color = border_color
+		self.repaint()
+		self.rect = pygame.Rect(x,y,24,32)
+
+	def repaint(self):
+		self.image.fill(self.color)
