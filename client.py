@@ -10,10 +10,10 @@ _GAME = None
 _THREAD = None
 
 _GHOSTS = []
-_GHOSTS_READY = False
 
 
 def __process():
+    global _GHOSTS, _GHOSTS_READY
     running = True
     while running:
         try:
@@ -26,21 +26,22 @@ def __process():
                     _ACTOR.rect.topleft)
                 _LOCK.acquire()
                 _GHOSTS = temp_ghosts
-                _GHOSTS_READY = True
             else:
                 running = False
         finally:
             _LOCK.release()
+    print "client thread stopping!"
 
 
 def connect(actor, game):
+    global _ACTOR, _GAME, _PLAYER_ID, _THREAD
     try:
         _LOCK.acquire()
         _ACTOR = actor
         _GAME = game
         _PLAYER_ID = server.connect()
         _THREAD = threading.Thread(target=__process)
-        _THREAD.run()
+        _THREAD.start()
     except:
         _ACTOR = None
         _PLAYER_ID = None
@@ -50,6 +51,7 @@ def connect(actor, game):
 
 
 def disconnect():
+    global _ACTOR, _GAME, _PLAYER_ID, _THREAD
     try:
         _LOCK.acquire()
         server.disconnect(_PLAYER_ID)
@@ -62,13 +64,11 @@ def disconnect():
 
 
 def get_ghosts():
+    global _GHOSTS
     r = []
     try:
         _LOCK.acquire()
-        if _GHOSTS_READY:
-            r = _GHOSTS
-            _GHOSTS = []
-            _GHOSTS_READY = False
+        r = _GHOSTS
     finally:
         _LOCK.release()
     return r
