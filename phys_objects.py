@@ -588,7 +588,6 @@ class Ghost(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.__init__(self)
 		self.image = pygame.Surface((24,32))
 		self.color = color
-		self.border_color = border_color
 		self.repaint()
 		self.rect = pygame.Rect(x,y,24,32)
 

@@ -8,6 +8,7 @@ SERVER_PORT = 50069
 
 lock = threading.Lock()
 users = {}
+next_uid = 0
 
 
 class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
@@ -15,14 +16,28 @@ class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
         lock.acquire()
         try:
             # format: {'user': .., 'level': .., 'pos: (.., ..)}
+            # to get an id: {'user': '__NEWUSER__'}
+            # to disconnect: {'user': .., 'level': None ...}
             data = json.loads(self.request[0].strip())
-            users[data['user']] = data
 
             sendback = []
-            for user in users:
-                if user is not data['user'] \
-                  and users[user]['level'] is data['level']:
-                    sendback.append(users[user])
+
+            if data['user'] == '__NEWUSER__':
+                sendback = next_uid
+                uid += 1
+            else:
+                if data['level'] is None:
+                    try:
+                        del users[data['user']]
+                    except:
+                        pass
+
+                users[data['user']] = data
+
+                for user in users:
+                    if user is not data['user'] \
+                      and users[user]['level'] is data['level']:
+                        sendback.append(users[user])
 
             socket = self.request[1]
             socket.sendto(json.dumps(sendback), self.client_address)
@@ -44,6 +59,12 @@ def send(user, level, position):
     r = json.loads(sock.recv(1024))
     sock.close()
     return r
+
+def connect():
+    return send('__NEWUSER__', None, None)
+
+def disconnect(user):
+    send(user, None, None)
 
 
 def _SET_SERVER_IP(server):
