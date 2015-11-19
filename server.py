@@ -13,6 +13,7 @@ next_uid = 0
 
 class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
+	global next_uid
         lock.acquire()
         try:
             # format: {'user': .., 'level': .., 'pos: (.., ..)}
@@ -23,22 +24,22 @@ class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
             sendback = []
 
             if data['user'] == '__NEWUSER__':
+		print "new user! ", next_uid
                 sendback = next_uid
-                uid += 1
+                next_uid += 1
             else:
                 if data['level'] is None:
                     try:
+			print "disconnect! ", data['user']
                         del users[data['user']]
                     except:
                         pass
-
-                users[data['user']] = data
-
-                for user in users:
-                    if user is not data['user'] \
-                      and users[user]['level'] is data['level']:
-                        sendback.append(users[user])
-
+		else:
+	                users[data['user']] = data
+        	        for user in users:
+                	    if user is not data['user'] \
+	                      and users[user]['level'] is data['level']:
+        	                sendback.append(users[user])
             socket = self.request[1]
             socket.sendto(json.dumps(sendback), self.client_address)
         finally:
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     server_thread.start()
 
     print "Server started at {} {}".format(ip, port)
-    raw_input("Press Enter to kill server")
+    raw_input("Press Enter to kill server\n")
 
     server.shutdown()
     server.server_close()
