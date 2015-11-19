@@ -54,7 +54,8 @@ def disconnect():
     global _ACTOR, _GAME, _PLAYER_ID, _THREAD
     try:
         _LOCK.acquire()
-        server.disconnect(_PLAYER_ID)
+        if _PLAYER_ID is not None:
+            server.disconnect(_PLAYER_ID)
         _PLAYER_ID = None
         _GAME = None
         _ACTOR = None
