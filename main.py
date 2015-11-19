@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import pygame,phys_objects,drawing,gamestate
+import server
+import client
+
 pygame.init()
 
 size = (320*2,240*2)
@@ -26,6 +29,8 @@ mouse_down_pos = None
 invincible_mode = False
 
 keys = {'left':False,'right':False,'jump':False}
+
+client.connect(actor, game)
 
 while still_running:
 	if actor.is_crushed == True:
@@ -114,10 +119,20 @@ while still_running:
 	pusher.solve_collisions(group)
 	rf_fixer.solve_rfs(group)
 	
+	ghost_list = client.get_ghosts()
+	ghosts = []
+	for ghost in ghost_list:
+		ghosts.append(phys_objects.Ghost(ghost['position'][0], ghost['position'][1]))
+
+	for fuck_groups in group:
+		ghosts.append(fuck_groups)
+
 	drawer.update_camera(actor, size[0], size[1])
-	drawer.draw(screen, group)
+	drawer.draw(screen, ghosts)
 	game.draw_gui(screen)
 	pygame.display.flip()
 	clock.tick(FPS)
+
+client.disconnect()
 
 pygame.quit()
