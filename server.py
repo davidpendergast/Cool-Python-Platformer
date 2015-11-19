@@ -3,7 +3,7 @@ import socket
 import threading
 import SocketServer
 
-SERVER_IP = "52.32.142.217"
+SERVER_IP = "52.34.151.88"
 SERVER_PORT = 50069
 
 lock = threading.Lock()
