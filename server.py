@@ -61,8 +61,10 @@ def send(user, level, position):
     sock.close()
     return r
 
+
 def connect():
     return send('__NEWUSER__', None, None)
+
 
 def disconnect(user):
     send(user, None, None)
