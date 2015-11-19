@@ -1,6 +1,8 @@
 import server
 import threading
 import random
+import colorsys
+import phys_objects
 
 _LOCK = threading.Lock()
 
@@ -20,10 +22,14 @@ def __process():
             _LOCK.acquire()
             if _PLAYER_ID is not None:
                 _LOCK.release()
-                temp_ghosts = server.send(
-                    _PLAYER_ID,
-                    _GAME.level_num,
-                    _ACTOR.rect.topleft)
+                temp_ghosts = []
+                for ghast in server.send(
+                        _PLAYER_ID,
+                        _GAME.level_num,
+                        _ACTOR.rect.topleft):
+                    temp_ghosts.append(phys_objects.Ghost(
+                        ghast['position'],
+                        color=get_ghost_color(ghast['user'])))
                 _LOCK.acquire()
                 _GHOSTS = temp_ghosts
             else:
@@ -42,6 +48,7 @@ def connect(actor, game):
         _PLAYER_ID = server.connect()
         _THREAD = threading.Thread(target=__process)
         _THREAD.start()
+        actor.color = get_ghost_color(_PLAYER_ID)
     except:
         _ACTOR = None
         _PLAYER_ID = None
@@ -73,3 +80,11 @@ def get_ghosts():
     finally:
         _LOCK.release()
     return r
+
+
+def get_ghost_color(i):
+    state = random.getstate()
+    random.seed(i)
+    color = colorsys.hsv_to_rgb(random.random(), 1.0, 1.0)
+    random.setstate(state)
+    return color
