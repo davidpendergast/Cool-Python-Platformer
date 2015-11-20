@@ -119,6 +119,7 @@ class LevelManager:
     
     def update_total_time_highscore(self, time):
         print "Total time = " + str(time)
+        print str(self.level_highscore_data)
         if self.level_highscore_data[-1][0] > time:
             print "New High Score!"
             self.level_highscore_data[-1] = (time, "DLP");
@@ -169,7 +170,7 @@ class LevelManager:
         for line in self.level_filenames:
             header.write(line + "\n")
         
-        header.write("\n@highscores (level, time, initials, formatted time)\n")
+        header.write("\n@highscores\t(level, time, initials, formatted time)\n")
         
         for i in range(0, len(self.level_highscore_data)):
             line = self.level_highscore_data[i]
