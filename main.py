@@ -1,34 +1,39 @@
 #!/usr/bin/env python
 
-import pygame,phys_objects,drawing,gamestate
+import pygame
+
+import phys_objects
+import drawing
+import gamestate
+
 import server
 import client
 
 pygame.init()
 
-size = (320*2,240*2)
+size = (640, 480)
 screen = pygame.display.set_mode(size)
 
 still_running = True
 clock = pygame.time.Clock()
 FPS = 60
 
-camera = (0,0)
+camera = (0, 0)
 
 pusher = phys_objects.CollisionFixer()
 rf_fixer = phys_objects.ReferenceFrameFixer()
 drawer = drawing.Drawer()
 game = gamestate.Game()
-actor = game.actor
-group = game.group 
+actor = game.actor  # The player's character
+group = game.group  # list of all objects in the current level (including the player).
 
-DEV_MODE = True
+DEV_MODE = True     # if true gives access to developer commands.
 
 mouse_down_pos = None
 
 invincible_mode = False
 
-keys = {'left':False,'right':False,'jump':False}
+keys = {'left':False, 'right':False, 'jump':False}
 
 client.connect(actor, game)
 
@@ -41,16 +46,17 @@ while still_running:
         game.reset_level()
     if actor.finished_level:
         game.next_level(True)
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             still_running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
-                keys['left']=True
+                keys['left'] = True
             elif event.key == pygame.K_d:
-                keys['right']=True
+                keys['right'] = True
             elif event.key == pygame.K_w:
-                keys['jump']=True
+                keys['jump'] = True
             elif event.key == pygame.K_RETURN or event.key == pygame.K_r:
                 game.death_count += 1
                 game.reset_level()
@@ -74,12 +80,12 @@ while still_running:
                 keys['right']=False
             elif event.key == pygame.K_w:
                 keys['jump']=False
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and DEV_MODE:
             x = event.pos[0]+drawer.camera_pos[0]
             y = event.pos[1]+drawer.camera_pos[1]
             mouse_down_pos = (x,y)
             print "Mouse Click at: ("+str(x)+", "+str(y)+") ["+str(x - (x % drawer.grid_spacing))+", "+str(y - (y % drawer.grid_spacing))+"]"
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and DEV_MODE:
             x = event.pos[0]+drawer.camera_pos[0]
             y = event.pos[1]+drawer.camera_pos[1]
             grid_x = x - (x % drawer.grid_spacing)

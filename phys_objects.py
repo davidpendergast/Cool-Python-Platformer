@@ -566,7 +566,7 @@ class CollisionFixer:
 
     def rect_collide(self, rect, spritegroup):
         "Finds all the sprites in Group (or list) spritegroup that collide with given rect. Returns a list of those sprites."
-        #TODO - make better
+        # TODO - make better
         list = [sprite for sprite in spritegroup if rect.colliderect(sprite.rect)]
         return list
         
