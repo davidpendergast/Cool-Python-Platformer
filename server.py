@@ -52,21 +52,31 @@ class ThreadedUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
 
 def send(user, level, position):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print "\tConnecting"
     sock.connect((SERVER_IP, SERVER_PORT))
-    sock.sendall(json.dumps({
-        'user': user,
-        'level': level,
-        'position': position}))
-    r = json.loads(sock.recv(1024))
-    sock.close()
+    sock.settimeout(1.0)
+    print "\tSending"
+    r = None
+    try:
+        sock.sendall(json.dumps({
+            'user': user,
+            'level': level,
+            'position': position}))
+        print "\tReading"
+        r = json.loads(sock.recv(1024))
+    finally:
+        sock.close()
     return r
 
 
 def connect():
-    return send('__NEWUSER__', None, None)
+    print "Connecting"
+    uid =  send('__NEWUSER__', None, None)
+    return uid
 
 
 def disconnect(user):
+    print "Disconnecting"
     send(user, None, None)
 
 
