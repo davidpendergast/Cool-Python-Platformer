@@ -119,10 +119,7 @@ while still_running:
 	pusher.solve_collisions(group)
 	rf_fixer.solve_rfs(group)
 	
-	ghost_list = client.get_ghosts()
-	ghosts = []
-	for ghost in ghost_list:
-		ghosts.append(phys_objects.Ghost(ghost['position'][0], ghost['position'][1]))
+	ghosts = client.get_ghosts()
 
 	for fuck_groups in group:
 		ghosts.append(fuck_groups)

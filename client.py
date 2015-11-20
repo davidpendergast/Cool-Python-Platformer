@@ -15,7 +15,7 @@ _GHOSTS = []
 
 
 def __process():
-    global _GHOSTS, _GHOSTS_READY
+    global _GHOSTS
     running = True
     while running:
         try:
@@ -87,4 +87,4 @@ def get_ghost_color(i):
     random.seed(i)
     color = colorsys.hsv_to_rgb(random.random(), 1.0, 1.0)
     random.setstate(state)
-    return color
+    return tuple([x * 255 for x in color])
