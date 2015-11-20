@@ -13,7 +13,7 @@ next_uid = 0
 
 class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
-	global next_uid
+        global next_uid
         lock.acquire()
         try:
             # format: {'user': .., 'level': .., 'pos: (.., ..)}
@@ -24,22 +24,22 @@ class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
             sendback = []
 
             if data['user'] == '__NEWUSER__':
-		print "new user! ", next_uid
+                print "new user! ", next_uid
                 sendback = next_uid
                 next_uid += 1
             else:
                 if data['level'] is None:
                     try:
-			print "disconnect! ", data['user']
+                        print "disconnect! ", data['user']
                         del users[data['user']]
                     except:
                         pass
-		else:
-	                users[data['user']] = data
-        	        for user in users:
-                	    if user is not data['user'] \
-	                      and users[user]['level'] is data['level']:
-        	                sendback.append(users[user])
+                else:
+                    users[data['user']] = data
+                    for user in users:
+                        if user is not data['user'] \
+                          and users[user]['level'] is data['level']:
+                            sendback.append(users[user])
             socket = self.request[1]
             socket.sendto(json.dumps(sendback), self.client_address)
         finally:
@@ -52,19 +52,31 @@ class ThreadedUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
 
 def send(user, level, position):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print "\tConnecting"
     sock.connect((SERVER_IP, SERVER_PORT))
-    sock.sendall(json.dumps({
-        'user': user,
-        'level': level,
-        'position': position}))
-    r = json.loads(sock.recv(1024))
-    sock.close()
+    sock.settimeout(1.0)
+    print "\tSending"
+    r = None
+    try:
+        sock.sendall(json.dumps({
+            'user': user,
+            'level': level,
+            'position': position}))
+        print "\tReading"
+        r = json.loads(sock.recv(1024))
+    finally:
+        sock.close()
     return r
 
+
 def connect():
-    return send('__NEWUSER__', None, None)
+    print "Connecting"
+    uid =  send('__NEWUSER__', None, None)
+    return uid
+
 
 def disconnect(user):
+    print "Disconnecting"
     send(user, None, None)
 
 

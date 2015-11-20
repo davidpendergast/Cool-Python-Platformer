@@ -64,6 +64,9 @@ while still_running:
             elif event.key == pygame.K_LEFT and DEV_MODE:
                 game.prev_level()
                 continue
+            elif event.key == pygame.K_ESCAPE:
+                still_running = False
+                break
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 keys['left']=False
@@ -118,17 +121,11 @@ while still_running:
     group.update(dt)
     pusher.solve_collisions(group)
     rf_fixer.solve_rfs(group)
-    
-    ghost_list = client.get_ghosts()
-    ghosts = []
-    for ghost in ghost_list:
-        ghosts.append(phys_objects.Ghost(ghost['position'][0], ghost['position'][1]))
-
-    for fuck_groups in group:
-        ghosts.append(fuck_groups)
 
     drawer.update_camera(actor, size[0], size[1])
-    drawer.draw(screen, ghosts)
+    drawer.draw(screen, client.get_ghosts())
+    drawer.draw(screen, group)
+
     game.draw_gui(screen)
     pygame.display.flip()
     clock.tick(FPS)

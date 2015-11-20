@@ -622,7 +622,7 @@ class CustomPath(Path):
 
 
 class Ghost(pygame.sprite.Sprite):
-    def __init__(self, x, y, color=(200, 128, 128)):
+    def __init__(self, (x, y), color=(200, 128, 128)):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((24, 32))
         self.color = color
