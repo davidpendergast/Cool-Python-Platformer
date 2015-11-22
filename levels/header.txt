@@ -5,10 +5,10 @@ level_2
 level_3
 level_4
 
-@highscores	(time, initials, formatted time, level)
-0	1000000	DLP	0:00:00
-1	1000000	DLP	0:00:00
-2	1000000	DLP	0:00:00
-3	1000000	DLP	0:00:00
-4	1000000	DLP	0:00:00
-ALL	1000000	DLP	0:00:00
+@highscores	(level, time, initials, formatted time)
+0	661	DLP	11:01
+1	503	DLP	8:23
+2	477	DLP	7:57
+3	598	DLP	9:58
+4	795	DLP	13:15
+ALL	3321	DLP	55:21
