@@ -1,0 +1,21 @@
+{   "info": {
+        "name":"E-Z",
+        "version":"1.0"
+    },
+    "actor": {"x":"0", "y":"0"},
+    "blocks": [
+        {"type":"normal", "x":"0", "y":"128", "width":"128", "height":"288"},
+        {"type":"normal", "x":"224", "y":"160", "width":"128", "height":"64"},
+        {"type":"normal", "x":"416", "y":"96", "width":"96", "height":"128"},
+        {"type":"normal", "x":"224", "y":"224", "width":"288", "height":"96"},
+        {"type":"normal", "x":"672", "y":"96", "width":"128", "height":"192"},
+        {"type":"normal", "x":"800", "y":"128", "width":"128", "height":"192"},
+        {"type":"normal", "x":"928", "y":"160", "width":"128", "height":"192"},
+        {"type":"normal", "x":"1056", "y":"160", "width":"224", "height":"64"},
+        {"type":"normal", "x":"1344", "y":"96", "width":"64", "height":"64"},
+        {"type":"normal", "x":"1472", "y":"64", "width":"64", "height":"64"},
+        {"type":"normal", "x":"1696", "y":"192", "width":"256", "height":"64"},
+        {"type":"finish", "x":"1930", "y":"104", "width":"16", "height":"16"}
+    ],
+    "enemies": []
+}

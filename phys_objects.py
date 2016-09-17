@@ -7,7 +7,6 @@ class Box(pygame.sprite.Sprite):
     def __init__(self, width, height, color=(128, 128, 128), border_color=None):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((width, height))
-            
         self.color = color
         self.border_color = border_color
         self.repaint()
@@ -163,7 +162,7 @@ class MovingBlock(Block):
         self.dist_before_reverse = 32*5
         self.current_dir = 1;
         self.speed = 1;
-        self.path = CustomPath(x_fun, y_fun)
+        self.path = Path(x_fun, y_fun)
         
         #vars used for switch behavior
         self.is_paused = False  
@@ -177,18 +176,18 @@ class MovingBlock(Block):
         if self.pause_after_next_update:
             self.is_paused = True
     
-    @staticmethod
-    def get_up_down_block(width, height, x, y_low, y_high, t="@t*0.01*math.pi"):
-        return MovingBlock(width, height, str(x), "("+str(y_low)+"+"+str(y_high)+")/2 + ("+str(y_high)+"-"+str(y_low)+")/2*math.cos("+t+")")
+    #@staticmethod
+    #def get_up_down_block(width, height, x, y_low, y_high, t="@t*0.01*math.pi"):
+    #    return MovingBlock(width, height, str(x), "("+str(y_low)+"+"+str(y_high)+")/2 + ("+str(y_high)+"-"+str(y_low)+")/2*math.cos("+t+")")
     
-    @staticmethod
-    def get_left_right_block(width, height, x_low, x_high, y, t="@t*0.01*math.pi"):
-        return MovingBlock(width, height, "("+str(x_low)+"+"+str(x_high)+")/2 + ("+str(x_high)+"-"+str(x_low)+")/2*math.cos("+t+")", str(y))
+    #@staticmethod
+    #def get_left_right_block(width, height, x_low, x_high, y, t="@t*0.01*math.pi"):
+    #    return MovingBlock(width, height, "("+str(x_low)+"+"+str(x_high)+")/2 + ("+str(x_high)+"-"+str(x_low)+")/2*math.cos("+t+")", str(y))
     
-    @staticmethod
-    def get_ellipse_block(width, height, x_low, x_high, y_low, y_high, t="@t*0.01*math.pi"):
-        "Returns a moving block with specified width and height whose top-left corner moves in the ellipse defined by the given rectangle."
-        return MovingBlock(width, height, "("+str(x_low)+"+"+str(x_high)+")/2 + ("+str(x_high)+"-"+str(x_low)+")/2*math.cos("+t+")", "("+str(y_low)+"+"+str(y_high)+")/2 + ("+str(y_high)+"-"+str(y_low)+")/2*math.sin("+t+")")
+    #@staticmethod
+    #def get_ellipse_block(width, height, x_low, x_high, y_low, y_high, t="@t*0.01*math.pi"):
+    #    "Returns a moving block with specified width and height whose top-left corner moves in the ellipse defined by the given rectangle."
+    #    return MovingBlock(width, height, "("+str(x_low)+"+"+str(x_high)+")/2 + ("+str(x_high)+"-"+str(x_low)+")/2*math.cos("+t+")", "("+str(y_low)+"+"+str(y_high)+")/2 + ("+str(y_high)+"-"+str(y_low)+")/2*math.sin("+t+")")
     
     
 class Actor(Box):
@@ -279,21 +278,30 @@ class Actor(Box):
         self.is_left_toe_grounded = False
         self.is_right_toe_grounded = False
         
-        self.apply_friction(dt)
         Box.update(self, dt)
         
         #fall detection
         if self.y() >= 2048:
             self.is_alive = False
-            
+
     def collided_with(self, obj, dir="NONE"):
         if obj.is_solid:
             if dir == "BOTTOM":
                 self.jumps = 1
+    
     def apply_friction(self, dt):
-        if (self.is_left_walled or self.is_right_walled) and self.vy() > 0:
-            wall_fric = 0.1
-            self.set_vy(self.vy()-0.1)
+        fric = 0.1
+        if self.is_grounded:
+            fric = 1
+        vx = self.vx()
+        if vx < fric and vx > -fric:
+            vx = 0
+        else:
+            if vx < 0:
+                vx = vx + fric
+            else:
+                vx = vx - fric
+        self.set_vx(vx)
             
             
 class BadBlock(Block):
@@ -365,7 +373,6 @@ class Enemy(Actor):
         
     def update(self, dt):
         if not self.is_alive:
-            self.kill()
             return;
         if not self.walks_off_platforms and self.is_grounded:
             if (self.direction == -1 and not self.is_left_toe_grounded) or (self.direction == 1 and not self.is_right_toe_grounded):
@@ -586,14 +593,14 @@ class ReferenceFrameFixer:
         
         
 class Path:
-    def __init__(self):
+    def __init__(self, x_expression, y_expression):
         self.t = 0;
-        self.x_fun = Path.null_path
-        self.y_fun = Path.null_path
+        self.x_fun = x_expression
+        self.y_fun = y_expression
         
     def step(self, dt):
         self.t += dt
-        return (self.x_fun(self.t, 100, 0.01, 0, 0), self.y_fun(self.t, -100, 0.01, 0, 0))
+        return (self.x_fun.value(self.t), self.y_fun.value(self.t))
         
     @staticmethod
     def null_path(t, A, B, t_offs, y_offs):
@@ -608,17 +615,6 @@ class Path:
     def cos_path(t, A, B, t_offs, y_offs):
         "A*sin(B(t-t_offs)) + y_offs"
         return A*math.cos(B*(t-t_offs)) + y_offs
-
-class CustomPath(Path):
-    def __init__(self, _x_fun, _y_fun):
-        Path.__init__(self)
-        "Example function: 32*math.sin(@t*0.1) + 30"
-        self.x_fun = _x_fun.replace("@t", "self.t")
-        self.y_fun = _y_fun.replace("@t", "self.t")
-        self.t = 0
-    def step(self, dt):
-        self.t += dt
-        return (eval(self.x_fun), eval(self.y_fun)) # lol don't worry about this
 
 
 class Ghost(pygame.sprite.Sprite):

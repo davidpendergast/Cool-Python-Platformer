@@ -8,6 +8,8 @@ class Drawer:
         self.show_grid = False
         self.grid_spacing = 32
         self.grid_color = (50,50,50)
+    
+    
     def draw(self, screen, group):
         self.update_background_color()
         screen.fill(self.background_color)
@@ -23,14 +25,19 @@ class Drawer:
                 self.update_actor_for_debug_mode(sprite)
             screen.blit(sprite.image, (sprite.rect.x - self.camera_pos[0], sprite.rect.y - self.camera_pos[1]))
         
+    
     def update_camera(self, box, screen_width, screen_height):
         rect = box.rect
         self.camera_pos = (rect.x + rect.width/2 - screen_width/2, rect.y + rect.height/2 - screen_height/2)
+    
+    
     def update_background_color(self):
         if self.camera_pos[1] < 512:
             self.background_color = (0,0,0)
         else:
             self.background_color = (min(255*3/4, (self.camera_pos[1] - 512)//8),0,0)
+            
+            
     def update_actor_for_debug_mode(self, actor):
         actor.image.fill(actor.color) #reseting actor
         if actor.is_grounded:

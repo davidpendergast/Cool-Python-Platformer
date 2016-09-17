@@ -1,68 +1,211 @@
 import pygame
 import sys
 import phys_objects
+import drawing
+import levels
 
-class Game:
+class GameState:
+    def pre_event_update(self):
+        pass
+    def handle_event(self, event):
+        pass
+    def update(self, dt):
+        pass
+    def draw(self, screen):
+        pass
+
+        
+class PlayingState(GameState):
     def __init__(self):
-        self.group = pygame.sprite.Group()
-        self.actor = phys_objects.Actor(24, 32, (128, 128, 255))
-        self.actor.is_player = True
+        self.player = phys_objects.Actor(24, 32, (128, 128, 255))
+        self.player.is_player = True
+        
         self.level_num = 0
         self.death_count = 0
-        self.level_name = None
+        
         self.total_time = 0
         self.level_time = 0
-        self.level_manager = LevelManager("levels")
-        self.level_manager.load_level(0, self.actor, self.group)
         
-    def add_time(self):
+        file_object = open("settings.txt", "r")
+        level_path_string = file_object.readline()
+        
+        print "Using levels from "+level_path_string
+        
+        self._level_manager = levels.LevelManager(level_path_string)
+        self._level_manager.load_level(0, self.player)
+        
+        self.pusher = phys_objects.CollisionFixer()
+        self.rf_fixer = phys_objects.ReferenceFrameFixer()
+        self.drawer = drawing.Drawer()
+        
+        self.keys = {'left':False, 'right':False, 'jump':False}
+        self.mouse_down_pos = None
+        
+        self.invincible_mode = False
+        self.frozen_mode = False
+        self.DEV_MODE = True
+    
+    def get_entities(self):
+        return self._level_manager.current_level.entity_list
+        
+    def pre_event_update(self):
+        if self.player.is_crushed == True:
+            self.player.is_alive = False
+        if self.player.is_alive == False and not self.invincible_mode: #move this stuff to gamestate.py
+            self.player.is_alive = True
+            self.death_count += 1
+            self.reset_level()
+        if self.player.finished_level:
+            self.next_level(True)
+    
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                self.keys['left'] = True
+            elif event.key == pygame.K_d:
+                self.keys['right'] = True
+            elif event.key == pygame.K_w:
+                self.keys['jump'] = True
+            elif event.key == pygame.K_RETURN or event.key == pygame.K_r:
+                self.death_count += 1
+                self.reset_level()
+                return True
+            elif event.key == pygame.K_g:
+                self.drawer.show_grid = not self.drawer.show_grid
+            elif event.key == pygame.K_k and self.DEV_MODE:
+                self.invincible_mode = not self.invincible_mode
+            elif event.key == pygame.K_f and self.DEV_MODE:
+                self.frozen_mode = not self.frozen_mode
+            elif event.key == pygame.K_RIGHT and self.DEV_MODE:
+                self.next_level()
+                return True
+            elif event.key == pygame.K_LEFT and self.DEV_MODE:
+                self.prev_level()
+                return True
+            elif event.key == pygame.K_DOWN and self.DEV_MODE:
+                self.reset_level(False)
+                return True
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                self.keys['left'] = False
+            elif event.key == pygame.K_d:
+                self.keys['right'] = False
+            elif event.key == pygame.K_w:
+                self.keys['jump'] = False
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.DEV_MODE:
+            x = event.pos[0]+self.drawer.camera_pos[0]
+            y = event.pos[1]+self.drawer.camera_pos[1]
+            self.mouse_down_pos = (x,y)
+            print "Mouse Click at: ("+str(x)+", "+str(y)+") ["+str(x - (x % self.drawer.grid_spacing))+", "+str(y - (y % self.drawer.grid_spacing))+"]"
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.DEV_MODE:
+            x = event.pos[0]+self.drawer.camera_pos[0]
+            y = event.pos[1]+self.drawer.camera_pos[1]
+            grid_x = x - (x % self.drawer.grid_spacing)
+            grid_y = y - (y % self.drawer.grid_spacing)
+            if self.mouse_down_pos != None:
+                grid_down_x = self.mouse_down_pos[0] - (self.mouse_down_pos[0] % self.drawer.grid_spacing)
+                grid_down_y = self.mouse_down_pos[1] - (self.mouse_down_pos[1] % self.drawer.grid_spacing)
+                if grid_x != grid_down_x or grid_y != grid_down_y:
+                    #mouse has been dragged across more than one grid square.
+                    print "Mouse Dragged to form rectangle:["+str(grid_down_x)+", "+str(grid_down_y)+", "+str(grid_x - grid_down_x)+", "+str(grid_y - grid_down_y)+"]"
+                    print "{\"type\":\"normal\", \"x\":\""+str(grid_down_x)+"\", \"y\":\""+str(grid_down_y)+"\", \"width\":\""+str(grid_x - grid_down_x)+"\", \"height\":\""+str(grid_y - grid_down_y)+"\"}"
+                    print "\"x_path\":\"(+ "+str((grid_x+grid_down_x)/2)+" (* "+str((grid_x-grid_down_x)/2)+" (cos (* 0.02 t))))\""
+                    print "\"y_path\":\"(+ "+str((grid_y+grid_down_y)/2)+" (* "+str((grid_y-grid_down_y)/2)+" (sin (* 0.02 t))))\""
+
+        if self.keys['jump']:
+            self.player.jump_action()
+            self.keys['jump'] = False
+    
+    def update(self, dt):
+        self.add_time(dt)
+        
+        if bool(self.keys['left']) ^ bool(self.keys['right']):
+            if self.keys['left']: 
+                self.player.move_action(-1)
+            elif self.keys['right']: 
+                self.player.move_action(1)
+        else:
+            self.player.apply_friction(dt)
+        
+        self.player.update(dt)
+        
+        if self.frozen_mode:
+            dt = 0
+        
+        for item in self.get_entities():
+            if item is not self.player:
+                item.update(dt)
+        
+        self.pusher.solve_collisions(self._level_manager.current_level.entity_list)
+        self.rf_fixer.solve_rfs(self._level_manager.current_level.entity_list)
+    
+    def draw(self, screen):
+        self.drawer.update_camera(self.player, screen.get_width(), screen.get_height())
+        # drawer.draw(screen, client.get_ghosts()) #### GHOSTS NOT BEING DRAWN ####
+        self.drawer.draw(screen, self.get_entities())
+        self.draw_gui(screen)
+     
+    def add_time(self, t):
         self.total_time += 1
         self.level_time += 1
+      
+    def reset_level(self, reset_player=True):
+        x = self.player.x()
+        y = self.player.y()
         
-    def reset_level(self):
-        self.actor.reset()
-        self.level_manager.load_level(self.level_num, self.actor, self.group)
+        self.player.reset()
+        self._level_manager.load_level(self.level_num, self.player)
         
+        if not reset_player:
+            self.player.set_xy(x,y)
+    
+    
     def next_level(self, update_highscore=False):
         if update_highscore:
-            self.level_manager.update_level_highscore(self.level_num, self.level_time)
+            self._level_manager.update_level_highscore(self.level_num, self.level_time)
             
-        if self.level_num == self.level_manager.get_num_levels() - 1:
-            self.level_manager.update_total_time_highscore(self.total_time)
-            self.level_manager.write_header()
+        if self.level_num == self._level_manager.get_num_levels() - 1:
+            self._level_manager.update_total_time_highscore(self.total_time)
+            self._level_manager.write_header()
             print "Game Over!"
             
             # TEMPORARY - loop back to level 0
             self.level_num = 0
             self.level_time = 0
             self.total_time = 0
-            self.actor.reset()
-            self.level_manager.load_level(self.level_num, self.actor, self.group)
+            self.player.reset()
+            self._level_manager.load_level(self.level_num, self.player)
         else:   
             self.level_num += 1
             self.level_time = 0
-            self.actor.reset()
-            self.level_manager.load_level(self.level_num, self.actor, self.group)
-            
+            self.player.reset()
+            self._level_manager.load_level(self.level_num, self.player)
+     
+     
     def prev_level(self):
         if self.level_num > 0:
             self.level_num += -1
-        self.actor.reset()
-        self.level_manager.load_level(self.level_num, self.actor, self.group)
-        
+        self.player.reset()
+        self._level_manager.load_level(self.level_num, self.player)
+    
+    
     def draw_gui(self, screen):
         font = pygame.font.Font(None, 36)
         level_text = font.render("Level: "+str(self.level_num + 1), True, (255, 255, 255))
-        level_title = font.render(str(self.level_manager.level_name), True, (255, 255, 255))
+        level_title = font.render(str(self._level_manager.current_level.name), True, (255, 255, 255))
         death_text = font.render("Deaths: "+str(self.death_count), True, (255, 255, 255))
         text_height = level_text.get_height()
         
-        time_text = font.render("Time: " + Game.format_time_string(self.total_time), True, (255, 255, 255))
+        time_text = font.render("Time: " + PlayingState.format_time_string(self.total_time), True, (255, 255, 255))
         screen.blit(level_text, (0, 0))
         screen.blit(level_title, (0, text_height))
         screen.blit(time_text, (screen.get_width()/2 - time_text.get_width()/2, 0))
         screen.blit(death_text, (screen.get_width() - death_text.get_width(), 0))
         
+        if screen.get_width() > 640 or screen.get_height() > 480:
+            pygame.draw.rect(screen,(255,0,0), pygame.Rect(100,100,640,480), 1)
+      
+    
     @staticmethod
     def format_time_string(time):
         if time % 60 < 10:
@@ -70,115 +213,10 @@ class Game:
         else:
             seconds = str(time % 60)
         return str(time // 60) + ":" + seconds
-    def draw_background(self):
-        pass
-        
-        
-class LevelManager:
-    def __init__(self, file_dir):
-        self.level_num = 0
-        self.actor = None
-        self.group = None
-        self.level_name = None      # accessed in level files, do not change
-        
-        self.file_dir = file_dir    # "Levels", most likely
-        self.level_filenames =[]
-        self.level_highscore_data = []
-        self.read_header()
-        
-    def get_num_levels(self):
-        return len(self.level_filenames)
-        
-    def load_level(self, num, actor, group):
-        assert num >= 0 and num < len(self.level_filenames)
-        group.empty()
-        self.group = group
-        self.level_num = num
-        self.actor = actor
-        self.level_name = "<Unnamed>"
-            
-        file_name = self.file_dir + "/" + self.level_filenames[num]+".py"
-        print "exec-ing " + file_name
-        try:
-            execfile(file_name)
-        except IOError:
-            print file_name+" could not be loaded. Please ensure that the file exists and is properly named."
-            self.load_void_level(actor, group)
-        except:
-            print file_name+" threw unexpected error while loading:", sys.exc_info()[0]
-            self.load_void_level(actor, group)
-            
-    def update_level_highscore(self, level_num, time):
-        if len(self.level_highscore_data)-1 <= level_num:
-            print "Error, could not update high score of level "+str(level_num)
-        else:
-            print "old time = "+str(self.level_highscore_data[level_num][0])+", new time = "+str(time)
-            if self.level_highscore_data[level_num][0] > time:
-                print "New High Score!"
-                self.level_highscore_data[level_num] = (time, "DLP")
-    
-    def update_total_time_highscore(self, time):
-        print "Total time = " + str(time)
-        print str(self.level_highscore_data)
-        if self.level_highscore_data[-1][0] > time:
-            print "New High Score!"
-            self.level_highscore_data[-1] = (time, "DLP");
-                
-    def load_void_level(self, actor, group):
-        group.empty()
-        self.group = group
-        self.level_num = -2
-        self.actor = actor
-        self.level_name = "The Void"
-        group.add(actor.set_xy(0, 0))
-        group.add(phys_objects.Block(128, 128).set_xy(0, 128))
-        group.add(phys_objects.FinishBlock(16, 16).set_xy(56, -64))
-        
-    def read_header(self):
-        header = open(self.file_dir + "/header.txt")
-        header_txt = header.read()
-        print header_txt
-        header_lines = header_txt.splitlines()
-        i = 0
-        while header_lines[i] is '':    # skip opening whitespace
-            i += 1
-        line = header_lines[i].split("\t")
-        print str(line[0])
-        if line[0] == "@levels":        # reading level filenames
-            i += 1
-            while header_lines[i] is not '':        
-                line = header_lines[i].split("\t")
-                self.level_filenames.append(line[0])
-                i += 1
-        while header_lines[i] is '':    # skip inbetween whitespace
-            i += 1
-        line = header_lines[i].split("\t")
-        if line[0] == "@highscores":    # read high score info
-            i += 1
-            while i < len(header_lines) and header_lines[i] is not '':
-                line = header_lines[i].split("\t")
-                self.level_highscore_data.append((int(line[1]), line[2]))
-                i += 1
-        print str(self.level_filenames)
-        print str(self.level_highscore_data)
-        
-    def write_header(self):
-        header = open(self.file_dir + "/header.txt", 'w')
-        header.flush()
-        header.write("@levels\t(filename)\n")
-        
-        for line in self.level_filenames:
-            header.write(line + "\n")
-        
-        header.write("\n@highscores\t(level, time, initials, formatted time)\n")
-        
-        for i in range(0, len(self.level_highscore_data)):
-            line = self.level_highscore_data[i]
-            i_str = str(i) if i < len(self.level_highscore_data)-1 else "ALL"
-            header.write(i_str + "\t" + str(line[0]) + "\t" + line[1] +"\t" + Game.format_time_string(line[0]) + "\n")
-            
-        header.close()
-        
+       
+       
+class EditingState(GameState):
+    pass
             
             
             
