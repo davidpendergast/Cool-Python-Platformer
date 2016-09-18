@@ -92,11 +92,18 @@ class PlayingState(GameState):
                 self.keys['right'] = False
             elif event.key == pygame.K_w:
                 self.keys['jump'] = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.DEV_MODE:
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.DEV_MODE:
             x = event.pos[0]+self.drawer.camera_pos[0]
             y = event.pos[1]+self.drawer.camera_pos[1]
+            grid_size = self.drawer.grid_spacing
+            grid_x = x - (x % grid_size)
+            grid_y = y - (y % grid_size)
             self.mouse_down_pos = (x,y)
-            print "Mouse Click at: ("+str(x)+", "+str(y)+") ["+str(x - (x % self.drawer.grid_spacing))+", "+str(y - (y % self.drawer.grid_spacing))+"]"
+            if event.button == 1:
+                print "Mouse Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]"
+            elif event.button == 3:
+                print "{\"type\":\"finish\", \"x\":\""+str(grid_x + grid_size/4) +"\", \"y\":\""+str(grid_y + grid_size/4)+"\", \"width\":\""+str(grid_size/2)+"\", \"height\":\""+str(grid_size/2)+"\"}"
+            
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.DEV_MODE:
             x = event.pos[0]+self.drawer.camera_pos[0]
             y = event.pos[1]+self.drawer.camera_pos[1]

@@ -133,14 +133,14 @@ class Sin(Transformer):
         
 class Number(Expression):
     def __init__(self, string):
-        if string is "pi":
+        if string == "pi":
             self.num = math.pi
         else:
             self.num = float(string)
     
     @staticmethod
     def matches(string):
-        if string is "pi":
+        if string == "pi":
             return True
         try:
             float(string)

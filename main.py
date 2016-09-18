@@ -14,7 +14,9 @@ pygame.init()
 game = gamestate.PlayingState()
 game.DEV_MODE = True     # if true gives access to developer commands.
 
-size = (640+200, 480+200) if game.DEV_MODE else (640, 480)
+size = (640, 480)
+if game.DEV_MODE:
+    size = (size[0]+200, size[1]+200)
 screen = pygame.display.set_mode(size)
 
 still_running = True
@@ -23,8 +25,6 @@ FPS = 60
 
 current_gamestate = game
 actor = game.player  # The player's character
-
-# keys = {'left':False, 'right':False, 'jump':False}
 
 client.connect(actor, game)
 

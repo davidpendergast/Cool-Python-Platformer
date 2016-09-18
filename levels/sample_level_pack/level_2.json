@@ -1,0 +1,26 @@
+{   "info": {
+        "name":"Walljumps",
+        "version":"1.0"
+    },
+    "actor": {"x":"0", "y":"0"},
+    "blocks": [
+        {"type":"normal", "x":"-64", "y":"128", "width":"192", "height":"288"},
+        {"type":"normal", "x":"192", "y":"0", "width":"32", "height":"128"},
+        {"type":"normal", "x":"128", "y":"128", "width":"96", "height":"32"},
+        {"type":"normal", "x":"224", "y":"0", "width":"288", "height":"64"},
+        {"type":"normal", "x":"576", "y":"-224", "width":"288", "height":"288"},
+        {"type":"normal", "x":"480", "y":"64", "width":"32", "height":"96"},
+        {"type":"normal", "x":"512", "y":"128", "width":"64", "height":"32"},
+        {"type":"normal", "x":"576", "y":"64", "width":"32", "height":"96"},
+        {"type":"normal", "x":"832", "y":"-768", "width":"32", "height":"544"},
+        {"type":"normal", "x":"736", "y":"-768", "width":"32", "height":"416"},
+        {"type":"finish", "x":"1288", "y":"-632", "width":"16", "height":"16"},
+        {"type":"normal", "x":"128", "y":"160", "width":"736", "height":"256"},
+        {"type":"normal", "x":"224", "y":"64", "width":"256", "height":"96"},
+        {"type":"normal", "x":"608", "y":"64", "width":"256", "height":"96"},
+        {"type":"normal", "x":"864", "y":"-672", "width":"96", "height":"32"},
+        {"type":"moving", "width":"64", "height":"32", "x_path":"(+ 1056 (* 96 (cos (* 0.02 t))))", "y_path":"(+ -576 (* 96 (sin (* 0.02 t))))"},
+        {"type":"moving", "width":"64", "height":"32", "x_path":"(+ 1056 (* 96 (cos (+ (* 0.02 t) pi))))", "y_path":"(+ -576 (* 96 (sin (+ (* 0.02 t) pi))))"}
+    ],
+    "enemies": []
+}
