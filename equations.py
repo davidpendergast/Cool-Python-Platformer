@@ -11,6 +11,7 @@ class Expression:
     
     @staticmethod
     def list_to_expression(var):
+        #print "Expression: calling list_to_expression on: "+str(var)
         if type(var) == type([]):
             sym = var[0]
             elements = var[1:]
@@ -21,7 +22,7 @@ class Expression:
             
             return ExpressionFactory.get_expression(sym, args)
             
-        elif Number.matches(var):
+        elif Number.matches(str(var)):
             return Number(str(var))
         elif Variable.matches(var):
             return Variable()
@@ -70,12 +71,16 @@ class Expression:
     
 class Combiner(Expression):
     def __init__(self, list):
-        if len(list) != 2:
+        if len(list) < 2:
             raise ValueError("Incorrect number of arguments for "+type(self))
-        self.left = list[0]
-        self.right = list[1]
+        self.args = list
     def __str__(self):
-        return "".join(["(", self.symbol, " ", str(self.left), " ", str(self.right), ")"])
+        res = "(" + self.symbol
+        for i in range(0, len(self.args)):
+            res += str(self.args[i])
+            if i != len(self.args)-1:
+                res += " "
+        return res + ")"
         
 class Transformer(Expression):
     def __init__(self, list):
@@ -88,36 +93,59 @@ class Transformer(Expression):
 
 class Sum(Combiner):
     def value(self, t): 
-        return self.left.value(t) + self.right.value(t)
+        res = 0
+        for arg in self.args:
+            res += arg.value(t)
+        return res
           
 class Difference(Combiner):
-    @staticmethod
     def value(self, t):
-        return self.left.value(t) - self.right.value(t)
+        res = self.args[0].value(t)
+        for arg in self.args[1:]:
+            res -= arg.value(t)
+        return res
         
 class Product(Combiner):
     def value(self, t):
-        return self.left.value(t) * self.right.value(t)
+        res = 1
+        for arg in self.args:
+            res *= arg.value(t)
+        return res
 
 class Quotient(Combiner):
     def value(self, t):
-        return self.left.value(t) / self.right.value(t)
+        res = self.args[0].value(t)
+        for arg in self.args[1:]:
+            res = res / arg.value(t)
+        return res
    
 class Exponent(Combiner):
     def value(self, t):
-        return self.left.value(t) ** self.right.value(t)
+        res = self.args[0].value(t)
+        for arg in self.args[1:]:
+            res = res ** arg.value(t)
+        return res
 
 class Modulo(Combiner):
     def value(self, t):
-        return self.left.value(t) % self.right.value(t)
+        res = self.args[0].value(t)
+        for arg in self.args[1:]:
+            res = res % arg.value(t) # uh... lol
+        return res
         
 class Max(Combiner):
     def value(self, t):
-        return max(self.left.value(t), self.right.value(t))
+        res = self.args[0].value(t)
+        for arg in self.args[1:]:
+            res = math.max(res, arg.value(t))
+        return res
         
 class Min(Combiner):
     def value(self, t):
-        return min(self.left.value(t), self.right.value(t))
+        res = self.args[0].value(t)
+        for arg in self.args[1:]:
+            res = math.min(res, arg.value(t))
+        return res
        
 class Abs(Transformer):
     def value(self, t):
@@ -188,4 +216,6 @@ class ExpressionFactory:
             expr.symbol = sym
         
         return expr
+        
+print str(Expression.get_expression("(/ 4 2)").value(5))
         

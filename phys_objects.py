@@ -3,6 +3,8 @@ import sets
 import math
 import random
 
+import equations
+
 class Box(pygame.sprite.Sprite):
     def __init__(self, width, height, color=(128, 128, 128), border_color=None):
         pygame.sprite.Sprite.__init__(self)
@@ -156,13 +158,13 @@ class Block(Box):
 
             
 class MovingBlock(Block):
-    def __init__(self, width, height, x_fun, y_fun, color=None, border_color=None):
+    def __init__(self, width, height, path, color=None, border_color=None):
         Block.__init__(self, width, height, color, border_color)
         self.current_dist = 0
         self.dist_before_reverse = 32*5
         self.current_dir = 1;
         self.speed = 1;
-        self.path = Path(x_fun, y_fun)
+        self.path = path
         
         #vars used for switch behavior
         self.is_paused = False  
@@ -170,25 +172,12 @@ class MovingBlock(Block):
     
     def update(self, dt):
         if self.path != None and not self.is_paused:
-            xy = self.path.step(dt)
+            self.path.step(dt)
+            xy = self.path.get_xy()
             self.set_x(xy[0])
             self.set_y(xy[1])
         if self.pause_after_next_update:
-            self.is_paused = True
-    
-    #@staticmethod
-    #def get_up_down_block(width, height, x, y_low, y_high, t="@t*0.01*math.pi"):
-    #    return MovingBlock(width, height, str(x), "("+str(y_low)+"+"+str(y_high)+")/2 + ("+str(y_high)+"-"+str(y_low)+")/2*math.cos("+t+")")
-    
-    #@staticmethod
-    #def get_left_right_block(width, height, x_low, x_high, y, t="@t*0.01*math.pi"):
-    #    return MovingBlock(width, height, "("+str(x_low)+"+"+str(x_high)+")/2 + ("+str(x_high)+"-"+str(x_low)+")/2*math.cos("+t+")", str(y))
-    
-    #@staticmethod
-    #def get_ellipse_block(width, height, x_low, x_high, y_low, y_high, t="@t*0.01*math.pi"):
-    #    "Returns a moving block with specified width and height whose top-left corner moves in the ellipse defined by the given rectangle."
-    #    return MovingBlock(width, height, "("+str(x_low)+"+"+str(x_high)+")/2 + ("+str(x_high)+"-"+str(x_low)+")/2*math.cos("+t+")", "("+str(y_low)+"+"+str(y_high)+")/2 + ("+str(y_high)+"-"+str(y_low)+")/2*math.sin("+t+")")
-    
+            self.is_paused = True   
     
 class Actor(Box):
     STANDARD_SIZE = (24, 32)
@@ -598,24 +587,51 @@ class Path:
         self.x_fun = x_expression
         self.y_fun = y_expression
         
-    def step(self, dt):
-        self.t += dt
+    def get_xy(self):
         return (self.x_fun.value(self.t), self.y_fun.value(self.t))
         
-    @staticmethod
-    def null_path(t, A, B, t_offs, y_offs):
-        return 0;
-    
-    @staticmethod
-    def sin_path(t, A, B, t_offs, y_offs):
-        "= A*sin(B(t-t_offs)) + y_offs"
-        return A*math.sin(B*(t-t_offs)) + y_offs
-        
-    @staticmethod
-    def cos_path(t, A, B, t_offs, y_offs):
-        "A*sin(B(t-t_offs)) + y_offs"
-        return A*math.cos(B*(t-t_offs)) + y_offs
+    def step(self, dt):
+        self.t += dt
 
+class PointPath(Path):  
+    def __init__(self, x_points, y_points, speed=3):
+        self.x_points = x_points
+        self.y_points = y_points
+        self.speed = speed
+        if len(self.x_points) < 2 or len(self.y_points) < 2 or len(self.x_points) != len(self.y_points):
+            raise ValueError("Path given arrays of invalid lengths: x_points="+str(len(self.x_points))+", y_points="+str(len(self.y_points)))
+        self.dest_index = 1
+        
+        Path.__init__(self, self.get_spline_funct(self.x_points[0],self.x_points[1]), self.get_spline_funct(self.y_points[0],self.y_points[1]))
+        
+        self.at_end_of_spline = False
+        
+    def get_xy(self):
+        if self.at_end_of_spline:
+            return (self.x_points[self.dest_index], self.y_points[self.dest_index])
+        else:
+            return Path.get_xy(self)
+    def step(self, dt):
+        if self.at_end_of_spline:
+            #time to move to next spline
+            self.t = 0
+            self.dest_index = (self.dest_index + 1) % len(self.x_points)
+            
+            self.x_fun = self.get_spline_funct(self.x_points[self.dest_index-1], self.x_points[self.dest_index])
+            self.y_fun = self.get_spline_funct(self.y_points[self.dest_index-1], self.y_points[self.dest_index])
+            self.at_end_of_spline = False
+      
+        self.t += dt
+        inner = self.speed * 0.01 * self.t
+        if inner > math.pi:
+            self.at_end_of_spline = True
+        
+    def get_spline_funct(self, x1, x2):
+        d = (x2 - x1)
+        if d == 0:
+            return equations.Expression.get_expression(str(x1))
+        spline_string = "(+ "+str(x1)+" (* (/ "+str(d)+" 2) (- 1 (cos (* "+str(self.speed)+" 0.01 t)))))"
+        return equations.Expression.get_expression(spline_string)
 
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, (x, y), color=(200, 128, 128)):

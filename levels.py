@@ -128,7 +128,6 @@ class LevelReader:
     @staticmethod
     def load(filename):
         list = []
-        #filename = "sample_level.json"
         
         try:
             with open(filename) as json_file:
@@ -152,9 +151,19 @@ class LevelReader:
                         block = phys_objects.FinishBlock(int(elem["width"]), int(elem["height"]))
                         block.set_xy(int(elem["x"]), int(elem["y"]))
                     elif elem["type"] == "moving":
-                        x_path = equations.Expression.get_expression(str(elem["x_path"]))
-                        y_path = equations.Expression.get_expression(str(elem["y_path"]))
-                        block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), x_path, y_path)
+                        path = None
+                        if "x_path" in elem and "y_path" in elem:
+                            x_path = equations.Expression.get_expression(str(elem["x_path"]))
+                            y_path = equations.Expression.get_expression(str(elem["y_path"]))
+                            path = phys_objects.Path(x_path, y_path)
+                        elif "x_points" in elem and "y_points" in elem and "speed" in elem:
+                            x_points = elem["x_points"]
+                            y_points = elem["y_points"]
+                            speed = elem["speed"]
+                            print str(x_points) + ", " + str(y_points) +", " + str(speed)
+                            path = phys_objects.PointPath(x_points, y_points, speed)
+                        
+                        block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), path)
                     else:
                         continue
                     list.append(block)

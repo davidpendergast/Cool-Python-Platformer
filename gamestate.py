@@ -1,5 +1,7 @@
 import pygame
 import sys
+import json
+
 import phys_objects
 import drawing
 import levels
@@ -26,8 +28,10 @@ class PlayingState(GameState):
         self.total_time = 0
         self.level_time = 0
         
-        file_object = open("settings.txt", "r")
-        level_path_string = file_object.readline()
+        with open("settings.json") as data_file:    
+            data = json.load(data_file)
+            self.DEV_MODE = data["dev_mode"]
+            level_path_string = data["level_path"]     
         
         print "Using levels from "+level_path_string
         
@@ -43,7 +47,6 @@ class PlayingState(GameState):
         
         self.invincible_mode = False
         self.frozen_mode = False
-        self.DEV_MODE = True
     
     def get_entities(self):
         return self._level_manager.current_level.entity_list
@@ -51,7 +54,7 @@ class PlayingState(GameState):
     def pre_event_update(self):
         if self.player.is_crushed == True:
             self.player.is_alive = False
-        if self.player.is_alive == False and not self.invincible_mode: #move this stuff to gamestate.py
+        if self.player.is_alive == False and not self.invincible_mode:
             self.player.is_alive = True
             self.death_count += 1
             self.reset_level()
@@ -187,14 +190,12 @@ class PlayingState(GameState):
             self.level_time = 0
             self.player.reset()
             self._level_manager.load_level(self.level_num, self.player)
-     
-     
+      
     def prev_level(self):
         if self.level_num > 0:
             self.level_num += -1
         self.player.reset()
         self._level_manager.load_level(self.level_num, self.player)
-    
     
     def draw_gui(self, screen):
         font = pygame.font.Font(None, 36)
@@ -212,7 +213,6 @@ class PlayingState(GameState):
         if screen.get_width() > 640 or screen.get_height() > 480:
             pygame.draw.rect(screen,(255,0,0), pygame.Rect(100,100,640,480), 1)
       
-    
     @staticmethod
     def format_time_string(time):
         if time % 60 < 10:

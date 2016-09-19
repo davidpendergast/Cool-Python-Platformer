@@ -12,7 +12,6 @@ import client
 pygame.init()
 
 game = gamestate.PlayingState()
-game.DEV_MODE = True     # if true gives access to developer commands.
 
 size = (640, 480)
 if game.DEV_MODE:
