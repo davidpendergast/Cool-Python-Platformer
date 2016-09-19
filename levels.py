@@ -1,6 +1,8 @@
 import sys
 import json
+import os
 from pprint import pprint
+from StringIO import StringIO
 
 import pygame
 
@@ -48,14 +50,13 @@ class LevelManager:
         
         self.file_dir = file_dir    # "levels/something", most likely
         self.level_filenames =[]
-        self.level_highscore_data = []
         self.read_header()
+        self.highscores = self.load_or_create_highscore_data()  
         
     def get_num_levels(self):
         return len(self.level_filenames)
         
     def load_level(self, num, actor):
-        
         level = LevelReader.load(self.file_dir + "/" + self.level_filenames[num])
         if level == None:
             print "Level "+str(num)+" failed to load, using Void Level instead."
@@ -65,40 +66,11 @@ class LevelManager:
         level.set_actor(actor)
         self.current_level = level
         
-        
-        # self.level_num = num
-        # self.actor = actor
-        # self.level_name = "<Unnamed>"
-            
-        # file_name = self.file_dir + "/" + self.level_filenames[num]+".py"
-        # print "exec-ing " + file_name
-        # try:
-            # execfile(file_name)
-            # self.current_level = Level(group, self.level_name, self.level_num)
-            # self.current_level.set_actor(self.actor)
-        # except IOError:
-            # print file_name+" could not be loaded. Please ensure that the file exists and is properly named."
-            # self.load_void_level(actor, group)
-        # except:
-            # print file_name+" threw unexpected error while loading:", sys.exc_info()[0]
-            # self.load_void_level(actor, group)
-            
-        
     def update_level_highscore(self, level_num, time):
-        if len(self.level_highscore_data)-1 <= level_num:
-            print "Error, could not update high score of level "+str(level_num)
-        else:
-            print "old time = "+str(self.level_highscore_data[level_num][0])+", new time = "+str(time)
-            if self.level_highscore_data[level_num][0] > time:
-                print "New High Score!"
-                self.level_highscore_data[level_num] = (time, "DLP")
+        pass
     
     def update_total_time_highscore(self, time):
-        print "Total time = " + str(time)
-        print str(self.level_highscore_data)
-        if self.level_highscore_data[-1][0] > time:
-            print "New High Score!"
-            self.level_highscore_data[-1] = (time, "DLP");
+        pass
                 
     def create_void_level(self):
         list = []
@@ -123,6 +95,29 @@ class LevelManager:
             self.level_filenames.append(line)
         
         print "Level filenames are "+str(self.level_filenames)
+        
+    def load_or_create_highscore_data(self):
+        if os.path.isfile("./"+self.file_dir+"/highscores.json"):
+            pass
+        else:
+            print "No highscores.json file found, creating new one..."
+            num_levels = len(self.level_filenames)
+            dict = {
+                "best_overall_run_total":None,
+                "best_overall_run_scores":[None for i in range(0,num_levels)],
+                "best_individual_scores":[None for i in range(0,num_levels)]
+            }
+            
+            file = open(self.file_dir+"/highscores.json", 'w')
+            
+            io = StringIO()
+            print "dumping: "
+            print json.dumps(dict, indent=4, sort_keys=True)
+            
+            json.dump(dict, file, indent=4, sort_keys=True)
+            
+            file.close()
+            
 
 class LevelReader:
     @staticmethod
@@ -191,7 +186,6 @@ class LevelReader:
             
             return Level(list, name)
         except:
-            #e = sys.exc_info()[0]
             print "Error while loading "+filename+":"
             for err in sys.exc_info():
                 print "\t"+str(err)
