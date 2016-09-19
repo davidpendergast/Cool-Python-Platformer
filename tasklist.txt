@@ -1,0 +1,21 @@
+future features:
+
+    highscores
+    replays
+        
+buggeroonies:
+
+    physics glitchyness:
+        walljumping on a platform moving away from you
+        weird smushes
+        
+    dragging window freezes game (spelunky does this too so maybe it's ok)
+    
+    
+In consideration:
+
+    Some menus?
+        Main menu?
+            pretty much just a start button?
+   
+    
