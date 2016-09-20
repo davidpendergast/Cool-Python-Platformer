@@ -72,11 +72,14 @@ class LevelManager:
         self.current_level = level
         
     def update_level_highscore(self, level_num, time):
+        dirty = False
+    
         current_record = self.best_individual_scores[level_num]
         if current_record == None or time < current_record:
-            print "***NEW LEVEL RECORD***"
+            print "\n***NEW LEVEL RECORD***"
             print "Level "+str(level_num)+"'s record of "+str(gamestate.PlayingState.format_time_string(current_record))+" broken with "+gamestate.PlayingState.format_time_string(time)+"!"
             self.best_individual_scores[level_num] = time
+            dirty = True
         
         self.current_run_times[level_num] = time
         if level_num == self.get_num_levels()-1: #last level
@@ -91,12 +94,14 @@ class LevelManager:
             
             if final_time != None:
                 if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
-                    print "***NEW FULL RUN RECORD***"
+                    print "\n***NEW FULL RUN RECORD***"
                     print "Previous record "+str(gamestate.PlayingState.format_time_string(self.best_overall_run_total))+" broken with "+str(gamestate.PlayingState.format_time_string(final_time))
                     self.best_overall_run_total = final_time
                     self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
+                    dirty = True
         
-        self.dump_highscores_to_file()
+        if dirty:
+            self.dump_highscores_to_file()
         
     def dump_highscores_to_file(self):
         print "Saving highscores to "+self.get_highscores_filename()+"..."
@@ -183,7 +188,6 @@ class LevelReader:
         
         try:
             with open(filename) as json_file:
-                print str(json_file)
                 data = json.load(json_file)
             
             
@@ -212,7 +216,6 @@ class LevelReader:
                             x_points = elem["x_points"]
                             y_points = elem["y_points"]
                             speed = elem["speed"]
-                            print str(x_points) + ", " + str(y_points) +", " + str(speed)
                             path = phys_objects.PointPath(x_points, y_points, speed)
                         
                         block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), path)
@@ -233,8 +236,6 @@ class LevelReader:
                     else:
                         continue
                     list.append(enemy)
-            else:
-                print "no enemies in "+filename+"?"
             
             actor = phys_objects.Actor().set_xy(int(data["actor"]["x"]), int(data["actor"]["y"]))
             actor.is_player = True

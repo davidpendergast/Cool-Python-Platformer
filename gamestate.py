@@ -73,6 +73,9 @@ class PlayingState(GameState):
                 self.death_count += 1
                 self.reset_level()
                 return True
+            elif event.key == pygame.K_BACKSPACE:
+                self.full_reset()
+                return True
             elif event.key == pygame.K_g:
                 self.drawer.show_grid = not self.drawer.show_grid
             elif event.key == pygame.K_k and self.DEV_MODE:
@@ -169,6 +172,13 @@ class PlayingState(GameState):
         if not reset_player:
             self.player.set_xy(x,y)
     
+    def full_reset(self):
+        self.player.reset()
+        self.level_num = 0
+        self.total_time = 0
+        self.level_time = 0
+        self.death_count = 0
+        self._level_manager.load_level(0, self.player)
     
     def next_level(self, update_highscore=False):
         if update_highscore:

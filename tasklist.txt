@@ -1,6 +1,8 @@
 future features:
 
     highscores
+        DONE functionality 
+        in-game indicators
     replays
         
 buggeroonies:
