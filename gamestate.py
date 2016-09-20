@@ -175,8 +175,6 @@ class PlayingState(GameState):
             self._level_manager.update_level_highscore(self.level_num, self.level_time)
             
         if self.level_num == self._level_manager.get_num_levels() - 1:
-            self._level_manager.update_total_time_highscore(self.total_time)
-            self._level_manager.write_header()
             print "Game Over!"
             
             # TEMPORARY - loop back to level 0
@@ -215,12 +213,24 @@ class PlayingState(GameState):
       
     @staticmethod
     def format_time_string(time):
+        if time == None:
+            return None
         if time % 60 < 10:
             seconds = "0" + str(time % 60)
         else:
             seconds = str(time % 60)
         return str(time // 60) + ":" + seconds
-       
+        
+    @staticmethod
+    def unformat_time_string(time_string):
+        "'34:56' -> 34*60 + 56"
+        if time_string == None:
+            return None
+        split = time_string.split(":")
+        if len(split) == 2:
+            return int(split[0])*60 + int(split[1])
+        else:
+            raise ValueError("invalid time string to unformat: "+str(time_string))
        
 class EditingState(GameState):
     pass

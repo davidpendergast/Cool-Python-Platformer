@@ -7,6 +7,7 @@ from StringIO import StringIO
 import pygame
 
 import phys_objects
+import gamestate
 import equations
 
 
@@ -49,9 +50,13 @@ class LevelManager:
         self.current_level = None
         
         self.file_dir = file_dir    # "levels/something", most likely
-        self.level_filenames =[]
-        self.read_header()
-        self.highscores = self.load_or_create_highscore_data()  
+        self.level_filenames = self.read_filenames_from_header()
+        highscores = self.load_or_create_highscore_data()  
+        self.current_run_times = [None for i in range(0,self.get_num_levels())]
+        
+        self.best_overall_run_total = gamestate.PlayingState.unformat_time_string(highscores["best_overall_run_total"])
+        self.best_individual_scores = [gamestate.PlayingState.unformat_time_string(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
+        self.best_overall_run_scores = [gamestate.PlayingState.unformat_time_string(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
         
     def get_num_levels(self):
         return len(self.level_filenames)
@@ -67,11 +72,48 @@ class LevelManager:
         self.current_level = level
         
     def update_level_highscore(self, level_num, time):
-        pass
-    
-    def update_total_time_highscore(self, time):
-        pass
-                
+        current_record = self.best_individual_scores[level_num]
+        if current_record == None or time < current_record:
+            print "***NEW LEVEL RECORD***"
+            print "Level "+str(level_num)+"'s record of "+str(gamestate.PlayingState.format_time_string(current_record))+" broken with "+gamestate.PlayingState.format_time_string(time)+"!"
+            self.best_individual_scores[level_num] = time
+        
+        self.current_run_times[level_num] = time
+        if level_num == self.get_num_levels()-1: #last level
+            final_time = 0
+            for val in self.current_run_times:
+                if val == None:
+                    final_time = None
+                    break;
+                else:
+                    final_time += val
+            print "Game Completed! Final time: "+str(gamestate.PlayingState.format_time_string(final_time))
+            
+            if final_time != None:
+                if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
+                    print "***NEW FULL RUN RECORD***"
+                    print "Previous record "+str(gamestate.PlayingState.format_time_string(self.best_overall_run_total))+" broken with "+str(gamestate.PlayingState.format_time_string(final_time))
+                    self.best_overall_run_total = final_time
+                    self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
+        
+        self.dump_highscores_to_file()
+        
+    def dump_highscores_to_file(self):
+        print "Saving highscores to "+self.get_highscores_filename()+"..."
+        highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
+        highscores["best_overall_run_total"] = gamestate.PlayingState.format_time_string(self.best_overall_run_total)
+        highscores["best_individual_scores"] = [gamestate.PlayingState.format_time_string(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
+        highscores["best_overall_run_scores"] = [gamestate.PlayingState.format_time_string(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
+        
+        file = open(self.get_highscores_filename(), 'w')
+        
+        print "dumping: "
+        print json.dumps(highscores, indent=4, sort_keys=True)
+        
+        json.dump(highscores, file, indent=4, sort_keys=True)
+        
+        file.close()
+        
     def create_void_level(self):
         list = []
        
@@ -84,7 +126,8 @@ class LevelManager:
         
         return Level(list, "The Void")
         
-    def read_header(self):
+    def read_filenames_from_header(self):
+        res = []
         header = open(self.file_dir + "/header.txt")
         for line in header:
             if line[-1] == '\r':
@@ -92,33 +135,47 @@ class LevelManager:
             if line[-1] == '\n':
                 line = line[:len(line)-1]
                 
-            self.level_filenames.append(line)
+            res.append(line)
         
-        print "Level filenames are "+str(self.level_filenames)
+        print "Level filenames are "+str(res)
+        return res
         
     def load_or_create_highscore_data(self):
-        if os.path.isfile("./"+self.file_dir+"/highscores.json"):
-            pass
+        dict = None
+        if os.path.isfile("./"+self.get_highscores_filename()) and os.path.getsize("./"+self.get_highscores_filename()) > 0:
+            print "Loading "+self.file_dir+"/highscores.json..."
+            with open(self.file_dir+"/highscores.json") as data_file:
+                dict = json.load(data_file)
+                self.repair_highscore_data_if_necessary(dict)
         else:
             print "No highscores.json file found, creating new one..."
-            num_levels = len(self.level_filenames)
-            dict = {
-                "best_overall_run_total":None,
-                "best_overall_run_scores":[None for i in range(0,num_levels)],
-                "best_individual_scores":[None for i in range(0,num_levels)]
-            }
+            num_levels = self.get_num_levels()
+            dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
             
             file = open(self.file_dir+"/highscores.json", 'w')
             
-            io = StringIO()
             print "dumping: "
             print json.dumps(dict, indent=4, sort_keys=True)
             
             json.dump(dict, file, indent=4, sort_keys=True)
             
             file.close()
-            
-
+        return dict
+    
+    @staticmethod
+    def generate_empty_highscores_dict(num_levels):
+        return {
+                "best_overall_run_total":None,
+                "best_overall_run_scores":[None for i in range(0,num_levels)],
+                "best_individual_scores":[None for i in range(0,num_levels)]
+            }
+    
+    def repair_highscore_data_if_necessary(self, highscore_data):
+        pass
+        
+    def get_highscores_filename(self):
+        return self.file_dir+"/highscores.json"
+        
 class LevelReader:
     @staticmethod
     def load(filename):
@@ -189,8 +246,7 @@ class LevelReader:
             print "Error while loading "+filename+":"
             for err in sys.exc_info():
                 print "\t"+str(err)
-            
-          
+                
         return None
         
         
