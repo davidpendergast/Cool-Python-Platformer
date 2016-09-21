@@ -211,7 +211,9 @@ class PlayingState(GameState):
         screen.blit(death_text, (screen.get_width() - death_text.get_width(), 0))
         
         if screen.get_width() > 640 or screen.get_height() > 480:
-            pygame.draw.rect(screen,(255,0,0), pygame.Rect(100,100,640,480), 1)
+            xoffset = (screen.get_width() - 640) / 2
+            yoffset = (screen.get_height() - 480) / 2
+            pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,640,480), 1)
        
 class EditingState(GameState):
     pass
