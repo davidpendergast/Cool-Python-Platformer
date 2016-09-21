@@ -5,6 +5,7 @@ import json
 import phys_objects
 import drawing
 import levels
+import options
 
 class GameState:
     def pre_event_update(self):
@@ -15,10 +16,10 @@ class GameState:
         pass
     def draw(self, screen):
         pass
-
         
 class PlayingState(GameState):
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.player = phys_objects.Actor(24, 32, (128, 128, 255))
         self.player.is_player = True
         
@@ -26,16 +27,15 @@ class PlayingState(GameState):
         self.death_count = 0
         
         self.total_time = 0
-        self.level_time = 0
+        self.level_time = 0 
         
-        with open("settings.json") as data_file:    
-            data = json.load(data_file)
-            self.DEV_MODE = data["dev_mode"]
-            level_path_string = data["level_path"]     
+        print str(self.settings)
+        print str(settings)
+        print str(settings.level_path)
+        print str(settings.level_path())
+        print "Using levels from "+str(self.settings.level_path())
         
-        print "Using levels from "+level_path_string
-        
-        self._level_manager = levels.LevelManager(level_path_string)
+        self._level_manager = levels.LevelManager(self.settings.level_path())
         self._level_manager.load_level(0, self.player)
         
         self.pusher = phys_objects.CollisionFixer()
@@ -44,9 +44,6 @@ class PlayingState(GameState):
         
         self.keys = {'left':False, 'right':False, 'jump':False}
         self.mouse_down_pos = None
-        
-        self.invincible_mode = False
-        self.frozen_mode = False
     
     def get_entities(self):
         return self._level_manager.current_level.entity_list
@@ -54,7 +51,7 @@ class PlayingState(GameState):
     def pre_event_update(self):
         if self.player.is_crushed == True:
             self.player.is_alive = False
-        if self.player.is_alive == False and not self.invincible_mode:
+        if self.player.is_alive == False and not self.settings.invincible_mode():
             self.player.is_alive = True
             self.death_count += 1
             self.reset_level()
@@ -78,17 +75,17 @@ class PlayingState(GameState):
                 return True
             elif event.key == pygame.K_g:
                 self.drawer.show_grid = not self.drawer.show_grid
-            elif event.key == pygame.K_k and self.DEV_MODE:
-                self.invincible_mode = not self.invincible_mode
-            elif event.key == pygame.K_f and self.DEV_MODE:
-                self.frozen_mode = not self.frozen_mode
-            elif event.key == pygame.K_RIGHT and self.DEV_MODE:
+            elif event.key == pygame.K_k and self.settings.dev_mode():
+                self.settings.set_invincible_mode(not self.settings.invincible_mode())
+            elif event.key == pygame.K_f and self.settings.dev_mode():
+                self.settings.set_frozen_mode(not self.settings.frozen_mode())
+            elif event.key == pygame.K_RIGHT and self.settings.dev_mode():
                 self.next_level()
                 return True
-            elif event.key == pygame.K_LEFT and self.DEV_MODE:
+            elif event.key == pygame.K_LEFT and self.settings.dev_mode():
                 self.prev_level()
                 return True
-            elif event.key == pygame.K_DOWN and self.DEV_MODE:
+            elif event.key == pygame.K_DOWN and self.settings.dev_mode():
                 self.reset_level(False)
                 return True
         elif event.type == pygame.KEYUP:
@@ -98,7 +95,7 @@ class PlayingState(GameState):
                 self.keys['right'] = False
             elif event.key == pygame.K_w:
                 self.keys['jump'] = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.DEV_MODE:
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.settings.dev_mode():
             x = event.pos[0]+self.drawer.camera_pos[0]
             y = event.pos[1]+self.drawer.camera_pos[1]
             grid_size = self.drawer.grid_spacing
@@ -110,7 +107,7 @@ class PlayingState(GameState):
             elif event.button == 3:
                 print "{\"type\":\"finish\", \"x\":\""+str(grid_x + grid_size/4) +"\", \"y\":\""+str(grid_y + grid_size/4)+"\", \"width\":\""+str(grid_size/2)+"\", \"height\":\""+str(grid_size/2)+"\"}"
             
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.DEV_MODE:
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.settings.dev_mode():
             x = event.pos[0]+self.drawer.camera_pos[0]
             y = event.pos[1]+self.drawer.camera_pos[1]
             grid_x = x - (x % self.drawer.grid_spacing)
@@ -142,7 +139,7 @@ class PlayingState(GameState):
         
         self.player.update(dt)
         
-        if self.frozen_mode:
+        if self.settings.frozen_mode():
             dt = 0
         
         for item in self.get_entities():

@@ -9,6 +9,7 @@ import pygame
 import phys_objects
 import gamestate
 import equations
+import options
 
 
 # Level class is essentially just a list of the entities in a level, as well as information 
@@ -151,7 +152,7 @@ class LevelManager:
             print "Loading "+self.file_dir+"/highscores.json..."
             with open(self.file_dir+"/highscores.json") as data_file:
                 dict = json.load(data_file)
-                self.repair_highscore_data_if_necessary(dict)
+                dict = self.repair_highscore_data_if_necessary(dict)
         else:
             print "No highscores.json file found, creating new one..."
             num_levels = self.get_num_levels()
@@ -176,7 +177,14 @@ class LevelManager:
             }
     
     def repair_highscore_data_if_necessary(self, highscore_data):
-        pass
+        damaged = len(highscore_data["best_individual_scores"]) != self.get_num_levels()
+        damaged |= len(highscore_data["best_overall_run_scores"]) != self.get_num_levels()
+        
+        if damaged:
+            print "highscores.json is invalid, wiping scores." # a bit excessive but w/ever
+            return self.generate_empty_highscores_dict(self.get_num_levels())
+            
+        return highscore_data    
         
     def get_highscores_filename(self):
         return self.file_dir+"/highscores.json"

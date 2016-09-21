@@ -5,16 +5,18 @@ import pygame
 import phys_objects
 import drawing
 import gamestate
+import options
 
 import server
 import client
 
 pygame.init()
 
-game = gamestate.PlayingState()
+settings = options.Settings()
+game = gamestate.PlayingState(settings)
 
 size = (640, 480)
-if game.DEV_MODE:
+if settings.dev_mode():
     size = (size[0]+200, size[1]+200)
 screen = pygame.display.set_mode(size)
 
