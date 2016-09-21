@@ -46,11 +46,12 @@ class Level:
           
 
 class LevelManager:
-    def __init__(self, file_dir):
+    def __init__(self, settings):
+        self.settings = settings
         self.level_num = 0
         self.current_level = None
         
-        self.file_dir = file_dir    # "levels/something", most likely
+        self.file_dir = settings.level_path()    # "levels/something", most likely
         self.level_filenames = self.read_filenames_from_header()
         highscores = self.load_or_create_highscore_data()  
         self.current_run_times = [None for i in range(0,self.get_num_levels())]
@@ -105,6 +106,10 @@ class LevelManager:
             self.dump_highscores_to_file()
         
     def dump_highscores_to_file(self):
+        if self.settings.dev_mode():
+            print "Not saving high scores because we're in dev mode"
+            return
+        
         print "Saving highscores to "+self.get_highscores_filename()+"..."
         highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
         highscores["best_overall_run_total"] = gamestate.PlayingState.format_time_string(self.best_overall_run_total)

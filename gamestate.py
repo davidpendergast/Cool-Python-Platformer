@@ -29,13 +29,7 @@ class PlayingState(GameState):
         self.total_time = 0
         self.level_time = 0 
         
-        print str(self.settings)
-        print str(settings)
-        print str(settings.level_path)
-        print str(settings.level_path())
-        print "Using levels from "+str(self.settings.level_path())
-        
-        self._level_manager = levels.LevelManager(self.settings.level_path())
+        self._level_manager = levels.LevelManager(self.settings)
         self._level_manager.load_level(0, self.player)
         
         self.pusher = phys_objects.CollisionFixer()

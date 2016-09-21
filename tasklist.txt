@@ -4,6 +4,18 @@ future features:
         DONE functionality 
         in-game indicators
     replays
+    
+    10 intro levels each with unique challenge and charm (1/10 complete)
+        Basic Movement
+DONE    Moving Platforms
+        Walljumping
+        Bad Blocks
+        Saving Jumps
+        Enemies
+        Boost Jumps
+        Composite I
+        Composite II
+        Composite III
         
 buggeroonies:
 
