@@ -6,6 +6,7 @@ import phys_objects
 import drawing
 import levels
 import options
+from utilities import Utils
 
 class GameState:
     def pre_event_update(self):
@@ -203,7 +204,7 @@ class PlayingState(GameState):
         death_text = font.render("Deaths: "+str(self.death_count), True, (255, 255, 255))
         text_height = level_text.get_height()
         
-        time_text = font.render("Time: " + PlayingState.format_time_string(self.total_time), True, (255, 255, 255))
+        time_text = font.render("Time: " + Utils.format_time(self.total_time), True, (255, 255, 255))
         screen.blit(level_text, (0, 0))
         screen.blit(level_title, (0, text_height))
         screen.blit(time_text, (screen.get_width()/2 - time_text.get_width()/2, 0))
@@ -211,27 +212,6 @@ class PlayingState(GameState):
         
         if screen.get_width() > 640 or screen.get_height() > 480:
             pygame.draw.rect(screen,(255,0,0), pygame.Rect(100,100,640,480), 1)
-      
-    @staticmethod
-    def format_time_string(time):
-        if time == None:
-            return None
-        if time % 60 < 10:
-            seconds = "0" + str(time % 60)
-        else:
-            seconds = str(time % 60)
-        return str(time // 60) + ":" + seconds
-        
-    @staticmethod
-    def unformat_time_string(time_string):
-        "'34:56' -> 34*60 + 56"
-        if time_string == None:
-            return None
-        split = time_string.split(":")
-        if len(split) == 2:
-            return int(split[0])*60 + int(split[1])
-        else:
-            raise ValueError("invalid time string to unformat: "+str(time_string))
        
 class EditingState(GameState):
     pass

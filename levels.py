@@ -10,7 +10,7 @@ import phys_objects
 import gamestate
 import equations
 import options
-
+from utilities import Utils
 
 # Level class is essentially just a list of the entities in a level, as well as information 
 # about the level including its name and number.
@@ -56,9 +56,9 @@ class LevelManager:
         highscores = self.load_or_create_highscore_data()  
         self.current_run_times = [None for i in range(0,self.get_num_levels())]
         
-        self.best_overall_run_total = gamestate.PlayingState.unformat_time_string(highscores["best_overall_run_total"])
-        self.best_individual_scores = [gamestate.PlayingState.unformat_time_string(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
-        self.best_overall_run_scores = [gamestate.PlayingState.unformat_time_string(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
+        self.best_overall_run_total = Utils.unformat_time(highscores["best_overall_run_total"])
+        self.best_individual_scores = [Utils.unformat_time(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
+        self.best_overall_run_scores = [Utils.unformat_time(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
         
     def get_num_levels(self):
         return len(self.level_filenames)
@@ -79,7 +79,7 @@ class LevelManager:
         current_record = self.best_individual_scores[level_num]
         if current_record == None or time < current_record:
             print "\n***NEW LEVEL RECORD***"
-            print "Level "+str(level_num)+"'s record of "+str(gamestate.PlayingState.format_time_string(current_record))+" broken with "+gamestate.PlayingState.format_time_string(time)+"!"
+            print "Level "+str(level_num)+"'s record of "+str(Utils.format_time(current_record))+" broken with "+gamestate.Utils.format_time(time)+"!"
             self.best_individual_scores[level_num] = time
             dirty = True
         
@@ -92,12 +92,12 @@ class LevelManager:
                     break;
                 else:
                     final_time += val
-            print "Game Completed! Final time: "+str(gamestate.PlayingState.format_time_string(final_time))
+            print "Game Completed! Final time: "+str(Utils.format_time(final_time))
             
             if final_time != None:
                 if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
                     print "\n***NEW FULL RUN RECORD***"
-                    print "Previous record "+str(gamestate.PlayingState.format_time_string(self.best_overall_run_total))+" broken with "+str(gamestate.PlayingState.format_time_string(final_time))
+                    print "Previous record "+str(Utils.format_time(self.best_overall_run_total))+" broken with "+str(Utils.format_time(final_time))
                     self.best_overall_run_total = final_time
                     self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
                     dirty = True
@@ -112,9 +112,9 @@ class LevelManager:
         
         print "Saving highscores to "+self.get_highscores_filename()+"..."
         highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
-        highscores["best_overall_run_total"] = gamestate.PlayingState.format_time_string(self.best_overall_run_total)
-        highscores["best_individual_scores"] = [gamestate.PlayingState.format_time_string(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
-        highscores["best_overall_run_scores"] = [gamestate.PlayingState.format_time_string(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
+        highscores["best_overall_run_total"] = Utils.format_time(self.best_overall_run_total)
+        highscores["best_individual_scores"] = [Utils.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
+        highscores["best_overall_run_scores"] = [Utils.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
         
         file = open(self.get_highscores_filename(), 'w')
         
