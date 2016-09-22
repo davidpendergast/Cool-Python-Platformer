@@ -36,7 +36,7 @@ def __process():
                 running = False
         finally:
             _LOCK.release()
-    print "client thread stopping!"
+    print("client thread stopping!")
 
 
 def connect(actor, game):
@@ -72,11 +72,10 @@ def disconnect():
 
 
 def get_ghosts():
-    global _GHOSTS
     r = []
     try:
         _LOCK.acquire()
-        r = _GHOSTS
+        r = list(_GHOSTS)
     finally:
         _LOCK.release()
     return r
