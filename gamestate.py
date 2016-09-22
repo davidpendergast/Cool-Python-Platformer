@@ -5,7 +5,6 @@ import json
 import phys_objects
 import drawing
 import levels
-import client
 from options import HardSettings
 from utilities import Utils
 
@@ -147,7 +146,6 @@ class PlayingState(GameState):
     
     def draw(self, screen):
         self.drawer.update_camera(self.player, screen.get_width(), screen.get_height())
-        self.drawer.draw(screen, client.get_ghosts())
         self.drawer.draw(screen, self.get_entities())
         self.draw_gui(screen)
      
@@ -221,9 +219,3 @@ class PlayingState(GameState):
        
 class EditingState(GameState):
     pass
-            
-            
-            
-            
-            
-            
