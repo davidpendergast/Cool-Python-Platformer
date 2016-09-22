@@ -1,9 +1,11 @@
+#!/usr/bin/env python2.7
+
 import json
 import socket
 import threading
 import SocketServer
 
-SERVER_IP = "52.34.70.142"
+SERVER_IP = "0.0.0.0"
 SERVER_PORT = 50069
 
 lock = threading.Lock()
@@ -24,13 +26,13 @@ class ThreadedUDPHandler(SocketServer.BaseRequestHandler):
             sendback = []
 
             if data['user'] == '__NEWUSER__':
-                print "new user! ", next_uid
+                print("new user! ", next_uid)
                 sendback = next_uid
                 next_uid += 1
             else:
                 if data['level'] is None:
                     try:
-                        print "disconnect! ", data['user']
+                        print("disconnect! ", data['user'])
                         del users[data['user']]
                     except:
                         pass
@@ -52,17 +54,17 @@ class ThreadedUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
 
 def send(user, level, position):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print "\tConnecting"
+    print ("\tConnecting")
     sock.connect((SERVER_IP, SERVER_PORT))
     sock.settimeout(1.0)
-    print "\tSending"
+    print ("\tSending")
     r = None
     try:
         sock.sendall(json.dumps({
             'user': user,
             'level': level,
             'position': position}))
-        print "\tReading"
+        print("\tReading")
         r = json.loads(sock.recv(1024))
     finally:
         sock.close()
@@ -70,13 +72,13 @@ def send(user, level, position):
 
 
 def connect():
-    print "Connecting"
+    print("Connecting")
     uid =  send('__NEWUSER__', None, None)
     return uid
 
 
 def disconnect(user):
-    print "Disconnecting"
+    print("Disconnecting")
     send(user, None, None)
 
 
@@ -93,7 +95,7 @@ if __name__ == "__main__":
     server_thread.daemon = True
     server_thread.start()
 
-    print "Server started at {} {}".format(ip, port)
+    print("Server started at {} {}".format(ip, port))
     raw_input("Press Enter to kill server\n")
 
     server.shutdown()
