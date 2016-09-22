@@ -1,16 +1,15 @@
 import pygame 
 import sets 
 import math
-import random
 
 import equations
+from utilities import Utils
 
 class Box(pygame.sprite.Sprite):
-    def __init__(self, width, height, color=(128, 128, 128), border_color=None):
+    def __init__(self, width, height, color=(128, 128, 128)):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((width, height))
         self.color = color
-        self.border_color = border_color
         self.repaint()
         
         self.is_solid = True        # Whether this box prevents movement of other solid boxes
@@ -116,29 +115,20 @@ class Box(pygame.sprite.Sprite):
         "direction = side of self that touched obj. Valid inputs are TOP, BOTTOM, LEFT, RIGHT, NONE"
         pass
         
-    def set_color(self, color):
-        self.color = color
-        self.repaint()
-        
-    def set_border_color(self, color):
-        self.border_color = color
+    def set_color(self, color, perturb_color=0):
+        self.color = Utils.perturb_color(color, perturb_color)
         self.repaint()
         
     def repaint(self):
-        if self.border_color == None:
-            self.border_color = self.color
-        self.image.fill(self.border_color)
-        b_thickness = 2
-        self.image.fill(self.color, (b_thickness, b_thickness, self.image.get_width()-b_thickness*2, self.image.get_height()-b_thickness*2))
-    
+        self.image.fill(self.color, (0, 0, self.image.get_width(), self.image.get_height()))
     
 class Block(Box):
     BAD_COLOR = (255, 0, 0)
     NORMAL_COLOR = (128, 128, 128)
     
-    def __init__(self, width, height, color=None, border_color=None): 
-        color = self.perturb_color(Block.NORMAL_COLOR, 20) if color == None else color
-        Box.__init__(self, width, height, color, border_color)
+    def __init__(self, width, height, color=None): 
+        color = Block.NORMAL_COLOR if color == None else color
+        Box.__init__(self, width, height, color)
         self.is_solid = True
         self.is_pushable = False
         self.is_visible = True
@@ -147,19 +137,10 @@ class Block(Box):
     def update(self, dt):
         pass
         
-    def perturb_color(self, orig_color, max_perturb, only_greyscale=True):
-        if only_greyscale:
-            pert = random.randint(0, 20)
-            if random.random() > 0.5:
-                pert = -pert
-            return (orig_color[0]+pert, orig_color[1]+pert, orig_color[2]+pert)
-        else:
-            return orig_color
-
             
 class MovingBlock(Block):
-    def __init__(self, width, height, path, color=None, border_color=None):
-        Block.__init__(self, width, height, color, border_color)
+    def __init__(self, width, height, path, color=None):
+        Block.__init__(self, width, height, color)
         self.current_dist = 0
         self.dist_before_reverse = 32*5
         self.current_dir = 1;
@@ -182,8 +163,8 @@ class MovingBlock(Block):
 class Actor(Box):
     STANDARD_SIZE = (24, 32)
     
-    def __init__(self, width=24, height=32, color=(255, 128, 128), border_color=None):
-        Box.__init__(self, width, height, color, border_color)
+    def __init__(self, width=24, height=32, color=(255, 128, 128)):
+        Box.__init__(self, width, height, color)
         
         # Actor collision state variables.
         # Note: these are reset to false on each actor update, and reapplied by the collision fixer.
@@ -294,9 +275,9 @@ class Actor(Box):
             
             
 class BadBlock(Block):
-    def __init__(self, width, height, color=None, border_color=None):
+    def __init__(self, width, height, color=None):
         color = Block.BAD_COLOR if color == None else color
-        Block.__init__(self, width, height, color, border_color)
+        Block.__init__(self, width, height, color)
     def collided_with(self, obj, dir="NONE"):
         if isinstance(obj, Actor):
             obj.is_alive = False
@@ -305,9 +286,9 @@ class BadBlock(Block):
 class Switch(Block):
     SWITCH_COLOR = (100, 0, 200)
     
-    def __init__(self, width=16, height=16, color=None, border_color=(175, 175, 175)):
+    def __init__(self, width=16, height=16, color=None):
         color = Switch.SWITCH_COLOR if color == None else color
-        Block.__init__(self, width, height, color, border_color)
+        Block.__init__(self, width, height, color)
         self.dark_color = color
         self.light_color = (self.color[0] + 50, self.color[1] + 50, self.color[2] + 50)
         self.has_physics = False
@@ -323,7 +304,6 @@ class Switch(Block):
             self.set_color(self.dark_color)
             for thing in self.targets:
                 thing.set_color(self.dark_color)
-                thing.set_border_color(self.dark_color)
             self.currently_light_colored = False
         self.collided_last_update = False
         
@@ -334,13 +314,11 @@ class Switch(Block):
                 thing.is_paused = False
                 if not self.currently_light_colored:
                     thing.set_color(self.light_color)
-                    thing.set_border_color(self.light_color)
             self.set_color(self.light_color)
             self.currently_light_colored = True
             
     def add_target(self, moving_block):
         moving_block.pause_after_next_update = True
-        moving_block.set_border_color(self.color)
         moving_block.set_color(self.color)
         
         self.targets.append(moving_block)
@@ -352,8 +330,8 @@ class Enemy(Actor):
     SMART_COLOR = (0, 125, 125)
     BAD_COLOR = (255, 0, 0)
     
-    def __init__(self, width, height, color=(255, 0, 255), border_color=None):
-        Actor.__init__(self, width, height, color, border_color)
+    def __init__(self, width, height, color=(255, 0, 255)):
+        Actor.__init__(self, width, height, color)
         self.max_vx = 1
         self.move_speed = 0.5
         self.direction = -1
@@ -411,8 +389,8 @@ class Enemy(Actor):
 
         
 class FinishBlock(Block):
-    def __init__(self, width=16, height=16, color=(0, 255, 0), border_color=(0, 255, 0)):
-        Block.__init__(self, width, height, color, border_color)
+    def __init__(self, width=16, height=16, color=(0, 255, 0)):
+        Block.__init__(self, width, height, color)
     def collided_with(self, obj, dir="NONE"):
         if isinstance(obj, Actor):
             obj.finished_level = True

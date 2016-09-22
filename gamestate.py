@@ -5,7 +5,7 @@ import json
 import phys_objects
 import drawing
 import levels
-import options
+from options import HardSettings
 from utilities import Utils
 
 class GameState:
@@ -210,10 +210,13 @@ class PlayingState(GameState):
         screen.blit(time_text, (screen.get_width()/2 - time_text.get_width()/2, 0))
         screen.blit(death_text, (screen.get_width() - death_text.get_width(), 0))
         
-        if screen.get_width() > 640 or screen.get_height() > 480:
-            xoffset = (screen.get_width() - 640) / 2
-            yoffset = (screen.get_height() - 480) / 2
-            pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,640,480), 1)
+        standard_width = HardSettings.standard_size()[0]
+        standard_height = HardSettings.standard_size()[1]
+        
+        if screen.get_width() > standard_width or screen.get_height() > standard_height:
+            xoffset = (screen.get_width() - standard_width) / 2
+            yoffset = (screen.get_height() - standard_height) / 2
+            pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,standard_width,standard_height), 1)
        
 class EditingState(GameState):
     pass

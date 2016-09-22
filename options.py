@@ -28,6 +28,18 @@ class Settings:
     def set_frozen_mode(self, val):
         if self.dev_mode():
             self.__frozen_mode = val
+                 
+class HardSettings:
+    @staticmethod
+    def standard_size():
+        return (640, 480)
+    @staticmethod
+    def dev_size():
+        return (840,680)
+    @staticmethod
+    def fps():
+        return 60
+        
         
         
         

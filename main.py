@@ -5,24 +5,25 @@ import pygame
 import phys_objects
 import drawing
 import gamestate
-import options
+from options import Settings
+from options import HardSettings
 
 import server
 import client
 
 pygame.init()
 
-settings = options.Settings()
+settings = Settings()
 game = gamestate.PlayingState(settings)
 
-size = (640, 480)
+size = HardSettings.standard_size()
 if settings.dev_mode():
-    size = (size[0]+200, size[1]+200)
+    size = HardSettings.dev_size()
 screen = pygame.display.set_mode(size)
 
 still_running = True
 clock = pygame.time.Clock()
-FPS = 60
+FPS = HardSettings.fps()
 
 current_gamestate = game
 actor = game.player  # The player's character

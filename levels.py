@@ -15,11 +15,17 @@ from utilities import Utils
 # Level class is essentially just a list of the entities in a level, as well as information 
 # about the level including its name and number.
 class Level:
-        def __init__(self, list, name):
+        def __init__(self, list, name, theme=None):
+            if theme == None:
+                theme = Theme()
             self.name = name
             self.num = -1
             
             self.entity_list = list[:]
+            self.background_color = theme
+            for obj in self.entity_list:
+                theme.apply(obj)
+
             self.actor = self._find_player()
             if self.actor == None:
                 print "levels.Level: Warning: No actor found in loaded level!"
@@ -43,8 +49,30 @@ class Level:
             self.entity_list.remove(self.actor)
             self.entity_list.append(new_actor)
             self.actor = new_actor
-          
 
+# Determines the color scheme of   
+class Theme:
+    def __init__(self):
+        self.normal_color = (128, 128, 128)
+        self.normal_perturb = 20
+        self.moving_color = (128, 128, 128)
+        self.moving_perturb = 0
+        self.bad_color = (255, 0, 0)
+        self.background_color = (0, 0, 0)
+        self.finish_color = (0, 255, 0)
+    
+    def apply(self, object):
+        if isinstance(object, phys_objects.MovingBlock):
+            object.set_color(self.moving_color, self.moving_perturb)
+        elif isinstance(object, phys_objects.BadBlock):
+            object.set_color(self.bad_color, 0)
+        elif isinstance(object, phys_objects.FinishBlock):
+            object.set_color(self.finish_color, 0)
+        elif isinstance(object, phys_objects.Block):
+            object.set_color(self.normal_color, self.normal_perturb)
+        
+
+          
 class LevelManager:
     def __init__(self, settings):
         self.settings = settings
