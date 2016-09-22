@@ -5,6 +5,7 @@ import json
 import phys_objects
 import drawing
 import levels
+import client
 from options import HardSettings
 from utilities import Utils
 
@@ -39,7 +40,7 @@ class PlayingState(GameState):
         
         self.keys = {'left':False, 'right':False, 'jump':False}
         self.mouse_down_pos = None
-    
+        
     def get_entities(self):
         return self._level_manager.current_level.entity_list
         
@@ -146,7 +147,7 @@ class PlayingState(GameState):
     
     def draw(self, screen):
         self.drawer.update_camera(self.player, screen.get_width(), screen.get_height())
-        # drawer.draw(screen, client.get_ghosts()) #### GHOSTS NOT BEING DRAWN ####
+        self.drawer.draw(screen, client.get_ghosts())
         self.drawer.draw(screen, self.get_entities())
         self.draw_gui(screen)
      

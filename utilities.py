@@ -22,7 +22,8 @@ class Utils:
             return None
         split = time_str.split(":")
         if len(split) == 2:
-            return int(split[0])*1000 + int(split[1])
+            millis = int(split[0])*1000 + int(split[1])
+            return Utils.millis_to_ticks(millis)
         else:
             raise ValueError("invalid time string to unformat: "+str(time_str))
             
@@ -45,7 +46,11 @@ class Utils:
         
     @staticmethod
     def ticks_to_millis(ticks):
-        return (1000 / options.HardSettings.fps())*ticks
+        return int((1000 / options.HardSettings.fps())*ticks + 0.5)
+        
+    @staticmethod
+    def millis_to_ticks(millis):
+        return int(millis * options.HardSettings.fps() / 1000 + 0.5)
         
     @staticmethod
     def pad_to_length(string, length, filler, to_front=False):
