@@ -140,21 +140,14 @@ class Block(Box):
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
         Block.__init__(self, width, height, color)
-        self.speed = 1;
         self.path = path
-        
-        #vars used for switch behavior
-        self.is_paused = False  
-        self.pause_after_next_update = False
     
     def update(self, dt):
-        if self.path != None and not self.is_paused:
+        if self.path != None:
             self.path.step(dt)
             xy = self.path.get_xy()
             self.set_x(xy[0])
             self.set_y(xy[1])
-        if self.pause_after_next_update:
-            self.is_paused = True   
     
 class Actor(Box):
     STANDARD_SIZE = (24, 32)
@@ -278,48 +271,6 @@ class BadBlock(Block):
         if isinstance(obj, Actor):
             obj.is_alive = False
             
-            
-class Switch(Block):
-    SWITCH_COLOR = (100, 0, 200)
-    
-    def __init__(self, width=16, height=16, color=None):
-        color = Switch.SWITCH_COLOR if color == None else color
-        Block.__init__(self, width, height, color)
-        self.dark_color = color
-        self.light_color = (self.color[0] + 50, self.color[1] + 50, self.color[2] + 50)
-        self.has_physics = False
-        self.is_movable = False
-        self.is_solid = True
-        self.targets = []
-        self.currently_light_colored = False
-        self.collided_last_update = False
-        
-    def update(self, dt):
-        Block.update(self, dt)
-        if self.currently_light_colored == True and self.collided_last_update == False:
-            self.set_color(self.dark_color)
-            for thing in self.targets:
-                thing.set_color(self.dark_color)
-            self.currently_light_colored = False
-        self.collided_last_update = False
-        
-    def collided_with(self, obj, dir="NONE"):
-        if isinstance(obj, Actor):
-            self.collided_last_update = True
-            for thing in self.targets:
-                thing.is_paused = False
-                if not self.currently_light_colored:
-                    thing.set_color(self.light_color)
-            self.set_color(self.light_color)
-            self.currently_light_colored = True
-            
-    def add_target(self, moving_block):
-        moving_block.pause_after_next_update = True
-        moving_block.set_color(self.color)
-        
-        self.targets.append(moving_block)
-        return self
-        
         
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)

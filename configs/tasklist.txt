@@ -34,7 +34,7 @@ DONE        Moving Platforms
             ???
     
     Entities:
-        fix or remove switches
+DONE    fix or remove switches
             --right now they suck
         blocks that fall when you stand on them too long
         blocks that poof in and out of existence
