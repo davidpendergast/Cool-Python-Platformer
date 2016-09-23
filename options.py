@@ -1,11 +1,23 @@
 import json
+import os
+from shutil import copyfile
 
 class Settings:
+    default_settings_path = "configs/settings_default.json"
+    local_settings_path = "configs/settings.json"
+    
     def __init__(self):
-        with open("configs/settings.json") as data_file:    
+        with open(Settings.default_settings_path) as data_file:    
             data = json.load(data_file)
             self.__is_dev = data["dev_mode"]
             self.__level_path = data["level_path"] 
+        
+        self.create_local_settings_if_needed()
+        
+        with open(Settings.local_settings_path) as data_file:
+            data = json.load(data_file)
+            if "dev_mode" in data: self.__is_dev = data["dev_mode"]
+            if "level_path" in data: self.__level_path = data["level_path"]
             
         self.__show_grid = False
         self.__invincible_mode = False
@@ -27,7 +39,13 @@ class Settings:
         return self.__frozen_mode
     def set_frozen_mode(self, val):
         if self.dev_mode():
-            self.__frozen_mode = val
+            self.__frozen_mode = val   
+    def create_local_settings_if_needed(self):
+        if os.path.isfile(Settings.local_settings_path):
+            return
+        else:
+            print "Creating "+Settings.local_settings_path
+            copyfile(Settings.default_settings_path, Settings.local_settings_path)
                  
 class HardSettings:
     @staticmethod

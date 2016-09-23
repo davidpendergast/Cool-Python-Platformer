@@ -1,3 +1,4 @@
 *.pyc
 levels/old crap/
 *highscores.json
+configs/settings.json
