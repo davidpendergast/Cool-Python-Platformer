@@ -198,6 +198,7 @@ class LevelManager:
         
     def read_filenames_from_header(self):
         res = []
+        print "Reading " + self.file_dir + "/header.txt..."
         header = open(self.file_dir + "/header.txt")
         for line in header:
             if line[-1] == '\r':
@@ -207,18 +208,21 @@ class LevelManager:
                 
             res.append(line)
         
-        print "Level filenames are "+str(res)
+        print "\tlevel filenames are:"
+        for filename in res:
+            print "\t\t"+str(filename)
+            
         return res
         
     def load_or_create_highscore_data(self):
         dict = None
         if os.path.isfile("./"+self.get_highscores_filename()) and os.path.getsize("./"+self.get_highscores_filename()) > 0:
-            print "Loading "+self.file_dir+"/highscores.json..."
+            print "Reading "+self.file_dir+"/highscores.json..."
             with open(self.file_dir+"/highscores.json") as data_file:
                 dict = json.load(data_file)
                 dict = self.repair_highscore_data_if_necessary(dict)
         else:
-            print "No highscores.json file found, creating new one..."
+            print "Creating " + self.file_dir+"/highscores.json..."
             num_levels = self.get_num_levels()
             dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
             
@@ -231,7 +235,7 @@ class LevelManager:
             
             file.close()
         return dict
-    
+        
     @staticmethod
     def generate_empty_highscores_dict(num_levels):
         return {

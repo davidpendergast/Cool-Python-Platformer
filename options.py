@@ -7,13 +7,14 @@ class Settings:
     local_settings_path = "configs/settings.json"
     
     def __init__(self):
+        print "Reading " + Settings.default_settings_path + "..."
         with open(Settings.default_settings_path) as data_file:    
             data = json.load(data_file)
             self.__is_dev = data["dev_mode"]
             self.__level_path = data["level_path"] 
         
         self.create_local_settings_if_needed()
-        
+        print "Reading " + Settings.local_settings_path + "..."
         with open(Settings.local_settings_path) as data_file:
             data = json.load(data_file)
             if "dev_mode" in data: self.__is_dev = data["dev_mode"]
@@ -44,7 +45,7 @@ class Settings:
         if os.path.isfile(Settings.local_settings_path):
             return
         else:
-            print "Creating "+Settings.local_settings_path
+            print "Creating " + Settings.local_settings_path + "..."
             copyfile(Settings.default_settings_path, Settings.local_settings_path)
                  
 class HardSettings:
