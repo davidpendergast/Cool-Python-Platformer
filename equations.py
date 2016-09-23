@@ -70,10 +70,10 @@ class Expression:
         return 0
     
 class Combiner(Expression):
-    def __init__(self, list):
-        if len(list) < 2:
+    def __init__(self, arg_list):
+        if len(arg_list) < 2:
             raise ValueError("Incorrect number of arguments for "+type(self))
-        self.args = list
+        self.args = arg_list
     def __str__(self):
         res = "(" + self.symbol
         for i in range(0, len(self.args)):
@@ -83,10 +83,10 @@ class Combiner(Expression):
         return res + ")"
         
 class Transformer(Expression):
-    def __init__(self, list):
-        if len(list) != 1:
+    def __init__(self, arg_list):
+        if len(arg_list) != 1:
             raise ValueError("Incorrect number of arguments for "+type(self))
-        self.inner = list[0]
+        self.inner = arg_list[0]
         
     def __str__(self):
         return "".join(["(", self.symbol, " ", str(self.inner), ")"])
