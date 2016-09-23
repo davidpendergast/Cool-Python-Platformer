@@ -44,7 +44,7 @@ DONE    fix or remove switches
             --right now it's ~bad~
             
     Get rid of pygame built-in data structures:
-        use lists instead of groups
+DONE    use lists instead of groups
             --sorting by object type makes collision handling more stable with the push-out
                 strategy
     
@@ -102,12 +102,16 @@ DONE    level themes?
                     cannot be used to verify level-completion
                     would get complicated if graphics ever become more complex 
                         --how will animations work?
+                            --good reason not to do animations?
             should they be saved with highscore data?
                 --makes sense for your own scores, but what if you want to race someone else's 
                     ghosts?
             super meat boy style replay of all attempts upon completion of level?
                 --would have to design levels to make dying more frequent
+                    --doing this anyways
                     --would probably want to make deaths more 'juicy' as well
+                        --ghosts would have to have juicy deaths as well...
+                            --could design to be not so bad
                 --would be super cool
                 --requires some kind of skippable replay mode after each level
                     --would have to pause timer and sorta interfere with speedrunning flow (?)
@@ -119,4 +123,4 @@ DONE    level themes?
         no
         
     Music/Sound:
-        --adds a lot to the atmosphere
+        --adds a lot to the atmosphere, also to the annoyance
