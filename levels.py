@@ -73,13 +73,13 @@ class Theme:
     
     def apply(self, object):
         if isinstance(object, phys_objects.MovingBlock):
-            object.set_color(self.values["moving_color"], self.values["moving_perturb"])
+            object.set_color(self.values["moving_color"], self.values["moving_perturb"], self.values["perturb_grayscale_only"])
         elif isinstance(object, phys_objects.BadBlock):
             object.set_color(self.values["bad_color"], 0)
         elif isinstance(object, phys_objects.FinishBlock):
             object.set_color(self.values["finish_color"], 0)
         elif isinstance(object, phys_objects.Block):
-            object.set_color(self.values["normal_color"], self.values["normal_perturb"])
+            object.set_color(self.values["normal_color"], self.values["normal_perturb"], self.values["perturb_grayscale_only"])
     
     def __eq__(self, other):
         if not isinstance(other, Theme):
@@ -101,7 +101,8 @@ class Theme:
 
 BUILT_IN_THEMES = {
     "ice":Theme().set("normal_color", (145, 200, 220)).set("perturb_grayscale_only", False).set("background_color", (30, 60, 70)),
-    "fire":Theme().set("normal_color", (170, 90, 90)).set("perturb_grayscale_only", False).set("background_color", (95, 5, 5))
+    "fire":Theme().set("normal_color", (170, 90, 90)).set("perturb_grayscale_only", False).set("background_color", (95, 5, 5)),
+    "rainbow":Theme().set("normal_color", (128, 128, 128)).set("perturb_grayscale_only", False).set("normal_perturb", 128).set("background_color", (0, 0, 0)).set("moving_color", (128, 128, 128)).set("moving_perturb", 128)
 }
        
 class LevelManager:

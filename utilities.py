@@ -38,8 +38,8 @@ class Utils:
             val = sign[random.randint(0,1)]*random.randint(0,max_perturb)
             pert = val, val, val
         else:
-            pert = (sign[random.randint(0,1)]*random.randint(0,max_perturb) for i in range(3))
-            
+            pert = [sign[random.randint(0,1)]*random.randint(0,max_perturb) for i in range(3)]
+
         res = tuple([Utils.lim(orig_color[i]+pert[i], 0, 255) for i in range(3)])
 
         return res
