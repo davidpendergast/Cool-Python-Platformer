@@ -178,7 +178,6 @@ class PlayingState(GameState):
         if self.level_num == self._level_manager.get_num_levels() - 1:
             print "Game Over!"
             
-            # TEMPORARY - loop back to level 0
             self.level_num = 0
             self.level_time = 0
             self.total_time = 0
@@ -191,8 +190,8 @@ class PlayingState(GameState):
             self._level_manager.load_level(self.level_num, self.player)
       
     def prev_level(self):
-        if self.level_num > 0:
-            self.level_num += -1
+        "only used in dev mode"
+        self.level_num = (self.level_num - 1) % self._level_manager.get_num_levels()
         self.player.reset()
         self._level_manager.load_level(self.level_num, self.player)
     
