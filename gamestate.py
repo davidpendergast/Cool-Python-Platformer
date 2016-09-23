@@ -31,7 +31,6 @@ class PlayingState(GameState):
         self.level_time = 0 
         
         self._level_manager = levels.LevelManager(self.settings)
-        self._level_manager.load_level(0, self.player)
         
         self.pusher = phys_objects.CollisionFixer()
         self.rf_fixer = phys_objects.ReferenceFrameFixer()
@@ -40,6 +39,8 @@ class PlayingState(GameState):
         self.keys = {'left':False, 'right':False, 'jump':False}
         self.mouse_down_pos = None
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
+        
+        self.full_reset() # starts game from scratch
         
     def get_entities(self):
         return self._level_manager.current_level.entity_list
@@ -171,19 +172,14 @@ class PlayingState(GameState):
         self.level_time = 0
         self.death_count = 0
         self._level_manager.load_level(0, self.player)
+        print "\nGame Start!"
     
     def next_level(self, update_highscore=False):
         if update_highscore:
             self._level_manager.update_level_highscore(self.level_num, self.level_time)
             
         if self.level_num == self._level_manager.get_num_levels() - 1:
-            print "Game Over!"
-            
-            self.level_num = 0
-            self.level_time = 0
-            self.total_time = 0
-            self.player.reset()
-            self._level_manager.load_level(self.level_num, self.player)
+            self.full_reset()
         else:   
             self.level_num += 1
             self.level_time = 0

@@ -138,11 +138,13 @@ class LevelManager:
     
         current_record = self.best_individual_scores[level_num]
         if current_record == None or time < current_record:
-            print "\n***NEW LEVEL RECORD***"
+            print "***NEW LEVEL RECORD***"
             print "Level "+str(level_num)+"'s record of "+str(Utils.format_time(current_record))+" broken with "+gamestate.Utils.format_time(time)+"!"
             self.best_individual_scores[level_num] = time
             dirty = True
-        
+        else:
+            print "Level "+str(level_num)+" completed! Time: " +str(Utils.format_time(time))+"\t Best: "+gamestate.Utils.format_time(current_record)
+            
         self.current_run_times[level_num] = time
         if level_num == self.get_num_levels()-1: #last level
             final_time = 0
@@ -152,25 +154,28 @@ class LevelManager:
                     break;
                 else:
                     final_time += val
-            print "Game Completed! Final time: "+str(Utils.format_time(final_time))
             
             if final_time != None:
                 if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
-                    print "\n***NEW FULL RUN RECORD***"
+                    print "***NEW FULL RUN RECORD***"
                     print "Previous record "+str(Utils.format_time(self.best_overall_run_total))+" broken with "+str(Utils.format_time(final_time))
                     self.best_overall_run_total = final_time
                     self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
                     dirty = True
+                else:
+                    print "Game Completed! Final time: "+str(Utils.format_time(final_time))
         
         if dirty:
-            self.dump_highscores_to_file()
+            self.dump_highscores_to_file(0)
         
-    def dump_highscores_to_file(self):
+    def dump_highscores_to_file(self, suppress_printing=0):
+        "0 = print nothing, 1 = print message, 2 = print entire file"
         if self.settings.dev_mode():
             print "Not saving high scores because we're in dev mode"
             return
         
-        print "Saving highscores to "+self.get_highscores_filename()+"..."
+        if suppress_printing > 0:
+            print "Saving highscores to "+self.get_highscores_filename()+"..."
         highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
         highscores["best_overall_run_total"] = Utils.format_time(self.best_overall_run_total)
         highscores["best_individual_scores"] = [Utils.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
@@ -178,8 +183,9 @@ class LevelManager:
         
         file = open(self.get_highscores_filename(), 'w')
         
-        print "dumping: "
-        print json.dumps(highscores, indent=4, sort_keys=True)
+        if suppress_printing > 1:
+            print "dumping: "
+            print json.dumps(highscores, indent=4, sort_keys=True)
         
         json.dump(highscores, file, indent=4, sort_keys=True)
         
