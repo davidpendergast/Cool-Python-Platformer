@@ -8,9 +8,6 @@ import gamestate
 from options import Settings
 from options import HardSettings
 
-import server
-import client
-
 pygame.init()
 
 settings = Settings()
@@ -28,8 +25,6 @@ FPS = HardSettings.fps()
 current_gamestate = game
 actor = game.player  # The player's character
 
-client.connect(actor, game)
-
 while still_running:
     current_gamestate.pre_event_update()
     
@@ -45,7 +40,5 @@ while still_running:
 
     pygame.display.flip()
     clock.tick(FPS)
-
-client.disconnect()
 
 pygame.quit()
