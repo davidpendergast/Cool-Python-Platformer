@@ -15,13 +15,13 @@ from utilities import Utils
 # Level class is essentially just a list of the entities in a level, as well as information 
 # about the level including its name and number.
 class Level:
-        def __init__(self, list, name, theme=None):
+        def __init__(self, entity_list, name, theme=None):
             if theme == None:
                 theme = Theme()
             self.name = name
             self.num = -1
             
-            self.entity_list = list[:]
+            self.entity_list = entity_list[:]
             self.background_color = theme
             for obj in self.entity_list:
                 theme.apply(obj)
@@ -186,16 +186,16 @@ class LevelManager:
         file.close()
         
     def create_void_level(self):
-        list = []
+        entity_list = []
        
-        list.append(phys_objects.Block(128, 128).set_xy(0, 128))
-        list.append(phys_objects.FinishBlock(16, 16).set_xy(56, -64))
+        entity_list.append(phys_objects.Block(128, 128).set_xy(0, 128))
+        entity_list.append(phys_objects.FinishBlock(16, 16).set_xy(56, -64))
         
         actor = phys_objects.Actor().set_xy(32, 96)
         actor.is_player = True
-        list.append(actor)
+        entity_list.append(actor)
         
-        return Level(list, "The Void")
+        return Level(entity_list, "The Void")
         
     def read_filenames_from_header(self):
         res = []
@@ -216,26 +216,26 @@ class LevelManager:
         return res
         
     def load_or_create_highscore_data(self):
-        dict = None
+        hs_dict = None
         if os.path.isfile("./"+self.get_highscores_filename()) and os.path.getsize("./"+self.get_highscores_filename()) > 0:
             print "Reading "+self.file_dir+"/highscores.json..."
             with open(self.file_dir+"/highscores.json") as data_file:
-                dict = json.load(data_file)
-                dict = self.repair_highscore_data_if_necessary(dict)
+                hs_dict = json.load(data_file)
+                hs_dict = self.repair_highscore_data_if_necessary(hs_dict)
         else:
             print "Creating " + self.file_dir+"/highscores.json..."
             num_levels = self.get_num_levels()
-            dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
+            hs_dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
             
             file = open(self.file_dir+"/highscores.json", 'w')
             
             print "dumping: "
-            print json.dumps(dict, indent=4, sort_keys=True)
+            print json.dumps(hs_dict, indent=4, sort_keys=True)
             
-            json.dump(dict, file, indent=4, sort_keys=True)
+            json.dump(hs_dict, file, indent=4, sort_keys=True)
             
             file.close()
-        return dict
+        return hs_dict
         
     @staticmethod
     def generate_empty_highscores_dict(num_levels):
