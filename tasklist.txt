@@ -15,7 +15,11 @@ DONE    functionality
             --would show your times on each level, and their difference from high scores
             --option to play again
             --option to save replay? <- this should probably only happen when a record is broken
-        
+    
+    Settings:
+        separate files for default settings and user settings, so that user settings can be
+            gitignored.
+    
     Level Building:
         10 intro levels each with unique challenge and charm (1/10 complete)
             Basic Movement
@@ -43,7 +47,7 @@ DONE        Moving Platforms
             --character slides farther when fps is lower
                 
     Clock:
-        time probably isn't accurate, or only accurate due to multiple mistakes 
+DONE    time probably isn't accurate, or only accurate due to multiple mistakes 
             cancelling each other out lol
     
     Windows:
