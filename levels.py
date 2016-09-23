@@ -331,6 +331,7 @@ class LevelReader:
             actor.is_player = True
             
             entity_list.append(actor)
+            entity_list = sorted(entity_list)
             
             return Level(entity_list, name, theme)
         except:

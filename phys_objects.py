@@ -47,7 +47,7 @@ class Box(pygame.sprite.Sprite):
         if move_at_least_1 and dx != 0 and abs(dx) < 1:
             dx = math.copysign(1, dx)
         if move_at_least_1 and dy != 0 and abs(dy) < 1:
-            dy = math.copysign(1, dy)    
+            dy = math.copysign(1, dy) 
         self.rect.move_ip(dx, dy)
         for kid in self.rf_children:
             kid.rect.move_ip(dx, dy)
@@ -121,6 +121,16 @@ class Box(pygame.sprite.Sprite):
         
     def repaint(self):
         self.image.fill(self.color, (0, 0, self.image.get_width(), self.image.get_height()))
+        
+    def __cmp__(self, other):
+        if isinstance(other, Box):
+            return self.get_update_priority() - other.get_update_priority() 
+        else:
+            return 1
+    
+    def get_update_priority(self):
+        return -1
+    
     
 class Block(Box):
     BAD_COLOR = (255, 0, 0)
@@ -132,10 +142,14 @@ class Block(Box):
         self.is_solid = True
         self.is_pushable = False
         self.is_visible = True
+        self.has_physics = False
         self.a = (0, 0)
     
     def update(self, dt):
         pass
+        
+    def get_update_priority(self):
+        return 5
         
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
@@ -143,11 +157,21 @@ class MovingBlock(Block):
         self.path = path
     
     def update(self, dt):
+        self.v = (0,0)
         if self.path != None:
+            old_x = self.x()
+            old_y = self.y()
+           
             self.path.step(dt)
             xy = self.path.get_xy()
             self.set_x(xy[0])
             self.set_y(xy[1])
+            
+            self.v = (self.x() - old_x, self.y() - old_y) # used for crushing 
+    
+    def get_update_priority(self):
+        return 4
+    
     
 class Actor(Box):
     STANDARD_SIZE = (24, 32)
@@ -262,14 +286,20 @@ class Actor(Box):
                 vx = vx - fric
         self.set_vx(vx)
             
-            
+    def get_update_priority(self):
+        return 1
+        
 class BadBlock(Block):
     def __init__(self, width, height, color=None):
         color = Block.BAD_COLOR if color == None else color
         Block.__init__(self, width, height, color)
+    
     def collided_with(self, obj, dir="NONE"):
         if isinstance(obj, Actor):
             obj.is_alive = False
+            
+    def get_update_priority(self):
+        return 3
             
         
 class Enemy(Actor):
@@ -294,6 +324,9 @@ class Enemy(Actor):
         Actor.update(self, dt)
         
         self.move_action(self.direction)
+        
+    def get_update_priority(self):
+        return 2
         
     def collided_with(self, obj, dir="NONE"):
         Actor.collided_with(self, obj, dir)
@@ -341,7 +374,7 @@ class FinishBlock(Block):
     def collided_with(self, obj, dir="NONE"):
         if isinstance(obj, Actor):
             obj.finished_level = True
-            
+           
             
 class CollisionFixer:
     def __init__(self):
@@ -370,8 +403,15 @@ class CollisionFixer:
         for sprite in actors:   # Checking for crushed actors
             list = pygame.sprite.spritecollide(sprite, unmovables, False)
             for obj in list:
-                if self.really_intersects(sprite.rect, obj.rect, self.thresh):
-                    sprite.is_crushed = True
+                direction = self.intersect_dir(obj.rect, sprite.rect, self.thresh)
+                if direction != None and direction != "NONE":
+                    crushed = (direction == "TOP" and obj.vy() > 0) or \
+                        (direction == "BOTTOM" and obj.vy() < 0) or \
+                        (direction == "LEFT" and obj.vx() > 0) or \
+                        (direction == "RIGHT" and obj.vx() < 0)
+                    if crushed:
+                        sprite.is_crushed = True
+                        break
                     
         for sprite in actors: # Setting is_grounded, is_left_walled, is_right_walled for each actor
             full_rect = sprite.rect
@@ -466,32 +506,50 @@ class CollisionFixer:
         if not self.really_intersects(r1, r2, thresh):
             return "NONE"
         
-        dx = -r1.centerx + r2.centerx
-        dy = -r1.centery + r2.centery
-        atan = math.atan2(dx, dy)
+        h_box = self.h_box(r2, thresh)
+        v_box = self.v_box(r2, thresh)
         
-        if atan > math.pi/4 and atan < 3*math.pi/4:      # is this correct/why is this correct? seems to work...
-            return "LEFT"
-        elif atan > 3*math.pi/4 or atan < -3*math.pi/4:
-            return "BOTTOM"
-        elif atan < math.pi/4 and atan > -math.pi/4:
-            return "TOP"
-        elif atan < -math.pi/4 and atan > -3*math.pi/4:
-            return "RIGHT"
+        h_intersection = self.rect_intersect(r1, h_box)
+        v_intersection = self.rect_intersect(r1, v_box)
+        
+        if h_intersection != None and v_intersection != None:
+            # Colliding on both the guide rectangles, choose the one with larger overlap
+            if h_intersection.width > v_intersection.height:
+                v_intersection = None
+            else:
+                h_intersection = None
+        
+        if h_intersection == None:
+            if v_intersection.centery - v_box.centery > 0:
+                return "BOTTOM"
+            else:
+                return "TOP"
+        else:
+            if h_intersection.centerx - h_box.centerx > 0:
+                return "RIGHT"
+            else:
+                return "LEFT"
         
     def really_intersects(self, movable_rect, unmovable_rect, thresh):
-        h_box = movable_rect.copy()
-        h_box.inflate_ip(0, -h_box.height * thresh)
-        v_box = movable_rect.copy()
-        v_box.inflate_ip(-v_box.width * thresh, 0)
+        h_box = self.h_box(movable_rect, thresh)
+        v_box = self.v_box(movable_rect, thresh)
         
         return self.rect_intersect(h_box, unmovable_rect) != None or self.rect_intersect(v_box, unmovable_rect) != None
 
     def rect_collide(self, rect, spritegroup):
         "Finds all the sprites in Group (or list) spritegroup that collide with given rect. Returns a list of those sprites."
         # TODO - make better
-        list = [sprite for sprite in spritegroup if rect.colliderect(sprite.rect)]
-        return list
+        return sorted([sprite for sprite in spritegroup if rect.colliderect(sprite.rect)])
+        
+    def h_box(self, rect, thresh):
+        h_box = rect.copy()
+        h_box.inflate_ip(0, -h_box.height * thresh)
+        return h_box
+        
+    def v_box(self, rect, thresh):
+        v_box = rect.copy()
+        v_box.inflate_ip(-v_box.width * thresh, 0)
+        return v_box
         
         
 class ReferenceFrameFixer:
@@ -509,13 +567,19 @@ class ReferenceFrameFixer:
         
         
 class Path:
-    def __init__(self, x_expression, y_expression):
+    def __init__(self, x_expression, y_expression, integral=True):
         self.t = 0;
         self.x_fun = x_expression
         self.y_fun = y_expression
+        self.integral=integral
         
     def get_xy(self):
-        return (self.x_fun.value(self.t), self.y_fun.value(self.t))
+        x = self.x_fun.value(self.t)
+        y = self.y_fun.value(self.t)
+        if self.integral:
+            x = int(x + 0.5) # rounding
+            y = int(y + 0.5)
+        return (x,y)
         
     def step(self, dt):
         self.t += dt

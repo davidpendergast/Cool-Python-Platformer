@@ -8,7 +8,6 @@ class Drawer:
         self.grid_spacing = 32
         self.grid_color = (50,50,50)
     
-    
     def draw(self, screen, group):
         self.update_background_color()
         screen.fill(self.background_color)

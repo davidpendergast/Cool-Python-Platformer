@@ -39,6 +39,7 @@ class PlayingState(GameState):
         
         self.keys = {'left':False, 'right':False, 'jump':False}
         self.mouse_down_pos = None
+        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
         
     def get_entities(self):
         return self._level_manager.current_level.entity_list
@@ -196,13 +197,12 @@ class PlayingState(GameState):
         self._level_manager.load_level(self.level_num, self.player)
     
     def draw_gui(self, screen):
-        font = pygame.font.Font(None, 36)
-        level_text = font.render("Level: "+str(self.level_num + 1), True, (255, 255, 255))
-        level_title = font.render(str(self._level_manager.current_level.name), True, (255, 255, 255))
-        death_text = font.render("Deaths: "+str(self.death_count), True, (255, 255, 255))
+        level_text = self.font.render("Level: "+str(self.level_num + 1), True, (255, 255, 255))
+        level_title = self.font.render(str(self._level_manager.current_level.name), True, (255, 255, 255))
+        death_text = self.font.render("Deaths: "+str(self.death_count), True, (255, 255, 255))
         text_height = level_text.get_height()
         
-        time_text = font.render("Time: " + Utils.format_time(self.total_time), True, (255, 255, 255))
+        time_text = self.font.render("Time: " + Utils.format_time(self.total_time), True, (255, 255, 255))
         screen.blit(level_text, (0, 0))
         screen.blit(level_title, (0, text_height))
         screen.blit(time_text, (screen.get_width()/2 - time_text.get_width()/2, 0))
