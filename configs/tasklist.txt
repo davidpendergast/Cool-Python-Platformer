@@ -17,7 +17,7 @@ DONE    functionality
             --option to save replay? <- this should probably only happen when a record is broken
     
     Settings:
-        separate files for default settings and user settings, so that user settings can be
+DONE    separate files for default settings and user settings, so that user settings can be
             gitignored.
     
     Level Building:
@@ -32,6 +32,16 @@ DONE        Moving Platforms
             ???
             ???
             ???
+    
+    Entities:
+        fix or remove switches
+            --right now they suck
+        blocks that fall when you stand on them too long
+        blocks that poof in and out of existence
+        
+    Optimizations:
+        collision detection
+            --right now it's n^2
             
 @~~~~~~~~~~~~@
 | Known Bugs |
@@ -45,6 +55,9 @@ DONE        Moving Platforms
                 diagonally upwards shouldn't crush you from below.
         friction affected by fps
             --character slides farther when fps is lower
+        pretty much everything affected by fps
+            --movement speed, jump height, etc. not a huge deal because fps will pretty much always
+                be fixed at 60, but something isn't correct somewhere that's causing this behaviour.
                 
     Clock:
 DONE    time probably isn't accurate, or only accurate due to multiple mistakes 

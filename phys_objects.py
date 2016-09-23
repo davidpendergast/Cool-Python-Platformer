@@ -137,13 +137,9 @@ class Block(Box):
     def update(self, dt):
         pass
         
-            
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
         Block.__init__(self, width, height, color)
-        self.current_dist = 0
-        self.dist_before_reverse = 32*5
-        self.current_dir = 1;
         self.speed = 1;
         self.path = path
         
@@ -399,6 +395,7 @@ class FinishBlock(Block):
 class CollisionFixer:
     def __init__(self):
         self.thresh = 0.4
+        
     def solve_collisions(self, group):
         unmovables = pygame.sprite.Group()
         movables = pygame.sprite.Group()
@@ -512,6 +509,7 @@ class CollisionFixer:
         bot   = min(r1.y + r1.height, r2.y + r2.height)
         
         return pygame.Rect(left, top, right-left, bot-top)
+        
     def intersect_dir(self, r1, r2, thresh):
         "determines the direction from which r1 collides with r2"
         if not self.really_intersects(r1, r2, thresh):
