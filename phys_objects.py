@@ -381,28 +381,28 @@ class CollisionFixer:
         self.thresh = 0.4
         
     def solve_collisions(self, group):
-        unmovables = pygame.sprite.Group()
-        movables = pygame.sprite.Group()
-        actors = pygame.sprite.Group()
+        unmovables = []
+        movables = []
+        actors = []
         
         for sprite in group:
             if sprite.is_solid == False:
                 continue
             elif sprite.is_pushable:
-                movables.add(sprite)
+                movables.append(sprite)
                 if isinstance(sprite, Actor):
-                    actors.add(sprite)
+                    actors.append(sprite)
             else:
-                unmovables.add(sprite)
+                unmovables.append(sprite)
         
         for sprite in movables: # solving movable-unmovable coliisions
-            list = pygame.sprite.spritecollide(sprite, unmovables, False)
-            for other in list:
+            colliding_with = [x for x in unmovables if self.really_intersects(sprite.rect, x.rect, self.thresh)]
+            for other in colliding_with:
                 self.solve_pushout_collision(other, sprite)
         
         for sprite in actors:   # Checking for crushed actors
-            list = pygame.sprite.spritecollide(sprite, unmovables, False)
-            for obj in list:
+            colliding_with = [x for x in unmovables if self.really_intersects(sprite.rect, x.rect, self.thresh)]
+            for obj in colliding_with:
                 direction = self.intersect_dir(obj.rect, sprite.rect, self.thresh)
                 if direction != None and direction != "NONE":
                     crushed = (direction == "TOP" and obj.vy() > 0) or \
@@ -439,15 +439,11 @@ class CollisionFixer:
             if len(self.rect_collide(right_rect, candidates)) > 0:
                 sprite.is_right_walled = True
         for sprite in movables: # solving movable-movable collisions
-            list = pygame.sprite.spritecollide(sprite, movables, False)
-            for other in list:
+            colliding_with = [x for x in movables if self.really_intersects(sprite.rect, x.rect, self.thresh) and sprite is not x]
+            for other in colliding_with:
                 if other != sprite:
-                    dir = self.intersect_dir(other.rect, sprite.rect, 0.2) # thresh set to 0 so that vertical collisions always prevail
+                    dir = self.intersect_dir(other.rect, sprite.rect, 0.2)
                     sprite.collided_with(other, dir)
-        
-        movables.empty()
-        unmovables.empty()
-        actors.empty()
         
     def solve_pushout_collision(self, unmovable, movable):
         assert unmovable.is_pushable == False and movable.is_pushable == True
