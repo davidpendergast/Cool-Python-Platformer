@@ -32,7 +32,7 @@ class Utils:
         return min(max(x, minimum), maximum)
         
     @staticmethod
-    def perturb_color(orig_color, max_perturb, only_greyscale=True):
+    def perturb_color(orig_color, max_perturb, only_greyscale):
         sign = (-1,1)
         if only_greyscale:
             val = sign[random.randint(0,1)]*random.randint(0,max_perturb)

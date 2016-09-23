@@ -22,5 +22,6 @@
         {"type":"moving", "width":"64", "height":"32", "x_path":"(+ 1056 (* 96 (cos (* 0.02 t))))", "y_path":"(+ -576 (* 96 (sin (* 0.02 t))))"},
         {"type":"moving", "width":"64", "height":"32", "x_path":"(+ 1056 (* 96 (cos (+ (* 0.02 t) pi))))", "y_path":"(+ -576 (* 96 (sin (+ (* 0.02 t) pi))))"}
     ],
-    "enemies": []
+    "enemies": [],
+    "theme":"ice"
 }

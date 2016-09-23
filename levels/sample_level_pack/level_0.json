@@ -17,5 +17,15 @@
         {"type":"normal", "x":"1696", "y":"192", "width":"256", "height":"64"},
         {"type":"finish", "x":"1930", "y":"104", "width":"16", "height":"16"}
     ],
-    "enemies": []
+    "enemies": [],
+    "theme":{
+        "normal_color":[255, 128, 128],
+        "normal_perturb":50,
+        "perturb_grayscale_only":true,
+        "moving_color":[128, 128, 128],
+        "moving_perturb":0,
+        "bad_color":[255, 0, 0],
+        "background_color":[0, 0, 0],
+        "finish_color":[0, 255, 0]
+    }
 }

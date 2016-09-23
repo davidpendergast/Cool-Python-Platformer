@@ -115,8 +115,8 @@ class Box(pygame.sprite.Sprite):
         "direction = side of self that touched obj. Valid inputs are TOP, BOTTOM, LEFT, RIGHT, NONE"
         pass
         
-    def set_color(self, color, perturb_color=0):
-        self.color = Utils.perturb_color(color, perturb_color)
+    def set_color(self, color, perturb_color=0, only_greyscale=True):
+        self.color = Utils.perturb_color(color, perturb_color, only_greyscale)
         self.repaint()
         
     def repaint(self):
@@ -571,6 +571,7 @@ class Path:
     def step(self, dt):
         self.t += dt
 
+        
 class PointPath(Path):  
     def __init__(self, x_points, y_points, speed=3):
         self.x_points = x_points
@@ -611,6 +612,7 @@ class PointPath(Path):
         spline_string = "(+ "+str(x1)+" (* (/ "+str(d)+" 2) (- 1 (cos (* "+str(self.speed)+" 0.01 t)))))"
         return equations.Expression.get_expression(spline_string)
 
+        
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, (x, y), color=(200, 128, 128)):
         pygame.sprite.Sprite.__init__(self)

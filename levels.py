@@ -49,30 +49,61 @@ class Level:
             self.entity_list.remove(self.actor)
             self.entity_list.append(new_actor)
             self.actor = new_actor
-
-# Determines the color scheme of   
+ 
 class Theme:
-    def __init__(self):
-        self.normal_color = (128, 128, 128)
-        self.normal_perturb = 20
-        self.moving_color = (128, 128, 128)
-        self.moving_perturb = 0
-        self.bad_color = (255, 0, 0)
-        self.background_color = (0, 0, 0)
-        self.finish_color = (0, 255, 0)
+    def __init__(self, id=None):
+        if id == None:
+            self.values = {
+                "normal_color":(128, 128, 128),
+                "normal_perturb":20,
+                "perturb_grayscale_only":True,
+                "moving_color":(128, 128, 128),
+                "moving_perturb":0,
+                "bad_color":(255, 0, 0),
+                "background_color":(0, 0, 0),
+                "finish_color":(0, 255, 0)
+            }
+        else:
+            global BUILT_IN_THEMES
+            if id in BUILT_IN_THEMES:
+            
+                self.values = BUILT_IN_THEMES[id].values
+            else:
+                raise ValueError("Invalid theme id: "+str(id))
     
     def apply(self, object):
         if isinstance(object, phys_objects.MovingBlock):
-            object.set_color(self.moving_color, self.moving_perturb)
+            object.set_color(self.values["moving_color"], self.values["moving_perturb"])
         elif isinstance(object, phys_objects.BadBlock):
-            object.set_color(self.bad_color, 0)
+            object.set_color(self.values["bad_color"], 0)
         elif isinstance(object, phys_objects.FinishBlock):
-            object.set_color(self.finish_color, 0)
+            object.set_color(self.values["finish_color"], 0)
         elif isinstance(object, phys_objects.Block):
-            object.set_color(self.normal_color, self.normal_perturb)
-        
+            object.set_color(self.values["normal_color"], self.values["normal_perturb"])
+    
+    def __eq__(self, other):
+        if not isinstance(other, Theme):
+            return False
+        return self.normal_color == other.normal_color and \
+            self.normal_perturb == other.normal_perturb and \
+            self.perturb_grayscale_only == other.perturb_grayscale_only and \
+            self.moving_color == other.moving_color and \
+            self.moving_perturb == other.moving_perturb and \
+            self.bad_color == other.bad_color and \
+            self.background_color == other.background_color and \
+            self.finish_color == other.finish_color
+    
+    def set(self, field, value):
+        if field not in self.values:
+            raise ValueError("Theme field not recognized: "+str(field))
+        self.values[field] = value
+        return self
 
-          
+BUILT_IN_THEMES = {
+    "ice":Theme().set("normal_color", (145, 200, 220)).set("perturb_grayscale_only", False).set("background_color", (30, 60, 70)),
+    "fire":Theme().set("normal_color", (170, 90, 90)).set("perturb_grayscale_only", False).set("background_color", (95, 5, 5))
+}
+       
 class LevelManager:
     def __init__(self, settings):
         self.settings = settings
@@ -225,12 +256,11 @@ class LevelManager:
 class LevelReader:
     @staticmethod
     def load(filename):
-        list = []
+        entity_list = []
         
         try:
             with open(filename) as json_file:
                 data = json.load(json_file)
-            
             
             name = "<Unnamed>"
             if "info" in data and "name" in data["info"]:
@@ -262,7 +292,7 @@ class LevelReader:
                         block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), path)
                     else:
                         continue
-                    list.append(block)
+                    entity_list.append(block)
             else:
                 print "no blocks data in "+filename+"?"
                 
@@ -276,14 +306,29 @@ class LevelReader:
                         enemy = phys_objects.Enemy.get_bad_enemy(int(elem["x"]), int(elem["y"]))
                     else:
                         continue
-                    list.append(enemy)
+                    entity_list.append(enemy)
+            
+            theme = None 
+            if "theme" in data:
+                elem = data["theme"]
+                if isinstance(elem, type({})):
+                    theme = Theme()
+                    for key in elem:
+                        val = elem[key]
+                        if isinstance(val, list):
+                            val = tuple(val)
+                        theme.set(key, val)
+                else:
+                    # elem = "ice", "fire", ...
+                    theme = Theme(elem)
+                    
             
             actor = phys_objects.Actor().set_xy(int(data["actor"]["x"]), int(data["actor"]["y"]))
             actor.is_player = True
             
-            list.append(actor)
+            entity_list.append(actor)
             
-            return Level(list, name)
+            return Level(entity_list, name, theme)
         except:
             print "Error while loading "+filename+":"
             for err in sys.exc_info():

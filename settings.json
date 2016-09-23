@@ -1,4 +1,4 @@
 {
-    "dev_mode":false,
+    "dev_mode":true,
     "level_path":"levels/sample_level_pack"
 }

@@ -64,7 +64,7 @@ DONE    time probably isn't accurate, or only accurate due to multiple mistakes
                 stretches when moving, jumping, hanging on walls, etc.
         sprites?
             --would like to keep it minimalistic if using sprites at all.
-        level themes?
+DONE    level themes?
             --would give levels some character, even just having an "ice" theme that makes the 
                 platforms light-blue instead of grey for example
    
