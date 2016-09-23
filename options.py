@@ -2,7 +2,7 @@ import json
 
 class Settings:
     def __init__(self):
-        with open("settings.json") as data_file:    
+        with open("configs/settings.json") as data_file:    
             data = json.load(data_file)
             self.__is_dev = data["dev_mode"]
             self.__level_path = data["level_path"] 
