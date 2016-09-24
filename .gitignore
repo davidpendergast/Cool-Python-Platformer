@@ -1,4 +1,5 @@
 *.pyc
+*.swp
 levels/old crap/
 *highscores.json
 configs/settings.json

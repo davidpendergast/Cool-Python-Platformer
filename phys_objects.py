@@ -2,7 +2,7 @@ import pygame
 import sets 
 import math
 
-import equations
+import new_equation
 from utilities import Utils
 
 class Box(pygame.sprite.Sprite):
@@ -570,8 +570,8 @@ class Path:
         self.integral=integral
         
     def get_xy(self):
-        x = self.x_fun.value(self.t)
-        y = self.y_fun.value(self.t)
+        x = self.x_fun(self.t)
+        y = self.y_fun(self.t)
         if self.integral:
             x = int(x + 0.5) # rounding
             y = int(y + 0.5)
@@ -617,9 +617,9 @@ class PointPath(Path):
     def get_spline_funct(self, x1, x2):
         d = (x2 - x1)
         if d == 0:
-            return equations.Expression.get_expression(str(x1))
+            return new_equation.pythonify(str(x1))
         spline_string = "(+ "+str(x1)+" (* (/ "+str(d)+" 2) (- 1 (cos (* "+str(self.speed)+" 0.01 t)))))"
-        return equations.Expression.get_expression(spline_string)
+        return new_equation.pythonify(spline_string)
 
         
 class Ghost(pygame.sprite.Sprite):
