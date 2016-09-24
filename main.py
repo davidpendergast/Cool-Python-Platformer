@@ -34,7 +34,7 @@ while still_running:
         else:
             current_gamestate.handle_event(event)
             
-    dt = 100/FPS
+    dt = 1
     game.update(dt)
     game.draw(screen)
 

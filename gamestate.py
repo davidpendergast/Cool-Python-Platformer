@@ -145,6 +145,8 @@ class PlayingState(GameState):
         
         self.pusher.solve_collisions(self._level_manager.current_level.entity_list)
         self.rf_fixer.solve_rfs(self._level_manager.current_level.entity_list)
+        
+        self._level_manager.current_level.bring_out_yer_dead()
     
     def draw(self, screen):
         self.drawer.update_camera(self.player, screen.get_width(), screen.get_height())

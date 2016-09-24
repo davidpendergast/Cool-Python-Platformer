@@ -1,4 +1,4 @@
 crush_test.json
-level_1.json
+every_object.json
 level_3.json
 level_4.json

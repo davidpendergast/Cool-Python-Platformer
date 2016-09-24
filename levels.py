@@ -36,6 +36,9 @@ class Level:
         def remove_object(self, obj):
             self.entity_list.remove(obj)
             
+        def bring_out_yer_dead(self):
+            self.entity_list = filter(lambda x : not (hasattr(x, "is_dead") and x.id_dead) or x is self.actor, self.entity_list)
+            
         def _find_player(self):
             for elem in self.entity_list:
                 if isinstance(elem, phys_objects.Actor) and elem.is_player:

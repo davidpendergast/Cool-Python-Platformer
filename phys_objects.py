@@ -338,6 +338,7 @@ class Enemy(Actor):
                     if obj.jumps == 0:
                         obj.jumps = 1
                 else:
+                    # kill the player
                     obj.is_alive = False
         elif obj.is_solid and (dir == "RIGHT" or dir == "LEFT"):
             self.direction = -self.direction
@@ -532,10 +533,9 @@ class CollisionFixer:
         
         return self.rect_intersect(h_box, unmovable_rect) != None or self.rect_intersect(v_box, unmovable_rect) != None
 
-    def rect_collide(self, rect, spritegroup):
+    def rect_collide(self, rect, sprite_list):
         "Finds all the sprites in Group (or list) spritegroup that collide with given rect. Returns a list of those sprites."
-        # TODO - make better
-        return sorted([sprite for sprite in spritegroup if rect.colliderect(sprite.rect)])
+        return sorted([sprite for sprite in sprite_list if rect.colliderect(sprite.rect)])
         
     def h_box(self, rect, thresh):
         h_box = rect.copy()
