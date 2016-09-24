@@ -2,7 +2,7 @@ import pygame
 import sets 
 import math
 
-import new_equation
+import equations
 from utilities import Utils
 
 class Box(pygame.sprite.Sprite):
@@ -551,6 +551,7 @@ class CollisionFixer:
 class ReferenceFrameFixer:
     def __init__(self):
         pass
+        
     def solve_rfs(self, group):
         to_delete = sets.Set()
         for box in group:
@@ -599,6 +600,7 @@ class PointPath(Path):
             return (self.x_points[self.dest_index], self.y_points[self.dest_index])
         else:
             return Path.get_xy(self)
+            
     def step(self, dt):
         if self.at_end_of_spline:
             #time to move to next spline
@@ -617,9 +619,9 @@ class PointPath(Path):
     def get_spline_funct(self, x1, x2):
         d = (x2 - x1)
         if d == 0:
-            return new_equation.pythonify(str(x1))
+            return equations.pythonify(str(x1))
         spline_string = "(+ "+str(x1)+" (* (/ "+str(d)+" 2) (- 1 (cos (* "+str(self.speed)+" 0.01 t)))))"
-        return new_equation.pythonify(spline_string)
+        return equations.pythonify(spline_string)
 
         
 class Ghost(pygame.sprite.Sprite):

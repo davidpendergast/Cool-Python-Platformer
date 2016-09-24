@@ -8,7 +8,7 @@ import pygame
 
 import phys_objects
 import gamestate
-import new_equation
+import equations
 import options
 from utilities import Utils
 
@@ -291,8 +291,8 @@ class LevelReader:
                     elif elem["type"] == "moving":
                         path = None
                         if "x_path" in elem and "y_path" in elem:
-                            x_path = new_equation.pythonify(str(elem["x_path"]))
-                            y_path = new_equation.pythonify(str(elem["y_path"]))
+                            x_path = equations.pythonify(str(elem["x_path"]))
+                            y_path = equations.pythonify(str(elem["y_path"]))
                             path = phys_objects.Path(x_path, y_path)
                         elif "x_points" in elem and "y_points" in elem and "speed" in elem:
                             x_points = elem["x_points"]
