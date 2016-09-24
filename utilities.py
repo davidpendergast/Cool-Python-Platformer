@@ -7,7 +7,7 @@ class Utils:
         "75 -> '1:15'"
         if ticks == None:
             return None
-        millis = Utils.ticks_to_millis(ticks)
+        millis = int(Utils.ticks_to_millis(ticks) + 0.5)
         
         secs = str(millis // 1000)
         millis = str(millis % 1000)
@@ -23,7 +23,7 @@ class Utils:
         split = time_str.split(":")
         if len(split) == 2:
             millis = int(split[0])*1000 + int(split[1])
-            return Utils.millis_to_ticks(millis)
+            return int(Utils.millis_to_ticks(millis)+0.5)
         else:
             raise ValueError("invalid time string to unformat: "+str(time_str))
             
@@ -46,11 +46,11 @@ class Utils:
         
     @staticmethod
     def ticks_to_millis(ticks):
-        return int((1000 / options.HardSettings.fps())*ticks + 0.5)
+        return (1000 * ticks) / float(options.HardSettings.fps())
         
     @staticmethod
     def millis_to_ticks(millis):
-        return int(millis * options.HardSettings.fps() / 1000 + 0.5)
+        return (millis * options.HardSettings.fps()) / float(1000)
         
     @staticmethod
     def pad_to_length(string, length, filler, to_front=False):
@@ -62,4 +62,17 @@ class Utils:
                 return filler*pad + string
             else:
                 return string + filler*pad
+                
+if __name__ == "__main__":
+   print "Testing utilities.py..."
+   ticks = 1234
+   millis = Utils.ticks_to_millis(ticks)
+   ticks2 = Utils.millis_to_ticks(millis)
+   print str(ticks)+" ticks -> "+str(millis)+" ms -> "+str(ticks2)+" ticks" 
+   
+   formatted = Utils.format_time(ticks)
+   unformatted = Utils.unformat_time(formatted)
+   
+   print str(ticks)+" ticks -> "+formatted+" -> "+str(unformatted)+" ticks"
+   
     

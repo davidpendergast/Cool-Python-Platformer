@@ -15,13 +15,13 @@ from utilities import Utils
 # Level class is essentially just a list of the entities in a level, as well as information 
 # about the level including its name and number.
 class Level:
-        def __init__(self, list, name, theme=None):
+        def __init__(self, entity_list, name, theme=None):
             if theme == None:
                 theme = Theme()
             self.name = name
             self.num = -1
             
-            self.entity_list = list[:]
+            self.entity_list = entity_list[:]
             self.background_color = theme
             for obj in self.entity_list:
                 theme.apply(obj)
@@ -138,11 +138,13 @@ class LevelManager:
     
         current_record = self.best_individual_scores[level_num]
         if current_record == None or time < current_record:
-            print "\n***NEW LEVEL RECORD***"
+            print "***NEW LEVEL RECORD***"
             print "Level "+str(level_num)+"'s record of "+str(Utils.format_time(current_record))+" broken with "+gamestate.Utils.format_time(time)+"!"
             self.best_individual_scores[level_num] = time
             dirty = True
-        
+        else:
+            print "Level "+str(level_num)+" completed! Time: " +str(Utils.format_time(time))+"\t Best: "+gamestate.Utils.format_time(current_record)
+            
         self.current_run_times[level_num] = time
         if level_num == self.get_num_levels()-1: #last level
             final_time = 0
@@ -152,25 +154,28 @@ class LevelManager:
                     break;
                 else:
                     final_time += val
-            print "Game Completed! Final time: "+str(Utils.format_time(final_time))
             
             if final_time != None:
                 if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
-                    print "\n***NEW FULL RUN RECORD***"
+                    print "***NEW FULL RUN RECORD***"
                     print "Previous record "+str(Utils.format_time(self.best_overall_run_total))+" broken with "+str(Utils.format_time(final_time))
                     self.best_overall_run_total = final_time
                     self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
                     dirty = True
+                else:
+                    print "Game Completed! Final time: "+str(Utils.format_time(final_time))
         
         if dirty:
-            self.dump_highscores_to_file()
+            self.dump_highscores_to_file(0)
         
-    def dump_highscores_to_file(self):
+    def dump_highscores_to_file(self, suppress_printing=0):
+        "0 = print nothing, 1 = print message, 2 = print entire file"
         if self.settings.dev_mode():
             print "Not saving high scores because we're in dev mode"
             return
         
-        print "Saving highscores to "+self.get_highscores_filename()+"..."
+        if suppress_printing > 0:
+            print "Saving highscores to "+self.get_highscores_filename()+"..."
         highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
         highscores["best_overall_run_total"] = Utils.format_time(self.best_overall_run_total)
         highscores["best_individual_scores"] = [Utils.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
@@ -178,24 +183,25 @@ class LevelManager:
         
         file = open(self.get_highscores_filename(), 'w')
         
-        print "dumping: "
-        print json.dumps(highscores, indent=4, sort_keys=True)
+        if suppress_printing > 1:
+            print "dumping: "
+            print json.dumps(highscores, indent=4, sort_keys=True)
         
         json.dump(highscores, file, indent=4, sort_keys=True)
         
         file.close()
         
     def create_void_level(self):
-        list = []
+        entity_list = []
        
-        list.append(phys_objects.Block(128, 128).set_xy(0, 128))
-        list.append(phys_objects.FinishBlock(16, 16).set_xy(56, -64))
+        entity_list.append(phys_objects.Block(128, 128).set_xy(0, 128))
+        entity_list.append(phys_objects.FinishBlock(16, 16).set_xy(56, -64))
         
         actor = phys_objects.Actor().set_xy(32, 96)
         actor.is_player = True
-        list.append(actor)
+        entity_list.append(actor)
         
-        return Level(list, "The Void")
+        return Level(entity_list, "The Void")
         
     def read_filenames_from_header(self):
         res = []
@@ -216,26 +222,26 @@ class LevelManager:
         return res
         
     def load_or_create_highscore_data(self):
-        dict = None
+        hs_dict = None
         if os.path.isfile("./"+self.get_highscores_filename()) and os.path.getsize("./"+self.get_highscores_filename()) > 0:
             print "Reading "+self.file_dir+"/highscores.json..."
             with open(self.file_dir+"/highscores.json") as data_file:
-                dict = json.load(data_file)
-                dict = self.repair_highscore_data_if_necessary(dict)
+                hs_dict = json.load(data_file)
+                hs_dict = self.repair_highscore_data_if_necessary(hs_dict)
         else:
             print "Creating " + self.file_dir+"/highscores.json..."
             num_levels = self.get_num_levels()
-            dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
+            hs_dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
             
             file = open(self.file_dir+"/highscores.json", 'w')
             
             print "dumping: "
-            print json.dumps(dict, indent=4, sort_keys=True)
+            print json.dumps(hs_dict, indent=4, sort_keys=True)
             
-            json.dump(dict, file, indent=4, sort_keys=True)
+            json.dump(hs_dict, file, indent=4, sort_keys=True)
             
             file.close()
-        return dict
+        return hs_dict
         
     @staticmethod
     def generate_empty_highscores_dict(num_levels):
