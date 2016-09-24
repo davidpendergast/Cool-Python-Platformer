@@ -19,6 +19,7 @@
         {"type":"normal", "x":"1344", "y":"-192", "width":"64", "height":"32"},
         {"type":"normal", "x":"1472", "y":"-256", "width":"96", "height":"32"},
         {"type":"finish", "x":"1512", "y":"-344", "width":"16", "height":"16"}
+        
     ],
     "enemies": []
 }
