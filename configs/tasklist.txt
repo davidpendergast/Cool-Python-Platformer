@@ -21,7 +21,7 @@ DONE    separate files for default settings and user settings, so that user sett
             gitignored.
     
     Level Building:
-        10 intro levels each with unique challenge and charm (1/10 complete)
+        10 intro levels each with unique challenge and charm (2/10 complete)
             Basic Movement
 DONE        Moving Platforms
             Walljumping
@@ -29,7 +29,7 @@ DONE        Moving Platforms
             Saving Jumps
             Enemies
             Boost Jumps
-            ???
+DONE        Crushing
             ???
             ???
     
