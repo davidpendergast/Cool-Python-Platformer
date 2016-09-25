@@ -20,6 +20,10 @@ SCOPE = {
 }
 
 
+class MalformedException(Exception):
+    pass
+
+
 def badfix(string):
     string = string.replace(',', ' ')
     for op in EMDAS:
@@ -48,8 +52,7 @@ def paren(string):
                 node = descend(tree, depth)
                 node += [x for x in n.split(' ') if x]
     if depth != 0:
-        print('Warning: malformed expression:')
-        print(string)
+        raise MalformedException('Unmatched parenthesis in expression', string)
     return tree
 
 
@@ -81,8 +84,7 @@ def expression(tree):
         f = expression(tree[0])
         args = [expression(arg) for arg in tree[1]]
         return lambda s: f(s)([arg(s) for arg in args])
-    print('Warning: malformed expression:')
-    print(tree)
+    raise MalformedException('Unable to parse expression', tree)
     return lambda s: None
 
 
