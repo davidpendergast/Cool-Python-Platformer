@@ -7,6 +7,7 @@ from StringIO import StringIO
 import pygame
 
 import phys_objects
+import paths
 import gamestate
 import equations
 import options
@@ -296,12 +297,12 @@ class LevelReader:
                         if "x_path" in elem and "y_path" in elem:
                             x_path = equations.pythonify(str(elem["x_path"]))
                             y_path = equations.pythonify(str(elem["y_path"]))
-                            path = phys_objects.Path(x_path, y_path)
+                            path = paths.Path(x_path, y_path)
                         elif "x_points" in elem and "y_points" in elem and "speed" in elem:
                             x_points = elem["x_points"]
                             y_points = elem["y_points"]
                             speed = elem["speed"]
-                            path = phys_objects.PointPath(x_points, y_points, speed)
+                            path = paths.PointPath(x_points, y_points, speed)
                         
                         block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), path)
                     else:

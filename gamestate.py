@@ -5,6 +5,7 @@ import json
 import phys_objects
 import drawing
 import levels
+import collisions
 from options import HardSettings
 from utilities import Utils
 
@@ -32,8 +33,8 @@ class PlayingState(GameState):
         
         self._level_manager = levels.LevelManager(self.settings)
         
-        self.pusher = phys_objects.CollisionFixer()
-        self.rf_fixer = phys_objects.ReferenceFrameFixer()
+        self.pusher = collisions.CollisionFixer()
+        self.rf_fixer = collisions.ReferenceFrameFixer()
         self.drawer = drawing.Drawer()
         
         self.keys = {'left':False, 'right':False, 'jump':False}
