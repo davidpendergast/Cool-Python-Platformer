@@ -59,6 +59,3 @@ class HardSettings:
     def fps():
         return 60
         
-        
-        
-        

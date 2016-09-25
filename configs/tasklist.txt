@@ -3,7 +3,7 @@
 @~~~~~~~~~~~~~~~~~@
     High Scores:
 DONE    functionality 
-        in-game indicators
+DONE    in-game indicators
     
     Menus:
         main menu
@@ -58,7 +58,7 @@ DONE    use lists instead of groups
 @~~~~~~~~~~~~@
 
     Physics Glitches:
-        walljumping on a platform moving away from you
+!!!     walljumping on a platform moving away from you
             --player needs to snap to moving vertical surfaces
 DONE    weird smushes
             --probably need to look at velocities of blocks before smushing. A platform moving 

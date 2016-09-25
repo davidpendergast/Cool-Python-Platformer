@@ -3,6 +3,7 @@ import sets
 import math
 
 import equations
+import paths
 from utilities import Utils
 
 class Box(pygame.sprite.Sprite):
@@ -135,7 +136,7 @@ class Box(pygame.sprite.Sprite):
         return -1
     
     def __str__(self):
-        return "Box"+str(self.get_xy())
+        return "Box"
         
     def is_block(self): return False
     def is_actor(self): return False
@@ -144,6 +145,7 @@ class Box(pygame.sprite.Sprite):
     def is_finish_block(self): return False
     def is_enemy(self): return False
     def is_ghost(self): return False
+    
     
 class Block(Box):
     BAD_COLOR = (255, 0, 0)
@@ -167,7 +169,7 @@ class Block(Box):
     def is_block(self): return True
         
     def __str__(self):
-        return "Block"+str(self.get_xy())
+        return "Block"
         
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
@@ -193,7 +195,7 @@ class MovingBlock(Block):
     def is_moving_block(self): return True
         
     def __str__(self):
-        return "Moving_Block"+str(self.get_xy())
+        return "Moving_Block"
     
     
 class Actor(Box):
@@ -320,9 +322,10 @@ class Actor(Box):
         
     def __str__(self):
         if self.is_player:
-            return "Player"+str(self.get_xy())
+            return "Player"
         else:
-            return "Actor"+str(self.get_xy())
+            return "Actor"
+        
         
 class BadBlock(Block):
     def __init__(self, width, height, color=None):
@@ -339,7 +342,7 @@ class BadBlock(Block):
     def is_bad_block(self): return True
         
     def __str__(self):
-        return "Bad_Block"+str(self.get_xy()) 
+        return "Bad_Block"
         
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)
@@ -381,7 +384,6 @@ class Enemy(Actor):
                         obj.jumps = 1
                 else:
                     # kill the player
-                    print "dir="+dir
                     obj.kill(" an enemy.")
         elif obj.is_solid and (dir == "RIGHT" or dir == "LEFT"):
             self.direction = -self.direction
@@ -389,7 +391,7 @@ class Enemy(Actor):
     def is_enemy(self): return True    
          
     def __str__(self):
-        return "Enemy"+str(self.get_xy()) 
+        return "Enemy"
             
     @staticmethod
     def get_stupid_walker_enemy(x, y, direction = -1):
@@ -428,255 +430,9 @@ class FinishBlock(Block):
     def is_finish_block(self): return True
     
     def __str__(self):
-        return "Finish_Block"+str(self.get_xy())        
+        return "Finish_Block"    
             
-class CollisionFixer:
-    def __init__(self):
-        self.thresh = 0.4
-        
-    def solve_collisions(self, group):
-        unmovables = []
-        movables = []
-        actors = []
-        
-        for sprite in group:
-            if sprite.is_solid == False:
-                continue
-            elif sprite.is_pushable:
-                movables.append(sprite)
-                if sprite.is_actor():
-                    actors.append(sprite)
-            else:
-                unmovables.append(sprite)
-        
-        for sprite in movables: # solving movable-unmovable coliisions
-            colliding_with = [x for x in unmovables if self.really_intersects(sprite.rect, x.rect, self.thresh)]
-            for other in colliding_with:
-                self.solve_pushout_collision(other, sprite)
-        
-        for sprite in actors:   # Checking for crushed actors
-            colliding_with = [x for x in unmovables if self.really_intersects(sprite.rect, x.rect, self.thresh)]
-            for obj in colliding_with:
-                direction = self.intersect_dir(obj.rect, sprite.rect, self.thresh)
-                if direction != None and direction != "NONE":
-                    crushed = (direction == "TOP" and obj.vy() > 0) or \
-                        (direction == "BOTTOM" and obj.vy() < 0) or \
-                        (direction == "LEFT" and obj.vx() > 0) or \
-                        (direction == "RIGHT" and obj.vx() < 0)
-                    if crushed:
-                        sprite.is_crushed = True
-                        break
-                    
-        for sprite in actors: # Setting is_grounded, is_left_walled, is_right_walled for each actor
-            full_rect = sprite.rect
-            bot_rect  = pygame.Rect(full_rect.x, full_rect.bottom, full_rect.width, 1).inflate(-full_rect.width*self.thresh, 0) # creating a skinny rect that lies directly underneath the sprite.
-            left_rect = pygame.Rect(full_rect.x-1, full_rect.y, 1, full_rect.height).inflate(0, -full_rect.height*self.thresh)
-            right_rect= pygame.Rect(full_rect.right, full_rect.y, 1, full_rect.height).inflate(0, -full_rect.height*self.thresh)
             
-            candidates = self.rect_collide(full_rect.inflate(2, 2), unmovables)
-            
-            bot_collisions = self.rect_collide(bot_rect, candidates)
-            if len(bot_collisions) > 0:
-                sprite.is_grounded = True
-                for othersprite in bot_collisions:  # setting toe collision states
-                    coll = self.rect_intersect(othersprite.rect, bot_rect)
-                    
-                    if coll.left == bot_rect.left:
-                        sprite.is_left_toe_grounded = True
-                    if coll.right == bot_rect.right:
-                        sprite.is_right_toe_grounded = True
-                    if sprite.is_left_toe_grounded and sprite.is_right_toe_grounded:
-                        break
-                
-            if len(self.rect_collide(left_rect, candidates)) > 0:
-                sprite.is_left_walled = True 
-            if len(self.rect_collide(right_rect, candidates)) > 0:
-                sprite.is_right_walled = True
-        for sprite in movables: # solving movable-movable collisions
-            colliding_with = [x for x in movables if self.really_intersects(sprite.rect, x.rect, self.thresh) and sprite is not x]
-            for other in colliding_with:
-                if other != sprite:
-                    dir = self.intersect_dir(other.rect, sprite.rect, 0.2)
-                    sprite.collided_with(other, dir)
-        
-    def solve_pushout_collision(self, unmovable, movable):
-        assert unmovable.is_pushable == False and movable.is_pushable == True
-        v_box = movable.rect.copy()
-        v_box.inflate_ip(-v_box.width * self.thresh, 0)
-        
-        intersect = self.rect_intersect(unmovable.rect, v_box)  # vertical correction
-        if intersect != None:
-            if intersect.bottom == v_box.bottom:    # collision from bottom
-                movable.rect.move_ip(0, -intersect.height)
-                if movable.vy() > 0:
-                    movable.set_vy(0)
-                if movable.rf_parent != None:
-                    movable.rf_parent.remove_from_rf(movable)
-                unmovable.add_to_rf(movable)
-                movable.collided_with(unmovable, "BOTTOM")
-                unmovable.collided_with(movable, "TOP")
-            elif intersect.top == v_box.top:        # collision from top
-                movable.rect.move_ip(0, intersect.height)
-                if movable.vy() < 0:
-                    movable.set_vy(0)
-                movable.collided_with(unmovable, "TOP")
-                unmovable.collided_with(movable, "BOTTOM")
-                
-        h_box = movable.rect.copy()
-        h_box.inflate_ip(0, -h_box.height * self.thresh)
-
-        intersect = self.rect_intersect(unmovable.rect, h_box)  # horizontal correction
-        if intersect != None:
-            if intersect.left == h_box.left:
-                movable.rect.move_ip(intersect.width, 0)
-                movable.set_vx(0)
-                movable.set_ax(0)
-                movable.collided_with(unmovable, "LEFT")
-                unmovable.collided_with(movable, "RIGHT")
-            elif intersect.right == h_box.right:
-                movable.rect.move_ip(-intersect.width, 0)
-                movable.set_vx(0)
-                movable.set_ax(0)
-                movable.collided_with(unmovable, "RIGHT")
-                unmovable.collided_with(movable, "LEFT")
-        
-    def rect_intersect(self, r1, r2):
-        if not r1.colliderect(r2):
-            return None
-        
-        left  = max(r1.x, r2.x)
-        right = min(r1.x + r1.width, r2.x + r2.width)
-        top   = max(r1.y, r2.y)
-        bot   = min(r1.y + r1.height, r2.y + r2.height)
-        
-        return pygame.Rect(left, top, right-left, bot-top)
-        
-    def intersect_dir(self, r1, r2, thresh):
-        "determines the direction from which r1 collides with r2"
-        if not self.really_intersects(r1, r2, thresh):
-            return "NONE"
-        
-        h_box = self.h_box(r2, thresh)
-        v_box = self.v_box(r2, thresh)
-        
-        h_intersection = self.rect_intersect(r1, h_box)
-        v_intersection = self.rect_intersect(r1, v_box)
-        
-        if h_intersection != None and v_intersection != None:
-            # Colliding on both the guide rectangles, choose the one with larger overlap
-            if h_intersection.width < v_intersection.height:
-                v_intersection = None
-            else:
-                h_intersection = None
-        
-        if h_intersection == None:
-            if v_intersection.centery - v_box.centery > 0:
-                return "BOTTOM"
-            else:
-                return "TOP"
-        else:
-            if h_intersection.centerx - h_box.centerx > 0:
-                return "RIGHT"
-            else:
-                return "LEFT"
-        
-    def really_intersects(self, movable_rect, unmovable_rect, thresh):
-        h_box = self.h_box(movable_rect, thresh)
-        v_box = self.v_box(movable_rect, thresh)
-        
-        return self.rect_intersect(h_box, unmovable_rect) != None or self.rect_intersect(v_box, unmovable_rect) != None
-
-    def rect_collide(self, rect, sprite_list):
-        "Finds all the sprites in Group (or list) spritegroup that collide with given rect. Returns a list of those sprites."
-        return sorted([sprite for sprite in sprite_list if rect.colliderect(sprite.rect)])
-        
-    def h_box(self, rect, thresh):
-        h_box = rect.copy()
-        h_box.inflate_ip(0, -h_box.height * thresh)
-        return h_box
-        
-    def v_box(self, rect, thresh):
-        v_box = rect.copy()
-        v_box.inflate_ip(-v_box.width * thresh, 0)
-        return v_box
-        
-        
-class ReferenceFrameFixer:
-    def __init__(self):
-        pass
-        
-    def solve_rfs(self, group):
-        to_delete = sets.Set()
-        for box in group:
-            to_delete.clear()
-            for kid in box.rf_children:
-                if not kid.is_still_rf_child_of(box):
-                    to_delete.add(kid)
-            for kid in to_delete:
-                box.remove_from_rf(kid)
-        
-        
-class Path:
-    def __init__(self, x_expression, y_expression, integral=True):
-        self.t = 0;
-        self.x_fun = x_expression
-        self.y_fun = y_expression
-        self.integral=integral
-        
-    def get_xy(self):
-        x = self.x_fun(self.t)
-        y = self.y_fun(self.t)
-        if self.integral:
-            x = int(x + 0.5) # rounding
-            y = int(y + 0.5)
-        return (x,y)
-        
-    def step(self, dt):
-        self.t += dt
-
-        
-class PointPath(Path):  
-    def __init__(self, x_points, y_points, speed=3):
-        self.x_points = x_points
-        self.y_points = y_points
-        self.speed = speed
-        if len(self.x_points) < 2 or len(self.y_points) < 2 or len(self.x_points) != len(self.y_points):
-            raise ValueError("Path given arrays of invalid lengths: x_points="+str(len(self.x_points))+", y_points="+str(len(self.y_points)))
-        self.dest_index = 1
-        
-        Path.__init__(self, self.get_spline_funct(self.x_points[0],self.x_points[1]), self.get_spline_funct(self.y_points[0],self.y_points[1]))
-        
-        self.at_end_of_spline = False
-        
-    def get_xy(self):
-        if self.at_end_of_spline:
-            return (self.x_points[self.dest_index], self.y_points[self.dest_index])
-        else:
-            return Path.get_xy(self)
-            
-    def step(self, dt):
-        if self.at_end_of_spline:
-            #time to move to next spline
-            self.t = 0
-            self.dest_index = (self.dest_index + 1) % len(self.x_points)
-            
-            self.x_fun = self.get_spline_funct(self.x_points[self.dest_index-1], self.x_points[self.dest_index])
-            self.y_fun = self.get_spline_funct(self.y_points[self.dest_index-1], self.y_points[self.dest_index])
-            self.at_end_of_spline = False
-      
-        self.t += dt
-        inner = self.speed * 0.01 * self.t
-        if inner > math.pi:
-            self.at_end_of_spline = True
-        
-    def get_spline_funct(self, x1, x2):
-        d = (x2 - x1)
-        if d == 0:
-            return equations.pythonify(str(x1))
-        spline_string = "(+ "+str(x1)+" (* (/ "+str(d)+" 2) (- 1 (cos (* "+str(self.speed)+" 0.01 t)))))"
-        return equations.pythonify(spline_string)
-
-        
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, (x, y), color=(200, 128, 128)):
         pygame.sprite.Sprite.__init__(self)
@@ -691,4 +447,4 @@ class Ghost(pygame.sprite.Sprite):
     def is_ghost(self): return True
         
     def __str__(self):
-        return "Ghost"+str(self.get_xy()) 
+        return "Ghost"
