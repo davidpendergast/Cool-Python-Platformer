@@ -63,20 +63,24 @@ def expression(tree):
             return lambda s: s[n]
     if len(tree) == 1:
         return expression(tree[0])
-    if len(tree) == 2:
-        f = expression(tree[0])
-        args = [expression(arg) for arg in tree[1]]
-        return lambda s: f(s)([arg(s) for arg in args])
     for op in EMDAS.keys():
         if op in tree:
             i = tree.index(op)
             l = tree[:i]
             r = tree[i+1:]
 
+            if l == [] and op == '-':
+                r = expression(r)
+                return lambda s: -1 * r(s)
+
             return EMDAS[op](
                 expression(l),
                 expression(r),
             )
+    if len(tree) == 2:
+        f = expression(tree[0])
+        args = [expression(arg) for arg in tree[1]]
+        return lambda s: f(s)([arg(s) for arg in args])
     print('Warning: malformed expression:')
     print(tree)
     return lambda s: None
