@@ -37,11 +37,11 @@ class Level:
             self.entity_list.remove(obj)
             
         def bring_out_yer_dead(self):
-            self.entity_list = filter(lambda x : not (hasattr(x, "is_dead") and x.id_dead) or x is self.actor, self.entity_list)
+            self.entity_list = filter(lambda x : not (hasattr(x, "is_alive") and not x.is_alive) or x is self.actor, self.entity_list)
             
         def _find_player(self):
             for elem in self.entity_list:
-                if isinstance(elem, phys_objects.Actor) and elem.is_player:
+                if elem.is_actor() and elem.is_player:
                     return elem
             return None
             
@@ -75,13 +75,13 @@ class Theme:
                 raise ValueError("Invalid theme id: "+str(id))
     
     def apply(self, object):
-        if isinstance(object, phys_objects.MovingBlock):
+        if object.is_moving_block():
             object.set_color(self.values["moving_color"], self.values["moving_perturb"], self.values["perturb_grayscale_only"])
-        elif isinstance(object, phys_objects.BadBlock):
+        elif object.is_bad_block():
             object.set_color(self.values["bad_color"], 0)
-        elif isinstance(object, phys_objects.FinishBlock):
+        elif object.is_finish_block():
             object.set_color(self.values["finish_color"], 0)
-        elif isinstance(object, phys_objects.Block):
+        elif object.is_block():
             object.set_color(self.values["normal_color"], self.values["normal_perturb"], self.values["perturb_grayscale_only"])
     
     def __eq__(self, other):

@@ -19,7 +19,7 @@ class Drawer:
                 draw_y = y*self.grid_spacing - self.camera_pos[1]%self.grid_spacing
                 pygame.draw.line(screen,self.grid_color,(0, draw_y), (screen.get_width(), draw_y))
         for sprite in group:
-            if isinstance(sprite, phys_objects.Actor):
+            if sprite.is_actor():
                 self.draw_collision_indicators(sprite)
             screen.blit(sprite.image, (sprite.rect.x - self.camera_pos[0], sprite.rect.y - self.camera_pos[1]))
     

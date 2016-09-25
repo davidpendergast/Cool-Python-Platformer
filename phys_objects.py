@@ -73,6 +73,9 @@ class Box(pygame.sprite.Sprite):
     def y(self):
         return self.rect.y
         
+    def get_xy(self):
+        return (self.x(), self.y())
+        
     def set_vx(self, vx):
         if vx > self.max_vx:
             vx = self.max_vx
@@ -131,6 +134,16 @@ class Box(pygame.sprite.Sprite):
     def get_update_priority(self):
         return -1
     
+    def __str__(self):
+        return "Box"+str(self.get_xy())
+        
+    def is_block(self): return False
+    def is_actor(self): return False
+    def is_moving_block(self): return False
+    def is_bad_block(self): return False
+    def is_finish_block(self): return False
+    def is_enemy(self): return False
+    def is_ghost(self): return False
     
 class Block(Box):
     BAD_COLOR = (255, 0, 0)
@@ -150,6 +163,11 @@ class Block(Box):
         
     def get_update_priority(self):
         return 5
+        
+    def is_block(self): return True
+        
+    def __str__(self):
+        return "Block"+str(self.get_xy())
         
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
@@ -171,6 +189,11 @@ class MovingBlock(Block):
     
     def get_update_priority(self):
         return 4
+        
+    def is_moving_block(self): return True
+        
+    def __str__(self):
+        return "Moving_Block"+str(self.get_xy())
     
     
 class Actor(Box):
@@ -215,6 +238,10 @@ class Actor(Box):
         self.finished_level = False
         self.v = (0, 0)
         self.a = (0, 0.3)
+        
+    def kill(self, message="unknown causes."):
+        self.is_alive = False
+        print str(self)+" was killed by "+message
         
     def jump_action(self):
         if self.is_grounded == False:   # if not grounded, check for walljumps
@@ -265,7 +292,7 @@ class Actor(Box):
         
         #fall detection
         if self.y() >= 2048:
-            self.is_alive = False
+            self.kill("falling too far.")
 
     def collided_with(self, obj, dir="NONE"):
         if obj.is_solid:
@@ -289,18 +316,30 @@ class Actor(Box):
     def get_update_priority(self):
         return 1
         
+    def is_actor(self): return True
+        
+    def __str__(self):
+        if self.is_player:
+            return "Player"+str(self.get_xy())
+        else:
+            return "Actor"+str(self.get_xy())
+        
 class BadBlock(Block):
     def __init__(self, width, height, color=None):
         color = Block.BAD_COLOR if color == None else color
         Block.__init__(self, width, height, color)
     
     def collided_with(self, obj, dir="NONE"):
-        if isinstance(obj, Actor):
-            obj.is_alive = False
+        if obj.is_actor():
+            obj.kill("touching a bad block.")
             
     def get_update_priority(self):
         return 3
-            
+        
+    def is_bad_block(self): return True
+        
+    def __str__(self):
+        return "Bad_Block"+str(self.get_xy()) 
         
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)
@@ -330,18 +369,23 @@ class Enemy(Actor):
         
     def collided_with(self, obj, dir="NONE"):
         Actor.collided_with(self, obj, dir)
-        if isinstance(obj, Actor):
+        if obj.is_actor():
             if obj.is_player:
                 if self.is_stompable and dir == "TOP":
-                    self.is_alive = False
+                    self.kill(" smushing.")
                     obj.set_vy(obj.jump_speed / 2)
                     if obj.jumps == 0:
                         obj.jumps = 1
                 else:
                     # kill the player
-                    obj.is_alive = False
+                    obj.kill(" an enemy.")
         elif obj.is_solid and (dir == "RIGHT" or dir == "LEFT"):
             self.direction = -self.direction
+            
+    def is_enemy(self): return True    
+         
+    def __str__(self):
+        return "Enemy"+str(self.get_xy()) 
             
     @staticmethod
     def get_stupid_walker_enemy(x, y, direction = -1):
@@ -372,10 +416,15 @@ class Enemy(Actor):
 class FinishBlock(Block):
     def __init__(self, width=16, height=16, color=(0, 255, 0)):
         Block.__init__(self, width, height, color)
+        
     def collided_with(self, obj, dir="NONE"):
-        if isinstance(obj, Actor):
+        if obj.is_actor():
             obj.finished_level = True
-           
+            
+    def is_finish_block(self): return True
+    
+    def __str__(self):
+        return "Finish_Block"+str(self.get_xy())        
             
 class CollisionFixer:
     def __init__(self):
@@ -391,7 +440,7 @@ class CollisionFixer:
                 continue
             elif sprite.is_pushable:
                 movables.append(sprite)
-                if isinstance(sprite, Actor):
+                if sprite.is_actor():
                     actors.append(sprite)
             else:
                 unmovables.append(sprite)
@@ -634,3 +683,8 @@ class Ghost(pygame.sprite.Sprite):
 
     def repaint(self):
         self.image.fill(self.color)
+        
+    def is_ghost(self): return True
+        
+    def __str__(self):
+        return "Ghost"+str(self.get_xy()) 
