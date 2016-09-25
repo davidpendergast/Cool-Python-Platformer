@@ -368,6 +368,9 @@ class Enemy(Actor):
         return 2
         
     def collided_with(self, obj, dir="NONE"):
+        if not self.is_alive:
+            print "I'm dead! no colliding for me today!"
+            return
         Actor.collided_with(self, obj, dir)
         if obj.is_actor():
             if obj.is_player:
@@ -378,6 +381,7 @@ class Enemy(Actor):
                         obj.jumps = 1
                 else:
                     # kill the player
+                    print "dir="+dir
                     obj.kill(" an enemy.")
         elif obj.is_solid and (dir == "RIGHT" or dir == "LEFT"):
             self.direction = -self.direction
@@ -560,7 +564,7 @@ class CollisionFixer:
         
         if h_intersection != None and v_intersection != None:
             # Colliding on both the guide rectangles, choose the one with larger overlap
-            if h_intersection.width > v_intersection.height:
+            if h_intersection.width < v_intersection.height:
                 v_intersection = None
             else:
                 h_intersection = None

@@ -39,6 +39,9 @@ DONE    fix or remove switches
         blocks that fall when you stand on them too long
         blocks that poof in and out of existence
         
+        unify Block, MovingBlock, BadBlock, and FinishBlock into one class
+            --all do pretty much the same thing, right?
+        
     Optimizations:
         collision detection
             --right now it's ~bad~
