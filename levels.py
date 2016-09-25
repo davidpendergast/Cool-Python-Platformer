@@ -127,6 +127,12 @@ class LevelManager:
     def get_num_levels(self):
         return len(self.level_filenames)
         
+    def get_best_level_time(self, level_num):
+        return self.best_individual_scores[level_num]
+    
+    def get_best_run_time(self):
+        return self.best_overall_run_total
+        
     def load_level(self, num, actor):
         level = LevelReader.load(self.file_dir + "/" + self.level_filenames[num])
         if level == None:

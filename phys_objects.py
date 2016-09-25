@@ -136,7 +136,7 @@ class Box(pygame.sprite.Sprite):
         return -1
     
     def __str__(self):
-        return "Box"+str(self.get_xy())
+        return "Box"
         
     def is_block(self): return False
     def is_actor(self): return False
@@ -169,7 +169,7 @@ class Block(Box):
     def is_block(self): return True
         
     def __str__(self):
-        return "Block"+str(self.get_xy())
+        return "Block"
         
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
@@ -195,7 +195,7 @@ class MovingBlock(Block):
     def is_moving_block(self): return True
         
     def __str__(self):
-        return "Moving_Block"+str(self.get_xy())
+        return "Moving_Block"
     
     
 class Actor(Box):
@@ -322,9 +322,9 @@ class Actor(Box):
         
     def __str__(self):
         if self.is_player:
-            return "Player"+str(self.get_xy())
+            return "Player"
         else:
-            return "Actor"+str(self.get_xy())
+            return "Actor"
         
         
 class BadBlock(Block):
@@ -342,7 +342,7 @@ class BadBlock(Block):
     def is_bad_block(self): return True
         
     def __str__(self):
-        return "Bad_Block"+str(self.get_xy()) 
+        return "Bad_Block"
         
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)
@@ -391,7 +391,7 @@ class Enemy(Actor):
     def is_enemy(self): return True    
          
     def __str__(self):
-        return "Enemy"+str(self.get_xy()) 
+        return "Enemy"
             
     @staticmethod
     def get_stupid_walker_enemy(x, y, direction = -1):
@@ -430,7 +430,7 @@ class FinishBlock(Block):
     def is_finish_block(self): return True
     
     def __str__(self):
-        return "Finish_Block"+str(self.get_xy())        
+        return "Finish_Block"    
             
             
 class Ghost(pygame.sprite.Sprite):
@@ -447,4 +447,4 @@ class Ghost(pygame.sprite.Sprite):
     def is_ghost(self): return True
         
     def __str__(self):
-        return "Ghost"+str(self.get_xy()) 
+        return "Ghost"

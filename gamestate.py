@@ -201,10 +201,18 @@ class PlayingState(GameState):
         death_text = self.font.render("Deaths: "+str(self.death_count), True, (255, 255, 255))
         text_height = level_text.get_height()
         
-        time_text = self.font.render("Time: " + Utils.format_time(self.total_time), True, (255, 255, 255))
+        best_total_time = self._level_manager.get_best_run_time()
+        total_time_text_color = self.get_time_display_color(self.total_time, best_total_time, start_color=(255,255,255), end_color=(255,255,255))
+        total_time_text = self.font.render("Total: " + Utils.format_time(self.total_time), True, total_time_text_color)
+        
+        best_level_time = self._level_manager.get_best_level_time(self.level_num)
+        level_time_text_color = self.get_time_display_color(self.level_time, best_level_time)
+        level_time_text = self.font.render("Level: "+Utils.format_time(self.level_time), True, level_time_text_color)
+        
         screen.blit(level_text, (0, 0))
         screen.blit(level_title, (0, text_height))
-        screen.blit(time_text, (screen.get_width()/2 - time_text.get_width()/2, 0))
+        screen.blit(total_time_text, (screen.get_width()/2 - total_time_text.get_width()/2, 0))
+        screen.blit(level_time_text, (screen.get_width()/2 - level_time_text.get_width()/2, text_height))
         screen.blit(death_text, (screen.get_width() - death_text.get_width(), 0))
         
         standard_width = HardSettings.standard_size()[0]
@@ -214,6 +222,20 @@ class PlayingState(GameState):
             xoffset = (screen.get_width() - standard_width) / 2
             yoffset = (screen.get_height() - standard_height) / 2
             pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,standard_width,standard_height), 1)
+            
+    def get_time_display_color(self, current_time, best_time, start_color=(0, 255, 0), end_color=(255, 255, 100), fail_color=(255, 0, 0)):
+        if best_time == None:
+            return start_color
+        elif current_time > best_time or best_time <= 0:
+            return fail_color
+        else:
+            val = current_time/float(best_time)
+            return (
+                int(start_color[0] + val*(end_color[0]-start_color[0])),
+                int(start_color[1] + val*(end_color[1]-start_color[1])), 
+                int(start_color[2] + val*(end_color[2]-start_color[2]))
+            )
+           
        
 class EditingState(GameState):
     pass

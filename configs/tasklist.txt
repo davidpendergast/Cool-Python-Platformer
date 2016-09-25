@@ -3,7 +3,7 @@
 @~~~~~~~~~~~~~~~~~@
     High Scores:
 DONE    functionality 
-        in-game indicators
+DONE    in-game indicators
     
     Menus:
         main menu
