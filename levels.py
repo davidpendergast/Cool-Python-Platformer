@@ -256,9 +256,10 @@ class LevelManager:
             file = open(self.file_dir+"/highscores.json", 'w')
             
             print "dumping: "
-            print json.dumps(hs_dict, indent=4, sort_keys=True)
-            
-            json.dump(hs_dict, file, indent=4, sort_keys=True)
+            json_str = json.dumps(hs_dict, indent=4, sort_keys=True)
+            json_str = Utils.make_json_pretty(json_str)
+            #json.dump(hs_dict, file, indent=4, sort_keys=True)
+            file.write(json_str)
             
             file.close()
         return hs_dict

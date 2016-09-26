@@ -1,4 +1,5 @@
 import random
+import re
 import options
 
 class Utils:
@@ -62,6 +63,33 @@ class Utils:
                 return filler*pad + string
             else:
                 return string + filler*pad
+    
+    @staticmethod
+    def make_json_pretty(json_string):
+        "makes arrays of numbers all be on the same line."
+        for i in range(0, len(json_string)):
+            if json_string[i] == '[':
+                j = Utils.find_close_paren(json_string, i, '[', ']')
+                array_contents = json_string[i+1:j]
+                pattern = re.compile("([0-9]*[.]?[0-9]*,)*")
+                if pattern.match(array_contents):
+                    print "Found match! "+array_contents
+                    # do thing
+                    
+        return json_string
+                
+    
+    @staticmethod
+    def find_close_paren(string, index, open='(', closed=')'):
+        balance = 0
+        for i in range(index, len(string)):
+            if string[i] == open:
+                balance += 1
+            elif string[i] == closed:
+                balance -= 1
+            if balance == 0:
+                return i
+        raise ValueError("Unbalanced parenthesis in "+string)
                 
 if __name__ == "__main__":
    print "Testing utilities.py..."
