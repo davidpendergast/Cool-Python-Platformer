@@ -53,7 +53,7 @@ class PlayingState(GameState):
         if self.player.is_alive == False and not self.settings.invincible_mode():
             self.player.is_alive = True
             self.death_count += 1
-            self.reset_level()
+            self.reset_level(reset_ghost=False)
         if self.player.finished_level:
             self.next_level(True)
     
@@ -67,7 +67,7 @@ class PlayingState(GameState):
                 self.keys['jump'] = True
             elif event.key == pygame.K_RETURN or event.key == pygame.K_r:
                 self.death_count += 1
-                self.reset_level()
+                self.reset_level(reset_player=True, reset_ghost=False)
                 return True
             elif event.key == pygame.K_BACKSPACE:
                 self.full_reset()
@@ -85,7 +85,7 @@ class PlayingState(GameState):
                 self.prev_level()
                 return True
             elif event.key == pygame.K_DOWN and self.settings.dev_mode():
-                self.reset_level(False)
+                self.reset_level(False, reset_ghost=False)
                 return True
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
@@ -136,8 +136,8 @@ class PlayingState(GameState):
         else:
             self.player.apply_friction(dt)
         
-        self.player.update(dt)
         self.ghost_recorder.update(dt)
+        self.player.update(dt) 
         
         if self.settings.frozen_mode():
             dt = 0
@@ -160,13 +160,13 @@ class PlayingState(GameState):
         self.total_time += 1
         self.level_time += 1
       
-    def reset_level(self, reset_player=True):
+    def reset_level(self, reset_player=True, reset_ghost=True):
         x = self.player.x()
         y = self.player.y()
         
         self.ghost_recorder.clear()
         self.player.reset()
-        self._level_manager.load_level(self.level_num, self.player)
+        self._level_manager.load_level(self.level_num, self.player, reset_ghost)
         
         if not reset_player:
             self.player.set_xy(x,y)

@@ -457,6 +457,7 @@ class GhostRecorder:
 class Ghost(Actor):
     def __init__(self, x_points, y_points, color):
         Actor.__init__(self)
+        self.is_solid = False
         self.set_color(color)
         self.x_points = x_points
         self.y_points = y_points
@@ -473,6 +474,13 @@ class Ghost(Actor):
             self.set_x(self.x_points[self.index])
             self.set_y(self.y_points[self.index])
     
+    def reset(self):
+        self.is_alive = True
+        self.index = 0
+        
+    def is_ghost(self):
+        return True
+    
     @staticmethod
     def from_json(json_data):
         if json_data == None:
@@ -482,7 +490,8 @@ class Ghost(Actor):
         color = json_data["color"]
         
         return Ghost(x_points, y_points, color)
-        
+    
+    
     @staticmethod
     def to_json(ghost):
         if ghost == None:

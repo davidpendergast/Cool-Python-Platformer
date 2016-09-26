@@ -134,7 +134,7 @@ class LevelManager:
     def get_best_run_time(self):
         return self.best_overall_run_total
         
-    def load_level(self, num, actor):
+    def load_level(self, num, actor, reset_ghost=True):
         level = LevelReader.load(self.file_dir + "/" + self.level_filenames[num])
         if level == None:
             print "Level "+str(num)+" failed to load, using Void Level instead."
@@ -142,8 +142,12 @@ class LevelManager:
         
         self.level_num = num
         level.set_actor(actor)
+        
         if self.ghosts[num] != None:
+            if reset_ghost:
+                self.ghosts[num].reset()
             level.add_object(self.ghosts[num])
+            
         self.current_level = level
         
     def update_level_highscore(self, level_num, time, ghost_recorder=None):
