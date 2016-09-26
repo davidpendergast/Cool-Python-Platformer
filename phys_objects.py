@@ -118,7 +118,10 @@ class Box(pygame.sprite.Sprite):
     def collided_with(self, obj, direction="NONE"):
         "direction = side of self that touched obj. Valid inputs are TOP, BOTTOM, LEFT, RIGHT, NONE"
         pass
-        
+    
+    def get_color(self):
+        return self.color
+    
     def set_color(self, color, perturb_color=0, only_greyscale=True):
         self.color = Utils.perturb_color(color, perturb_color, only_greyscale)
         self.repaint()
@@ -433,18 +436,62 @@ class FinishBlock(Block):
         return "Finish_Block"    
             
             
-class Ghost(pygame.sprite.Sprite):
-    def __init__(self, (x, y), color=(200, 128, 128)):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((24, 32))
-        self.color = color
-        self.repaint()
-        self.rect = pygame.Rect(x, y, 24, 32)
+class GhostRecorder:
+    def __init__(self, actor_to_track):
+       self.actor_to_track = actor_to_track
+       self.x_points = []
+       self.y_points = []
+    
+    def update(self, dt):
+        if self.actor_to_track.is_alive:
+            self.x_points.append(self.actor_to_track.x())
+            self.y_points.append(self.actor_to_track.y())
+            
+    def to_ghost(self):
+        return Ghost(self.x_points, self.y_points, self.actor_to_track.get_color())
+    
+    def clear(self):
+        self.x_points = []
+        self.y_points = []
 
-    def repaint(self):
-        self.image.fill(self.color)
+class Ghost(Actor):
+    def __init__(self, x_points, y_points, color):
+        Actor.__init__(self)
+        self.set_color(color)
+        self.x_points = x_points
+        self.y_points = y_points
+        self.index = 0
         
-    def is_ghost(self): return True
+        # if len(x_points) != len(y_points):
+            # raise ValueError("Unequal array sizes for Ghost: "+str(len(x_points)+" != "+str(len(y_points))
+
+    def update(self, dt):
+        self.index += 1
+        if self.index >= len(self.x_points):
+            self.is_alive = False
+        else:
+            self.set_x(self.x_points[self.index])
+            self.set_y(self.y_points[self.index])
+    
+    @staticmethod
+    def from_json(json_data):
+        if json_data == None:
+            return None
+        x_points = json_data["x_points"]
+        y_points = json_data["y_points"]
+        color = json_data["color"]
         
-    def __str__(self):
-        return "Ghost"
+        return Ghost(x_points, y_points, color)
+        
+    @staticmethod
+    def to_json(ghost):
+        if ghost == None:
+            return None
+        else:
+            c = ghost.get_color()
+            return {
+                "x_points":ghost.x_points,
+                "y_points":ghost.y_points,
+                "color":[c[0], c[1], c[2]]
+            }
+        

@@ -12,6 +12,7 @@ class Settings:
             data = json.load(data_file)
             self.__is_dev = data["dev_mode"]
             self.__level_path = data["level_path"] 
+            self.__color = data["color"]
         
         self.create_local_settings_if_needed()
         print "Reading " + Settings.local_settings_path + "..."
@@ -19,6 +20,7 @@ class Settings:
             data = json.load(data_file)
             if "dev_mode" in data: self.__is_dev = data["dev_mode"]
             if "level_path" in data: self.__level_path = data["level_path"]
+            if "color" in data: self.__color = data["color"]
             
         self.__show_grid = False
         self.__invincible_mode = False
@@ -41,6 +43,8 @@ class Settings:
     def set_frozen_mode(self, val):
         if self.dev_mode():
             self.__frozen_mode = val   
+    def get_color(self):
+        return self.__color
     def create_local_settings_if_needed(self):
         if os.path.isfile(Settings.local_settings_path):
             return

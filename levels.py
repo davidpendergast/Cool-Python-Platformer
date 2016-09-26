@@ -123,6 +123,7 @@ class LevelManager:
         self.best_overall_run_total = Utils.unformat_time(highscores["best_overall_run_total"])
         self.best_individual_scores = [Utils.unformat_time(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
         self.best_overall_run_scores = [Utils.unformat_time(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
+        self.ghosts = [phys_objects.Ghost.from_json(g) for g in highscores["ghosts"]]
         
     def get_num_levels(self):
         return len(self.level_filenames)
@@ -141,9 +142,11 @@ class LevelManager:
         
         self.level_num = num
         level.set_actor(actor)
+        if self.ghosts[num] != None:
+            level.add_object(self.ghosts[num])
         self.current_level = level
         
-    def update_level_highscore(self, level_num, time):
+    def update_level_highscore(self, level_num, time, ghost_recorder=None):
         dirty = False
     
         current_record = self.best_individual_scores[level_num]
@@ -151,6 +154,8 @@ class LevelManager:
             print "***NEW LEVEL RECORD***"
             print "Level "+str(level_num)+"'s record of "+str(Utils.format_time(current_record))+" broken with "+gamestate.Utils.format_time(time)+"!"
             self.best_individual_scores[level_num] = time
+            if ghost_recorder != None:
+                self.ghosts[level_num] = ghost_recorder.to_ghost()
             dirty = True
         else:
             print "Level "+str(level_num)+" completed! Time: " +str(Utils.format_time(time))+"\t Best: "+gamestate.Utils.format_time(current_record)
@@ -190,6 +195,7 @@ class LevelManager:
         highscores["best_overall_run_total"] = Utils.format_time(self.best_overall_run_total)
         highscores["best_individual_scores"] = [Utils.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["best_overall_run_scores"] = [Utils.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
+        highscores["ghosts"] = [phys_objects.Ghost.to_json(g) for g in self.ghosts]
         
         file = open(self.get_highscores_filename(), 'w')
         
@@ -258,7 +264,8 @@ class LevelManager:
         return {
                 "best_overall_run_total":None,
                 "best_overall_run_scores":[None for i in range(0,num_levels)],
-                "best_individual_scores":[None for i in range(0,num_levels)]
+                "best_individual_scores":[None for i in range(0,num_levels)],
+                "ghosts":[None for i in range(0, num_levels)]
             }
     
     def repair_highscore_data_if_necessary(self, highscore_data):

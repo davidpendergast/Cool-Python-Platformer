@@ -22,7 +22,8 @@ class GameState:
 class PlayingState(GameState):
     def __init__(self, settings):
         self.settings = settings
-        self.player = phys_objects.Actor(24, 32, (128, 128, 255))
+        self.player = phys_objects.Actor(24, 32, settings.get_color())
+        self.ghost_recorder = phys_objects.GhostRecorder(self.player)
         self.player.is_player = True
         
         self.level_num = 0
@@ -136,6 +137,7 @@ class PlayingState(GameState):
             self.player.apply_friction(dt)
         
         self.player.update(dt)
+        self.ghost_recorder.update(dt)
         
         if self.settings.frozen_mode():
             dt = 0
@@ -162,6 +164,7 @@ class PlayingState(GameState):
         x = self.player.x()
         y = self.player.y()
         
+        self.ghost_recorder.clear()
         self.player.reset()
         self._level_manager.load_level(self.level_num, self.player)
         
@@ -170,6 +173,7 @@ class PlayingState(GameState):
     
     def full_reset(self):
         self.player.reset()
+        self.ghost_recorder.clear()
         self.level_num = 0
         self.total_time = 0
         self.level_time = 0
@@ -179,7 +183,7 @@ class PlayingState(GameState):
     
     def next_level(self, update_highscore=False):
         if update_highscore:
-            self._level_manager.update_level_highscore(self.level_num, self.level_time)
+            self._level_manager.update_level_highscore(self.level_num, self.level_time, self.ghost_recorder)
             
         if self.level_num == self._level_manager.get_num_levels() - 1:
             self.full_reset()
@@ -187,6 +191,7 @@ class PlayingState(GameState):
             self.level_num += 1
             self.level_time = 0
             self.player.reset()
+            self.ghost_recorder.clear()
             self._level_manager.load_level(self.level_num, self.player)
       
     def prev_level(self):
@@ -236,7 +241,3 @@ class PlayingState(GameState):
                 int(start_color[1] + val*(end_color[1]-start_color[1])), 
                 int(start_color[2] + val*(end_color[2]-start_color[2]))
             )
-           
-       
-class EditingState(GameState):
-    pass
