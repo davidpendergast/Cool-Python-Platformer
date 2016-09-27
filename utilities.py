@@ -64,21 +64,29 @@ class Utils:
             else:
                 return string + filler*pad
     
+    paren_dict = {
+        "(":")",
+        "[":"]",
+        "{":"}"
+    }
+    
     @staticmethod
-    def make_json_pretty(json_string):
-        "makes arrays of numbers all be on the same line."
-        for i in range(0, len(json_string)):
-            if json_string[i] == '[':
-                j = Utils.find_close_paren(json_string, i, '[', ']')
-                array_contents = json_string[i+1:j]
-                pattern = re.compile("([0-9]*[.]?[0-9]*,)*")
-                if pattern.match(array_contents):
-                    print "Found match! "+array_contents
-                    # do thing
+    def make_json_pretty(json_string, __nuke_it=True):
+        "removes newlines between elements of innermost lists."
+        m = re.search('[({[]', json_string)    
+        if m == None:
+            if __nuke_it:
+                # json_string has no inner list
+                return re.sub("\s*,\s*", ", ", json_string)
+        else:
+            i = m.start(0)
+            j = Utils.find_close_paren(json_string, i, json_string[i], Utils.paren_dict[json_string[i]])
+            substring = Utils.make_json_pretty(json_string[i+1:j], True)
+            
+            return json_string[:i+1] + substring + Utils.make_json_pretty(json_string[j:], False)
                     
         return json_string
-                
-    
+                    
     @staticmethod
     def find_close_paren(string, index, open='(', closed=')'):
         balance = 0
@@ -92,15 +100,26 @@ class Utils:
         raise ValueError("Unbalanced parenthesis in "+string)
                 
 if __name__ == "__main__":
-   print "Testing utilities.py..."
-   ticks = 1234
-   millis = Utils.ticks_to_millis(ticks)
-   ticks2 = Utils.millis_to_ticks(millis)
-   print str(ticks)+" ticks -> "+str(millis)+" ms -> "+str(ticks2)+" ticks" 
+   # print "Testing utilities.py..."
+   # ticks = 1234
+   # millis = Utils.ticks_to_millis(ticks)
+   # ticks2 = Utils.millis_to_ticks(millis)
+   # print str(ticks)+" ticks -> "+str(millis)+" ms -> "+str(ticks2)+" ticks" 
    
-   formatted = Utils.format_time(ticks)
-   unformatted = Utils.unformat_time(formatted)
+   # formatted = Utils.format_time(ticks)
+   # unformatted = Utils.unformat_time(formatted)
    
-   print str(ticks)+" ticks -> "+formatted+" -> "+str(unformatted)+" ticks"
+   # print str(ticks)+" ticks -> "+formatted+" -> "+str(unformatted)+" ticks"
+   
+    l = [
+        "45, \n36",
+        "45, \n36, \nnull, \ndogs",
+        "[45, \n36, \nnull, \ndogs]",
+        "[45, \n{36, \nnull}, \ndogs]"
+        
+    ]
+    for test_string in l:
+        print "\n"
+        print test_string + " -> "+Utils.make_json_pretty(test_string)
    
     

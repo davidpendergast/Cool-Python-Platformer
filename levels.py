@@ -207,7 +207,9 @@ class LevelManager:
             print "dumping: "
             print json.dumps(highscores, indent=4, sort_keys=True)
         
-        json.dump(highscores, file, indent=4, sort_keys=True)
+        json_string = json.dumps(highscores, indent=4, sort_keys=True)
+        json_string = Utils.make_json_pretty(json_string)
+        file.write(json_string)
         
         file.close()
         
