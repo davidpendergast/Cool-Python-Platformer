@@ -100,17 +100,6 @@ class Utils:
         raise ValueError("Unbalanced parenthesis in "+string)
                 
 if __name__ == "__main__":
-   # print "Testing utilities.py..."
-   # ticks = 1234
-   # millis = Utils.ticks_to_millis(ticks)
-   # ticks2 = Utils.millis_to_ticks(millis)
-   # print str(ticks)+" ticks -> "+str(millis)+" ms -> "+str(ticks2)+" ticks" 
-   
-   # formatted = Utils.format_time(ticks)
-   # unformatted = Utils.unformat_time(formatted)
-   
-   # print str(ticks)+" ticks -> "+formatted+" -> "+str(unformatted)+" ticks"
-   
     l = [
         "45, \n36",
         "45, \n36, \nnull, \ndogs",
