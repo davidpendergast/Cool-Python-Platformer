@@ -22,7 +22,7 @@ DONE    separate files for default settings and user settings, so that user sett
     
     Level Building:
         10 intro levels each with unique challenge and charm (2/10 complete)
-            Basic Movement
+DONE        Basic Movement
 DONE        Moving Platforms
             Walljumping
             Bad Blocks
