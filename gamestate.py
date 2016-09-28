@@ -10,6 +10,9 @@ from options import HardSettings
 from utilities import Utils
 
 class GameState:
+    def __init__(self, settings):
+        self.settings = settings
+        self.state_manager = None # gets set when gamestate is added to a manager
     def pre_event_update(self):
         pass
     def handle_event(self, event):
@@ -19,9 +22,58 @@ class GameState:
     def draw(self, screen):
         pass
         
+class GameStateManager(GameState):
+    # state identifiers
+    MAIN_MENU_STATE = "menu_state"
+    PLAYING_STATE = "playing_state"
+    EDITTING_STATE = "editting_state"
+    GAME_OVER_STATE = "game_over_state"
+    
+    def __init__(self, settings):
+        self.states = {
+            GameStateManager.MAIN_MENU_STATE:None,
+            GameStateManager.PLAYING_STATE:None,
+            GameStateManager.EDITTING_STATE:None,
+            GameStateManager.GAME_OVER_STATE:None
+        }
+        self.settings = settings
+        self.current_state_id = None
+    
+    def set_state(self, state_id, gamestate):
+        gamestate.state_manager = self
+        self.states[state_id] = gamestate
+    
+    def get_state(self, state_id):
+        return self.states[state_id]
+    
+    def get_current_state(self):
+        if self.current_state_id == None:
+            return None
+        else:
+            return self.states[self.current_state_id]
+    
+    def set_current_state(self, state_id):
+        self.current_state_id = state_id
+
+    def pre_event_update(self):
+        if self.get_current_state() != None:
+            self.get_current_state().pre_event_update()
+        
+    def handle_event(self, event):
+        if self.get_current_state() != None:
+            self.get_current_state().handle_event(event)
+        
+    def update(self, dt):
+        if self.get_current_state() != None:
+            self.get_current_state().update(dt)
+        
+    def draw(self, screen):
+        if self.get_current_state() != None:
+            self.get_current_state().draw(screen)
+        
 class PlayingState(GameState):
     def __init__(self, settings):
-        self.settings = settings
+        GameState.__init__(self, settings)
         self.player = phys_objects.Actor(24, 32, settings.get_color())
         self.ghost_recorder = phys_objects.GhostRecorder(self.player)
         self.player.is_player = True

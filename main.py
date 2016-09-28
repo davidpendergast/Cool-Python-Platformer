@@ -7,11 +7,16 @@ import drawing
 import gamestate
 from options import Settings
 from options import HardSettings
+from gamestate import GameStateManager, PlayingState
 
 pygame.init()
 
 settings = Settings()
-game = gamestate.PlayingState(settings)
+gamestate_manager = GameStateManager(settings)
+playing = PlayingState(settings)
+gamestate_manager.set_state(GameStateManager.PLAYING_STATE, playing)
+
+gamestate_manager.set_current_state(GameStateManager.PLAYING_STATE)
 
 size = HardSettings.standard_size()
 if settings.dev_mode():
@@ -22,21 +27,20 @@ still_running = True
 clock = pygame.time.Clock()
 FPS = HardSettings.fps()
 
-current_gamestate = game
-actor = game.player  # The player's character
+actor = playing.player  # The player's character
 
 while still_running:
-    current_gamestate.pre_event_update()
+    gamestate_manager.pre_event_update()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             still_running = False
         else:
-            current_gamestate.handle_event(event)
+            gamestate_manager.handle_event(event)
             
     dt = 1
-    game.update(dt)
-    game.draw(screen)
+    gamestate_manager.update(dt)
+    gamestate_manager.draw(screen)
 
     pygame.display.flip()
     clock.tick(FPS)
