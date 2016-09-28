@@ -12,7 +12,7 @@ DONE    high score ghosts
             --pretty much just a: 
                 start button
                 level_pack selection
-        game completed menu
+NO?     game completed menu
             --would show your times on each level, and their difference from high scores
             --option to play again
             --option to save replay? <- this should probably only happen when a record is broken
@@ -20,9 +20,10 @@ DONE    high score ghosts
     Settings:
 DONE    separate files for default settings and user settings, so that user settings can be
             gitignored.
+        way to edit settings in-game
     
     Level Building:
-        10 intro levels each with unique challenge and charm (2/10 complete)
+        10 intro levels each with unique challenge and charm (3/10 complete)
 DONE        Basic Movement
 DONE        Moving Platforms
             Walljumping
@@ -42,16 +43,26 @@ DONE    fix or remove switches
         
         unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
             --all do pretty much the same thing, right?
+        blocks with individual themes
         
     Optimizations:
         collision detection
             --right now it's ~bad~
+        drawing
+            --also pretty bad
             
     Get rid of pygame built-in data structures:
 DONE    use lists instead of groups
             --sorting by object type makes collision handling more stable with the push-out
                 strategy
     
+    Level Editor:
+        toggleable mode when dev_mode is endable
+        ability to: 
+            pan camera independently of actor position
+            place blocks
+            edit block attributes in game (just edit their json?)
+            save levels out (formatting issues?)
          
             
 @~~~~~~~~~~~~@
