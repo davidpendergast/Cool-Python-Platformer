@@ -4,6 +4,7 @@
     High Scores:
 DONE    functionality 
 DONE    in-game indicators
+DONE    high score ghosts
     
     Menus:
         main menu
@@ -39,7 +40,7 @@ DONE    fix or remove switches
         blocks that fall when you stand on them too long
         blocks that poof in and out of existence
         
-        unify Block, MovingBlock, BadBlock, and FinishBlock into one class
+        unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
             --all do pretty much the same thing, right?
         
     Optimizations:
@@ -94,11 +95,6 @@ DONE    level themes?
     Replays:
         investigation
             how to store?
-                --sequence of player inputs?
-                    would allow for eventual server-side verification of level-completion
-                    potentially delicate
-                    future proof for graphical changes to the game
-                    extremely not future proof to even slight physics changes
                 --sequence of actor positions?
                     slightly more costly to store
                     cheap to play a replay
@@ -106,10 +102,11 @@ DONE    level themes?
                     would get complicated if graphics ever become more complex 
                         --how will animations work?
                             --good reason not to do animations?
+                            --just store animation state along with actor pos?
             should they be saved with highscore data?
                 --makes sense for your own scores, but what if you want to race someone else's 
                     ghosts?
-            super meat boy style replay of all attempts upon completion of level?
+NO          super meat boy style replay of all attempts upon completion of level?
                 --would have to design levels to make dying more frequent
                     --doing this anyways
                     --would probably want to make deaths more 'juicy' as well
@@ -120,10 +117,10 @@ DONE    level themes?
                     --would have to pause timer and sorta interfere with speedrunning flow (?)
                 --current code probably can't handle 100s of actors going at once, especially if 
                     physics/collision calculations are required for each one
-        functionality
         
     Level Builder:
-        no
+        --would require a lot of UI stuff
+        --would require exporting levels to json
         
     Music/Sound:
         --adds a lot to the atmosphere, also to the annoyance
