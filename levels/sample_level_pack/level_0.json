@@ -86,7 +86,8 @@
         
     ],
     "enemies": [],
-    "theme":{
+    "theme":"snow",
+    "theme_cust":{
         "normal_color":[255, 128, 128],
         "normal_perturb":50,
         "perturb_grayscale_only":true,

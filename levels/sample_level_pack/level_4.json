@@ -21,5 +21,6 @@
         {"type":"finish", "x":"1512", "y":"-344", "width":"16", "height":"16"}
         
     ],
-    "enemies": []
+    "enemies": [],
+    "theme": "snow"
 }

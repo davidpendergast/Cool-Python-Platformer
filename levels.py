@@ -106,6 +106,8 @@ class Theme:
 BUILT_IN_THEMES = {
     "ice":Theme().set("normal_color", (145, 200, 220)).set("perturb_grayscale_only", False).set("background_color", (30, 60, 70)),
     "fire":Theme().set("normal_color", (170, 90, 90)).set("perturb_grayscale_only", False).set("background_color", (95, 5, 5)),
+    "forest":Theme().set("normal_color", (80, 165, 60)).set("perturb_grayscale_only", False).set("background_color", (11, 30, 6)),
+    "snow":Theme().set("normal_color", (200, 200, 200)).set("perturb_grayscale_only", True).set("background_color", (50, 50, 50)),
     "rainbow":Theme().set("normal_color", (128, 128, 128)).set("perturb_grayscale_only", False).set("normal_perturb", 128).set("background_color", (0, 0, 0)).set("moving_color", (128, 128, 128)).set("moving_perturb", 128)
 }
        

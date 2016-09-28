@@ -27,5 +27,6 @@
         {"type":"normal", "x":"736", "y":"-1472", "width":"8", "height":"224"},
         {"type":"finish", "x":"840", "y":"-1528", "width":"16", "height":"16"}
     ],
-    "enemies": []
+    "enemies": [],
+    "theme":"forest"
 }
