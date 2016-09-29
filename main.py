@@ -30,7 +30,7 @@ still_running = True
 clock = pygame.time.Clock()
 FPS = HardSettings.fps()
 
-actor = playing.player  # The player's character
+actor = playing.get_player()  # The player's character
 
 while still_running:
     gamestate_manager.pre_event_update()

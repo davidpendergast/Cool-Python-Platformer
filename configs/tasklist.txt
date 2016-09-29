@@ -60,9 +60,12 @@ DONE    use lists instead of groups
     Level Editor:
         toggleable mode when dev_mode is endable
         ability to: 
-            pan camera independently of actor position
+DONE        pan camera independently of actor position
+DONE        select blocks
             place blocks
-            edit block attributes in game (just edit their json?)
+            delete blocks
+            edit block attributes (just edit their json?)
+            zoom view in and out
             save levels out (formatting issues?)
          
             

@@ -126,11 +126,11 @@ class InGameState(GameState):
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
     def get_entities(self):
         return self.platformer_instance.get_entities()   
-    def level_manager(self):
+    def get_level_manager(self):
         return self.platformer_instance.level_manager
     def get_level_num(self):
         return self.platformer_instance.get_level_num()
-    def player(self):
+    def get_player(self):
         return self.platformer_instance.get_player()
     def get_drawer(self):
         return self.platformer_instance.drawer
@@ -178,7 +178,7 @@ class PlayingState(InGameState):
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         
-        self.ghost_recorder = phys_objects.GhostRecorder(self.player())
+        self.ghost_recorder = phys_objects.GhostRecorder(self.get_player())
         self.death_count = 0
         
         self.total_time = 0
@@ -190,14 +190,14 @@ class PlayingState(InGameState):
         self.full_reset() # starts game from scratch
         
     def pre_event_update(self):
-        player = self.player()
+        player = self.get_player()
         if player.is_crushed == True:
             player.is_alive = False
         if player.is_alive == False and not self.settings.invincible_mode():
             player.is_alive = True
             self.death_count += 1
             self.reset_level(reset_ghost=False)
-        if self.player().finished_level:
+        if self.get_player().finished_level:
             self.next_level(True)
     
     def handle_event(self, event):
@@ -223,60 +223,31 @@ class PlayingState(InGameState):
                 return True
             elif event.key == pygame.K_DOWN and self.settings.dev_mode():
                 self.reset_level(False, reset_ghost=False)
-                return True
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.settings.dev_mode():
-            pass
-            # x = event.pos[0]+self.drawer.camera_pos[0]
-            # y = event.pos[1]+self.drawer.camera_pos[1]
-            # grid_size = self.drawer.grid_spacing
-            # grid_x = x - (x % grid_size)
-            # grid_y = y - (y % grid_size)
-            # self.mouse_down_pos = (x,y)
-            # if event.button == 1:
-                # print "Mouse Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]"
-            # elif event.button == 3:
-                # print "{\"type\":\"finish\", \"x\":\""+str(grid_x + grid_size/4) +"\", \"y\":\""+str(grid_y + grid_size/4)+"\", \"width\":\""+str(grid_size/2)+"\", \"height\":\""+str(grid_size/2)+"\"}"
-            
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.settings.dev_mode():
-            pass
-            # x = event.pos[0]+self.drawer.camera_pos[0]
-            # y = event.pos[1]+self.drawer.camera_pos[1]
-            # grid_x = x - (x % self.drawer.grid_spacing)
-            # grid_y = y - (y % self.drawer.grid_spacing)
-            # if self.mouse_down_pos != None:
-                # grid_down_x = self.mouse_down_pos[0] - (self.mouse_down_pos[0] % self.drawer.grid_spacing)
-                # grid_down_y = self.mouse_down_pos[1] - (self.mouse_down_pos[1] % self.drawer.grid_spacing)
-                # if grid_x != grid_down_x or grid_y != grid_down_y:
-                    # #mouse has been dragged across more than one grid square.
-                    # print "Mouse Dragged to form rectangle:["+str(grid_down_x)+", "+str(grid_down_y)+", "+str(grid_x - grid_down_x)+", "+str(grid_y - grid_down_y)+"]"
-                    # print "{\"type\":\"normal\", \"x\":\""+str(grid_down_x)+"\", \"y\":\""+str(grid_down_y)+"\", \"width\":\""+str(grid_x - grid_down_x)+"\", \"height\":\""+str(grid_y - grid_down_y)+"\"}"
-                    # print "\"x_path\":\"(+ "+str((grid_x+grid_down_x)/2)+" (* "+str((grid_x-grid_down_x)/2)+" (cos (* 0.02 t))))\""
-                    # print "\"y_path\":\"(+ "+str((grid_y+grid_down_y)/2)+" (* "+str((grid_y-grid_down_y)/2)+" (sin (* 0.02 t))))\"
-                    
+                return True                    
     
     def update(self, dt):
         self.add_time(dt)
         
         if self.keys['jump']:
-            self.player().jump_action()
+            self.get_player().jump_action()
             self.keys['jump'] = False
         
         if bool(self.keys['left']) ^ bool(self.keys['right']):
             if self.keys['left']: 
-                self.player().move_action(-1)
+                self.get_player().move_action(-1)
             elif self.keys['right']: 
-                self.player().move_action(1)
+                self.get_player().move_action(1)
         else:
-            self.player().apply_friction(dt)
+            self.get_player().apply_friction(dt)
         
         self.ghost_recorder.update(dt)
-        self.player().update(dt) 
+        self.get_player().update(dt) 
         
         if self.settings.frozen_mode():
             dt = 0
         
         for item in self.get_entities():
-            if item is not self.player():
+            if item is not self.get_player():
                 item.update(dt)
         
         self.pusher.solve_collisions(self.get_entities())
@@ -285,7 +256,7 @@ class PlayingState(InGameState):
         self.platformer_instance.current_level().bring_out_yer_dead()
     
     def draw(self, screen):
-        self.get_drawer().update_camera(self.player(), screen.get_width(), screen.get_height())
+        self.get_drawer().update_camera(self.get_player(), screen.get_width(), screen.get_height())
         self.get_drawer().draw(screen, self.get_entities())
         self.draw_gui(screen)
      
@@ -294,7 +265,7 @@ class PlayingState(InGameState):
         self.level_time += 1
     
     def reset_level(self, reset_player=True, reset_ghost=True):
-        player = self.player()
+        player = self.get_player()
         x = player.x()
         y = player.y()
         
@@ -306,7 +277,7 @@ class PlayingState(InGameState):
             player.set_xy(x,y)
     
     def full_reset(self):
-        self.player().reset()
+        self.get_player().reset()
         self.ghost_recorder.clear()
         self.platformer_instance.set_level_num(0)
         self.total_time = 0
@@ -320,20 +291,20 @@ class PlayingState(InGameState):
         if update_highscore:  
             self.platformer_instance.level_manager.update_level_highscore(level_num, self.level_time, self.ghost_recorder)
             
-        if level_num == self.level_manager().get_num_levels() - 1:
+        if level_num == self.get_level_manager().get_num_levels() - 1:
             self.full_reset()
         else:   
             self.platformer_instance.set_level_num(level_num + 1)
             self.level_time = 0
-            self.player().reset()
+            self.get_player().reset()
             self.ghost_recorder.clear()
             self.platformer_instance.load_level()
       
     def prev_level(self):
         "only used in dev mode"
         level_num = self.get_level_num()
-        self.platformer_instance.set_level_num((level_num - 1) % self.level_manager().get_num_levels())
-        self.player().reset()
+        self.platformer_instance.set_level_num((level_num - 1) % self.get_level_manager().get_num_levels())
+        self.get_player().reset()
         self.platformer_instance.load_level()
     
     def draw_gui(self, screen):
@@ -347,15 +318,15 @@ class PlayingState(InGameState):
             pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,standard_width,standard_height), 1)
         
         level_text = self.font.render("Level: "+str(self.get_level_num() + 1), True, (255, 255, 255))
-        level_title = self.font.render(str(self.level_manager().current_level.name), True, (255, 255, 255))
+        level_title = self.font.render(str(self.get_level_manager().current_level.name), True, (255, 255, 255))
         death_text = self.font.render("Deaths: "+str(self.death_count), True, (255, 255, 255))
         text_height = level_text.get_height()
         
-        best_total_time = self.level_manager().get_best_run_time()
+        best_total_time = self.get_level_manager().get_best_run_time()
         total_time_text_color = self.get_time_display_color(self.total_time, best_total_time, start_color=(255, 255, 255), end_color=(255, 255, 255))
         total_time_text = self.font.render("Total: " + Utils.format_time(self.total_time), True, total_time_text_color)
         
-        best_level_time = self.level_manager().get_best_level_time(self.get_level_num())
+        best_level_time = self.get_level_manager().get_best_level_time(self.get_level_num())
         level_time_text_color = self.get_time_display_color(self.level_time, best_level_time)
         level_time_text = self.font.render("Level: "+Utils.format_time(self.level_time), True, level_time_text_color)
         
@@ -417,15 +388,15 @@ class EditingState(InGameState):
             grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
             print "Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]"
             if self.keys['ctrl']:
-                clicked_objs = self.level_manager().current_level.get_objects_at((x,y))
+                pass
+            elif self.keys['shift']:
+                pass
+            else:
+                clicked_objs = self.get_level_manager().current_level.get_objects_at((x,y))
                 if len(clicked_objs) > 0:
                     self.set_selected(clicked_objs[0])
                 else:
                     self.set_selected(None)
-            elif self.keys['shift']:
-                pass
-            else:
-                pass
             
     def update(self, dt):
         self.do_camera_move(dt)
@@ -434,7 +405,7 @@ class EditingState(InGameState):
             dt = 0
         
         for item in self.get_entities():
-            if item is not self.player():
+            if item is not self.get_player():
                 item.update(dt)
         
         self.platformer_instance.current_level().bring_out_yer_dead()
@@ -467,6 +438,9 @@ class EditingState(InGameState):
             print str(self.selected) + " selected!"
             self.selected_old_color = self.selected.color
             self.selected.set_color(EditingState.SELECTED_COLOR)
+    
+    def switching_from(self, new_state_id):
+        self.set_selected(None)
             
             
                 
