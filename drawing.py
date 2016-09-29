@@ -31,6 +31,9 @@ class Drawer:
         rect = box.rect
         self.camera_pos = (rect.x + rect.width/2 - screen_width/2, rect.y + rect.height/2 - screen_height/2)
     
+    def move_camera(self, dx, dy):
+        self.camera_pos = (self.camera_pos[0] + dx, self.camera_pos[1] + dy) 
+    
     def update_background_color(self):
         if self.camera_pos[1] < 512:
             self.background_color = (0,0,0)

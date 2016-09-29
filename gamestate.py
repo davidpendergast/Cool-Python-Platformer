@@ -30,14 +30,14 @@ class GameStateManager(GameState):
     # state identifiers
     MAIN_MENU_STATE = "menu_state"
     PLAYING_STATE = "playing_state"
-    EDITTING_STATE = "editting_state"
+    EDITING_STATE = "editing_state"
     GAME_OVER_STATE = "game_over_state"
     
     def __init__(self, settings):
         self.states = {
             GameStateManager.MAIN_MENU_STATE:None,
             GameStateManager.PLAYING_STATE:None,
-            GameStateManager.EDITTING_STATE:None,
+            GameStateManager.EDITING_STATE:None,
             GameStateManager.GAME_OVER_STATE:None
         }
         self.settings = settings
@@ -65,6 +65,9 @@ class GameStateManager(GameState):
         
         if self.get_current_state() != None:
             self.get_current_state().switching_to(old_state_id)
+            
+        print "GameState changed: "+str(old_state_id)+" -> "+str(state_id)
+        print "Current state: "+str(self.get_current_state())
 
     def pre_event_update(self):
         if self.get_current_state() != None:
@@ -106,11 +109,24 @@ class PlatformerInstance:
     def load_level(self, reset_ghost=True):
         self.level_manager.load_level(self.get_level_num(), self.get_player(), reset_ghost)
     
-        
-class PlayingState(GameState):
+class InGameState(GameState):
     def __init__(self, settings, platformer_instance):
         GameState.__init__(self, settings)
         self.platformer_instance = platformer_instance
+    def get_entities(self):
+        return self.platformer_instance.get_entities()   
+    def level_manager(self):
+        return self.platformer_instance.level_manager
+    def get_level_num(self):
+        return self.platformer_instance.get_level_num()
+    def player(self):
+        return self.platformer_instance.get_player()
+    def drawer(self):
+        return self.platformer_instance.drawer
+        
+class PlayingState(InGameState):
+    def __init__(self, settings, platformer_instance):
+        InGameState.__init__(self, settings, platformer_instance)
         
         self.ghost_recorder = phys_objects.GhostRecorder(self.player())
         self.death_count = 0
@@ -126,9 +142,6 @@ class PlayingState(GameState):
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
         
         self.full_reset() # starts game from scratch
-        
-    def get_entities(self):
-        return self.platformer_instance.get_entities()
         
     def pre_event_update(self):
         player = self.player()
@@ -157,7 +170,10 @@ class PlayingState(GameState):
                 self.full_reset()
                 return True
             elif event.key == pygame.K_g:
-                self.platformer_instance.drawer.show_grid = not self.platformer_instance.drawer.show_grid
+                self.drawer().show_grid = not self.drawer().show_grid
+            elif event.key == pygame.K_e and self.settings.dev_mode():
+                self.state_manager.set_current_state(GameStateManager.EDITING_STATE)
+                return True
             elif event.key == pygame.K_k and self.settings.dev_mode():
                 self.settings.set_invincible_mode(not self.settings.invincible_mode())
             elif event.key == pygame.K_f and self.settings.dev_mode():
@@ -238,20 +254,13 @@ class PlayingState(GameState):
         self.platformer_instance.current_level().bring_out_yer_dead()
     
     def draw(self, screen):
-        self.platformer_instance.drawer.update_camera(self.player(), screen.get_width(), screen.get_height())
-        self.platformer_instance.drawer.draw(screen, self.get_entities())
+        self.drawer().update_camera(self.player(), screen.get_width(), screen.get_height())
+        self.drawer().draw(screen, self.get_entities())
         self.draw_gui(screen)
      
     def add_time(self, t):
         self.total_time += 1
         self.level_time += 1
-      
-    def level_manager(self):
-        return self.platformer_instance.level_manager
-    def get_level_num(self):
-        return self.platformer_instance.get_level_num()
-    def player(self):
-        return self.platformer_instance.get_player()
     
     def reset_level(self, reset_player=True, reset_ghost=True):
         player = self.player()
@@ -339,23 +348,57 @@ class PlayingState(GameState):
             )
 
             
-class EditingState(GameState):
+class EditingState(InGameState):
     def __init__(self, settings, platformer_instance):
-        GameState.__init__(self, settings)
-        self.platformer_instance = platformer_instance
-        pass
+        InGameState.__init__(self, settings, platformer_instance)
+        self.keys = {'left':False, 'right':False, 'up':False, 'down':True}
     def pre_event_update(self):
         pass
     def handle_event(self, event):
-        pass
+        print "gettin events"
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_e:
+                self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
+            elif event.key == pygame.K_g:
+                self.drawer().show_grid = not self.drawer().show_grid
+            elif event.key == pygame.K_a:
+                self.keys['left'] = True
+            elif event.key == pygame.K_d:
+                self.keys['right'] = True
+            elif event.key == pygame.K_w:
+                self.keys['up'] = True
+            elif event.key == pygame.K_s:
+                self.keys['down'] = True
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                self.keys['left'] = False
+            elif event.key == pygame.K_d:
+                self.keys['right'] = False
+            elif event.key == pygame.K_w:
+                self.keys['up'] = False
+            elif event.key == pygame.K_s:
+                self.keys['down'] = False
+            
     def update(self, dt):
-        pass
+        self.do_camera_move(dt)
+        
+    def do_camera_move(self, dt):
+        if bool(self.keys['left']) ^ bool(self.keys['right']):
+            if self.keys['left']: 
+                self.drawer().move_camera(-4, 0)
+            elif self.keys['right']: 
+                self.drawer().move_camera(4, 0)
+        
+        if bool(self.keys['up']) ^ bool(self.keys['down']):
+            if self.keys['up']: 
+                self.drawer().move_camera(0, -4)
+            elif self.keys['down']: 
+                self.drawer().move_camera(0, 4)
+        
     def draw(self, screen):
-        pass 
+        self.drawer().draw(screen, self.get_entities())
+        # self.draw_gui(screen) 
     def switching_to(self, old_state_id):
-        if old_state_id == GameStateManager.PLAYING_STATE:
-            playing = self.state_manager.get_state(GameStateManager.PLAYING_STATE)
-            if playing == None:
-                pass
+        pass
                 
         

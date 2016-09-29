@@ -17,7 +17,7 @@ platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)
 editing = EditingState(settings, platformer_inst)
 gamestate_manager.set_state(GameStateManager.PLAYING_STATE, playing)
-
+gamestate_manager.set_state(GameStateManager.EDITING_STATE, editing)
 
 gamestate_manager.set_current_state(GameStateManager.PLAYING_STATE)
 
