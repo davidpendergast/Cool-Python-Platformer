@@ -7,14 +7,17 @@ import drawing
 import gamestate
 from options import Settings
 from options import HardSettings
-from gamestate import GameStateManager, PlayingState
+from gamestate import GameStateManager, PlayingState, EditingState, PlatformerInstance
 
 pygame.init()
 
 settings = Settings()
 gamestate_manager = GameStateManager(settings)
-playing = PlayingState(settings)
+platformer_inst = PlatformerInstance(settings)
+playing = PlayingState(settings, platformer_inst)
+editing = EditingState(settings, platformer_inst)
 gamestate_manager.set_state(GameStateManager.PLAYING_STATE, playing)
+
 
 gamestate_manager.set_current_state(GameStateManager.PLAYING_STATE)
 
