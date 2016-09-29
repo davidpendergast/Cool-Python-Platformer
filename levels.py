@@ -37,6 +37,9 @@ class Level:
         def remove_object(self, obj):
             self.entity_list.remove(obj)
             
+        def get_objects_at(self, (x, y)):
+            return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]
+            
         def bring_out_yer_dead(self):
             self.entity_list = filter(lambda x : not (hasattr(x, "is_alive") and not x.is_alive) or x is self.actor, self.entity_list)
             

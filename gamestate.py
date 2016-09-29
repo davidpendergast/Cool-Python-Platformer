@@ -113,6 +113,17 @@ class InGameState(GameState):
     def __init__(self, settings, platformer_instance):
         GameState.__init__(self, settings)
         self.platformer_instance = platformer_instance
+        self.keys = {
+            'left':False, 
+            'right':False, 
+            'jump':False,
+            'up':False,
+            'down':False,
+            'shift':False,
+            'ctrl':False
+        }
+        self.mouse_down_pos = None
+        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
     def get_entities(self):
         return self.platformer_instance.get_entities()   
     def level_manager(self):
@@ -121,8 +132,47 @@ class InGameState(GameState):
         return self.platformer_instance.get_level_num()
     def player(self):
         return self.platformer_instance.get_player()
-    def drawer(self):
+    def get_drawer(self):
         return self.platformer_instance.drawer
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                self.keys['left'] = True
+            elif event.key == pygame.K_d:
+                self.keys['right'] = True
+            elif event.key == pygame.K_w:
+                self.keys['jump'] = True
+                self.keys['up'] = True
+            elif event.key == pygame.K_g:
+                self.get_drawer().show_grid = not self.get_drawer().show_grid
+            elif event.key == pygame.K_f and self.settings.dev_mode():
+                self.settings.set_frozen_mode(not self.settings.frozen_mode())
+            elif event.key == pygame.K_w:
+                self.keys['up'] = True
+            elif event.key == pygame.K_s:
+                self.keys['down'] = True
+            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
+                self.keys['ctrl'] = True
+            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
+                self.keys['shift'] = True
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                self.keys['left'] = False
+            elif event.key == pygame.K_d:
+                self.keys['right'] = False
+            elif event.key == pygame.K_w:
+                self.keys['jump'] = False
+                self.keys['up'] = False
+            elif event.key == pygame.K_s:
+                self.keys['down'] = False
+            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
+                self.keys['ctrl'] = False
+            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
+                self.keys['shift'] = False
+    
+    def switching_to(self, prev_state_id):
+        for key in self.keys:
+            self.keys[key] = False
         
 class PlayingState(InGameState):
     def __init__(self, settings, platformer_instance):
@@ -136,10 +186,6 @@ class PlayingState(InGameState):
         
         self.pusher = collisions.CollisionFixer()
         self.rf_fixer = collisions.ReferenceFrameFixer()
-        
-        self.keys = {'left':False, 'right':False, 'jump':False}
-        self.mouse_down_pos = None
-        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
         
         self.full_reset() # starts game from scratch
         
@@ -155,29 +201,20 @@ class PlayingState(InGameState):
             self.next_level(True)
     
     def handle_event(self, event):
+        InGameState.handle_event(self, event)
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                self.keys['left'] = True
-            elif event.key == pygame.K_d:
-                self.keys['right'] = True
-            elif event.key == pygame.K_w:
-                self.keys['jump'] = True
-            elif event.key == pygame.K_RETURN or event.key == pygame.K_r:
+            if event.key == pygame.K_RETURN or event.key == pygame.K_r:
                 self.death_count += 1
                 self.reset_level(reset_player=True, reset_ghost=False)
                 return True
             elif event.key == pygame.K_BACKSPACE:
                 self.full_reset()
                 return True
-            elif event.key == pygame.K_g:
-                self.drawer().show_grid = not self.drawer().show_grid
             elif event.key == pygame.K_e and self.settings.dev_mode():
                 self.state_manager.set_current_state(GameStateManager.EDITING_STATE)
                 return True
             elif event.key == pygame.K_k and self.settings.dev_mode():
                 self.settings.set_invincible_mode(not self.settings.invincible_mode())
-            elif event.key == pygame.K_f and self.settings.dev_mode():
-                self.settings.set_frozen_mode(not self.settings.frozen_mode())
             elif event.key == pygame.K_RIGHT and self.settings.dev_mode():
                 self.next_level()
                 return True
@@ -187,13 +224,6 @@ class PlayingState(InGameState):
             elif event.key == pygame.K_DOWN and self.settings.dev_mode():
                 self.reset_level(False, reset_ghost=False)
                 return True
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_a:
-                self.keys['left'] = False
-            elif event.key == pygame.K_d:
-                self.keys['right'] = False
-            elif event.key == pygame.K_w:
-                self.keys['jump'] = False
         elif event.type == pygame.MOUSEBUTTONDOWN and self.settings.dev_mode():
             pass
             # x = event.pos[0]+self.drawer.camera_pos[0]
@@ -221,14 +251,15 @@ class PlayingState(InGameState):
                     # print "Mouse Dragged to form rectangle:["+str(grid_down_x)+", "+str(grid_down_y)+", "+str(grid_x - grid_down_x)+", "+str(grid_y - grid_down_y)+"]"
                     # print "{\"type\":\"normal\", \"x\":\""+str(grid_down_x)+"\", \"y\":\""+str(grid_down_y)+"\", \"width\":\""+str(grid_x - grid_down_x)+"\", \"height\":\""+str(grid_y - grid_down_y)+"\"}"
                     # print "\"x_path\":\"(+ "+str((grid_x+grid_down_x)/2)+" (* "+str((grid_x-grid_down_x)/2)+" (cos (* 0.02 t))))\""
-                    # print "\"y_path\":\"(+ "+str((grid_y+grid_down_y)/2)+" (* "+str((grid_y-grid_down_y)/2)+" (sin (* 0.02 t))))\""
-
-        if self.keys['jump']:
-            self.player().jump_action()
-            self.keys['jump'] = False
+                    # print "\"y_path\":\"(+ "+str((grid_y+grid_down_y)/2)+" (* "+str((grid_y-grid_down_y)/2)+" (sin (* 0.02 t))))\"
+                    
     
     def update(self, dt):
         self.add_time(dt)
+        
+        if self.keys['jump']:
+            self.player().jump_action()
+            self.keys['jump'] = False
         
         if bool(self.keys['left']) ^ bool(self.keys['right']):
             if self.keys['left']: 
@@ -254,8 +285,8 @@ class PlayingState(InGameState):
         self.platformer_instance.current_level().bring_out_yer_dead()
     
     def draw(self, screen):
-        self.drawer().update_camera(self.player(), screen.get_width(), screen.get_height())
-        self.drawer().draw(screen, self.get_entities())
+        self.get_drawer().update_camera(self.player(), screen.get_width(), screen.get_height())
+        self.get_drawer().draw(screen, self.get_entities())
         self.draw_gui(screen)
      
     def add_time(self, t):
@@ -349,26 +380,24 @@ class PlayingState(InGameState):
 
             
 class EditingState(InGameState):
+    SELECTED_COLOR = (255, 128, 255)
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
-        self.keys = {'left':False, 'right':False, 'up':False, 'down':True}
+        self.selected = None
+        self.selected_old_color = None
     def pre_event_update(self):
         pass
     def handle_event(self, event):
-        print "gettin events"
+        InGameState.handle_event(self, event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_e:
                 self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
-            elif event.key == pygame.K_g:
-                self.drawer().show_grid = not self.drawer().show_grid
-            elif event.key == pygame.K_a:
+            
                 self.keys['left'] = True
             elif event.key == pygame.K_d:
                 self.keys['right'] = True
-            elif event.key == pygame.K_w:
-                self.keys['up'] = True
-            elif event.key == pygame.K_s:
-                self.keys['down'] = True
+            
+                
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 self.keys['left'] = False
@@ -378,27 +407,67 @@ class EditingState(InGameState):
                 self.keys['up'] = False
             elif event.key == pygame.K_s:
                 self.keys['down'] = False
+            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
+                self.keys['ctrl'] = False
+            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
+                self.keys['shift'] = False
+                
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
+            grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
+            print "Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]"
+            if self.keys['ctrl']:
+                clicked_objs = self.level_manager().current_level.get_objects_at((x,y))
+                if len(clicked_objs) > 0:
+                    self.set_selected(clicked_objs[0])
+                else:
+                    self.set_selected(None)
+            elif self.keys['shift']:
+                pass
+            else:
+                pass
             
     def update(self, dt):
         self.do_camera_move(dt)
         
+        if self.settings.frozen_mode():
+            dt = 0
+        
+        for item in self.get_entities():
+            if item is not self.player():
+                item.update(dt)
+        
+        self.platformer_instance.current_level().bring_out_yer_dead()
+        
     def do_camera_move(self, dt):
         if bool(self.keys['left']) ^ bool(self.keys['right']):
             if self.keys['left']: 
-                self.drawer().move_camera(-4, 0)
+                self.get_drawer().move_camera(-4, 0)
             elif self.keys['right']: 
-                self.drawer().move_camera(4, 0)
+                self.get_drawer().move_camera(4, 0)
         
         if bool(self.keys['up']) ^ bool(self.keys['down']):
             if self.keys['up']: 
-                self.drawer().move_camera(0, -4)
+                self.get_drawer().move_camera(0, -4)
             elif self.keys['down']: 
-                self.drawer().move_camera(0, 4)
+                self.get_drawer().move_camera(0, 4)
         
     def draw(self, screen):
-        self.drawer().draw(screen, self.get_entities())
+        self.get_drawer().draw(screen, self.get_entities())
         # self.draw_gui(screen) 
-    def switching_to(self, old_state_id):
-        pass
+        
+    def set_selected(self, obj):
+        if self.selected != None:
+            self.selected.set_color(self.selected_old_color)
+            self.selected_old_color = None
+        
+        self.selected = obj
+        
+        if self.selected != None:
+            print str(self.selected) + " selected!"
+            self.selected_old_color = self.selected.color
+            self.selected.set_color(EditingState.SELECTED_COLOR)
+            
+            
                 
         

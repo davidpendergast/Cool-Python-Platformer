@@ -31,6 +31,16 @@ class Drawer:
         rect = box.rect
         self.camera_pos = (rect.x + rect.width/2 - screen_width/2, rect.y + rect.height/2 - screen_height/2)
     
+    def screen_to_game_position(self, screen_pos, snap_to_grid=False):
+        x = screen_pos[0] + self.camera_pos[0]
+        y = screen_pos[1] + self.camera_pos[1]
+        
+        if snap_to_grid:
+            x = x - (x % self.grid_spacing)
+            y = y - (y % self.grid_spacing)
+            
+        return (x, y)
+    
     def move_camera(self, dx, dy):
         self.camera_pos = (self.camera_pos[0] + dx, self.camera_pos[1] + dy) 
     

@@ -21,6 +21,7 @@ NO?     game completed menu
 DONE    separate files for default settings and user settings, so that user settings can be
             gitignored.
         way to edit settings in-game
+        unify drawer settings with other settings
     
     Level Building:
         10 intro levels each with unique challenge and charm (3/10 complete)
