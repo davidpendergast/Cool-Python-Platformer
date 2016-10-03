@@ -141,6 +141,9 @@ class Box(pygame.sprite.Sprite):
     def __str__(self):
         return "Box"
         
+    def to_json(self):
+        raise NotImplementedError("Cannot convert "+str(self)+" to json because to_json isn't implemented.")
+        
     def is_block(self): return False
     def is_actor(self): return False
     def is_moving_block(self): return False
@@ -170,6 +173,15 @@ class Block(Box):
         return 5
         
     def is_block(self): return True
+    
+    def to_json(self):
+        return {
+            "type":"normal",
+            "width":self.get_width(),
+            "height":self.get_height(),
+            "x":self.x(),
+            "y":self.y()
+        }
         
     def __str__(self):
         return "Block"
@@ -196,6 +208,15 @@ class MovingBlock(Block):
         return 4
         
     def is_moving_block(self): return True
+    
+    def to_json(self):
+        my_json = {
+            "type":"moving",
+            "width":self.get_width(),
+            "height":self.get_height()
+        }
+        self.path.add_to_json(my_json)
+        return my_json
         
     def __str__(self):
         return "Moving_Block"
@@ -343,6 +364,11 @@ class BadBlock(Block):
         return 3
         
     def is_bad_block(self): return True
+    
+    def to_json(self):
+        my_json = Block.to_json(self)
+        my_json['type'] = "bad"
+        return my_json
         
     def __str__(self):
         return "Bad_Block"
@@ -393,6 +419,19 @@ class Enemy(Actor):
             
     def is_enemy(self): return True    
          
+    def to_json(self):
+        my_type = "dumb"
+        if not self.is_stompable:
+            my_type = "bad"
+        elif not self.walks_off_platforms:
+            my_type = "smart"
+        
+        return {
+            "type":my_type,
+            "x":0,
+            "y":0
+        }
+        
     def __str__(self):
         return "Enemy"
             

@@ -58,7 +58,7 @@ DONE    use lists instead of groups
                 strategy
     
     Level Editor:
-        toggleable mode when dev_mode is endable
+DONE    toggleable mode when dev_mode is enabled
         ability to: 
 DONE        pan camera independently of actor position
 DONE        select blocks

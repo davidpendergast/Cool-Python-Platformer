@@ -19,7 +19,11 @@ class Path:
         
     def step(self, dt):
         self.t += dt
-
+    
+    def add_to_json(self, json_dict):
+        json_dict["x_path"] = str(self.x_expression)
+        json_dict["y_path"] = str(self.y_expression)
+        
         
 class PointPath(Path):  
     def __init__(self, x_points, y_points, speed=3):
@@ -61,4 +65,8 @@ class PointPath(Path):
             return equations.pythonify(str(x1))
         spline_string = "(+ "+str(x1)+" (* (/ "+str(d)+" 2) (- 1 (cos (* "+str(self.speed)+" 0.01 t)))))"
         return equations.pythonify(spline_string)
+        
+    def add_to_json(self, json_dict):
+        json_dict["x_points"] = self.x_points
+        json_dict["y_points"] = self.y_points
         
