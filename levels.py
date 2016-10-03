@@ -17,11 +17,11 @@ from utilities import Utils
 # about the level including its name and number.
 class Level:
         def __init__(self, entity_list, name, theme=None):
+            self.theme = theme
             if theme == None:
                 theme = Theme()
             self.name = name
             self.num = -1
-            
             self.entity_list = entity_list[:]
             self.background_color = theme
             for obj in self.entity_list:
@@ -56,24 +56,46 @@ class Level:
             self.entity_list.remove(self.actor)
             self.entity_list.append(new_actor)
             self.actor = new_actor
- 
+        
+        
+        def to_json(self):
+            my_json = {
+                "info": {
+                    "name":self.name,
+                    "version":1.0
+                },
+                "actor":{"x":0, "y":0},
+                "blocks": [],
+                "enemies": [],
+            }
+            
+            for entity in self.entity_list:
+                if entity.is_enemy():
+                    my_json["enemies"].append(entity.to_json())
+                elif entity.is_block():
+                    my_json["blocks"].append(entity.to_json())
+                    
+            if self.theme != None:
+                my_json["theme"] = self.theme.to_json()
+
+                
 class Theme:
     def __init__(self, id=None):
+        self.id = id
         if id == None:
             self.values = {
-                "normal_color":(128, 128, 128),
+                "normal_color":[128, 128, 128],
                 "normal_perturb":20,
                 "perturb_grayscale_only":True,
-                "moving_color":(128, 128, 128),
+                "moving_color":[128, 128, 128],
                 "moving_perturb":0,
-                "bad_color":(255, 0, 0),
-                "background_color":(0, 0, 0),
-                "finish_color":(0, 255, 0)
+                "bad_color":[255, 0, 0],
+                "background_color":[0, 0, 0],
+                "finish_color":[0, 255, 0]
             }
         else:
             global BUILT_IN_THEMES
             if id in BUILT_IN_THEMES:
-            
                 self.values = BUILT_IN_THEMES[id].values
             else:
                 raise ValueError("Invalid theme id: "+str(id))
@@ -105,13 +127,19 @@ class Theme:
             raise ValueError("Theme field not recognized: "+str(field))
         self.values[field] = value
         return self
+        
+    def to_json(self):
+        if self.id != None:
+            return self.id
+        else:
+            return self.values
 
 BUILT_IN_THEMES = {
-    "ice":Theme().set("normal_color", (145, 200, 220)).set("perturb_grayscale_only", False).set("background_color", (30, 60, 70)),
-    "fire":Theme().set("normal_color", (170, 90, 90)).set("perturb_grayscale_only", False).set("background_color", (95, 5, 5)),
-    "forest":Theme().set("normal_color", (80, 165, 60)).set("perturb_grayscale_only", False).set("background_color", (11, 30, 6)),
-    "snow":Theme().set("normal_color", (200, 200, 200)).set("perturb_grayscale_only", True).set("background_color", (50, 50, 50)),
-    "rainbow":Theme().set("normal_color", (128, 128, 128)).set("perturb_grayscale_only", False).set("normal_perturb", 128).set("background_color", (0, 0, 0)).set("moving_color", (128, 128, 128)).set("moving_perturb", 128)
+    "ice":Theme().set("normal_color", [145, 200, 220]).set("perturb_grayscale_only", False).set("background_color", [30, 60, 70]),
+    "fire":Theme().set("normal_color", [170, 90, 90]).set("perturb_grayscale_only", False).set("background_color", [95, 5, 5]),
+    "forest":Theme().set("normal_color", [80, 165, 60]).set("perturb_grayscale_only", False).set("background_color", [11, 30, 6]),
+    "snow":Theme().set("normal_color", [200, 200, 200]).set("perturb_grayscale_only", True).set("background_color", [50, 50, 50]),
+    "rainbow":Theme().set("normal_color", [128, 128, 128]).set("perturb_grayscale_only", False).set("normal_perturb", 128).set("background_color", [0, 0, 0]).set("moving_color", [128, 128, 128]).set("moving_perturb", 128)
 }
        
 class LevelManager:
@@ -355,8 +383,6 @@ class LevelReader:
                     theme = Theme()
                     for key in elem:
                         val = elem[key]
-                        if isinstance(val, list):
-                            val = tuple(val)
                         theme.set(key, val)
                 else:
                     # elem = "ice", "fire", ...

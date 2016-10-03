@@ -501,9 +501,6 @@ class Ghost(Actor):
         self.x_points = x_points
         self.y_points = y_points
         self.index = 0
-        
-        # if len(x_points) != len(y_points):
-            # raise ValueError("Unequal array sizes for Ghost: "+str(len(x_points)+" != "+str(len(y_points))
 
     def update(self, dt):
         self.index += 1
