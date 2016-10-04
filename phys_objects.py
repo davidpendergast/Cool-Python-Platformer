@@ -151,6 +151,7 @@ class Box(pygame.sprite.Sprite):
     def is_finish_block(self): return False
     def is_enemy(self): return False
     def is_ghost(self): return False
+    def is_spawn_point(self): return False
     
     
 class Block(Box):
@@ -379,7 +380,7 @@ class Enemy(Actor):
     BAD_COLOR = (255, 0, 0)
     
     def __init__(self, width, height, color=(255, 0, 255)):
-        Actor.__init__(self, width, height, color)
+        Actor.__init__(self, start_x, start_y, width, height, color)
         self.max_vx = 1
         self.move_speed = 0.5
         self.direction = -1
@@ -539,4 +540,38 @@ class Ghost(Actor):
                 "y_points":ghost.y_points,
                 "color":[c[0], c[1], c[2]]
             }
+
+class SpawnPoint(Box):
+    def __init__(self, x, y, actor):
+        Box.__init__(self, 10, 10)
+        self.set_xy(x,y)
+        self.actor = actor
+        self.is_solid = False
+        self.is_pushable = False
+        self.is_visible = False
+        self.has_physics = False
+        
+    def do_spawn(self):
+        self.actor.reset()
+        self.actor.set_xy(self.x(), self.y()) 
+        
+    def is_spawn_point(self): return True
+    
+    def __str__(self):
+        return "Spawn["+str(self.x())+", "+str(self.y())+"]"
+        
+    def to_json(self):
+        return {
+            "type":"spawn",
+            "x":self.x(),
+            "y":self.y(),
+            "actor":self.actor.to_json()
+        }
+    
+    @staticmethod
+    def from_json(json_data):
+        x = json_data["x"]
+        y = json_data["y"]
+        actor = Actor.from_json(json_data["actor"])
+        return SpawnPoint(x, y, actor)
         

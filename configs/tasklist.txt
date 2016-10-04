@@ -67,6 +67,12 @@ DONE        select blocks
             edit block attributes (just edit their json?)
             zoom view in and out
             save levels out (formatting issues?)
+            
+    Level Storage:
+        store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead
+            --will make editing paths easier in game
+            --super needed for themes
+        custom json formatter to make easier to read
          
             
 @~~~~~~~~~~~~@
@@ -76,7 +82,7 @@ DONE        select blocks
     Physics Glitches:
 !!!     walljumping on a platform moving away from you
             --player needs to snap to moving vertical surfaces
-DONE    weird smushes
+!!!    weird smushes
             --probably need to look at velocities of blocks before smushing. A platform moving 
                 diagonally upwards shouldn't crush you from below.
         friction affected by fps

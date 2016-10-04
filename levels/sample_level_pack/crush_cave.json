@@ -94,5 +94,6 @@
         {"type":"finish", "x":"4104", "y":"-24", "width":"16", "height":"16"}
     ],
     "enemies": [],
+    "spawns": [],
     "theme":"ice"
 }

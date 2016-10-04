@@ -12,6 +12,7 @@ import gamestate
 import equations
 import options
 from utilities import Utils
+import level_loader
 
 # Level class is essentially just a list of the entities in a level, as well as information 
 # about the level including its name and number.
@@ -64,9 +65,10 @@ class Level:
                     "name":self.name,
                     "version":1.0
                 },
-                "actor":{"x":0, "y":0},
                 "blocks": [],
                 "enemies": [],
+                "spawns":[],
+                "paths":[]
             }
             
             for entity in self.entity_list:
@@ -77,6 +79,11 @@ class Level:
                     
             if self.theme != None:
                 my_json["theme"] = self.theme.to_json()
+                
+        @staticmethod
+        def from_json(self):
+            pass
+            
 
                 
 class Theme:
@@ -168,7 +175,7 @@ class LevelManager:
         return self.best_overall_run_total
         
     def load_level(self, num, actor, reset_ghost=True):
-        level = LevelReader.load(self.file_dir + "/" + self.level_filenames[num])
+        level = level_loader.load(self.file_dir + "/" + self.level_filenames[num])
         if level == None:
             print "Level "+str(num)+" failed to load, using Void Level instead."
             level = self.create_void_level()
@@ -321,86 +328,6 @@ class LevelManager:
     def get_highscores_filename(self):
         return self.file_dir+"/highscores.json"
         
-class LevelReader:
-    @staticmethod
-    def load(filename):
-        entity_list = []
-        
-        try:
-            with open(filename) as json_file:
-                data = json.load(json_file)
-            
-            name = "<Unnamed>"
-            if "info" in data and "name" in data["info"]:
-                name = data["info"]["name"]
-            
-            if "blocks" in data:
-                for elem in data["blocks"]:
-                    if elem["type"] == "normal":
-                        block = phys_objects.Block(int(elem["width"]), int(elem["height"]))
-                        block.set_xy(int(elem["x"]), int(elem["y"]))
-                    elif elem["type"] == "bad":
-                        block = phys_objects.BadBlock(int(elem["width"]), int(elem["height"]))
-                        block.set_xy(int(elem["x"]), int(elem["y"]))
-                    elif elem["type"] == "finish":
-                        block = phys_objects.FinishBlock(int(elem["width"]), int(elem["height"]))
-                        block.set_xy(int(elem["x"]), int(elem["y"]))
-                    elif elem["type"] == "moving":
-                        path = None
-                        if "x_path" in elem and "y_path" in elem:
-                            x_path = equations.pythonify(str(elem["x_path"]))
-                            y_path = equations.pythonify(str(elem["y_path"]))
-                            path = paths.Path(x_path, y_path)
-                        elif "x_points" in elem and "y_points" in elem and "speed" in elem:
-                            x_points = elem["x_points"]
-                            y_points = elem["y_points"]
-                            speed = elem["speed"]
-                            path = paths.PointPath(x_points, y_points, speed)
-                        
-                        block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), path)
-                    else:
-                        continue
-                    entity_list.append(block)
-            else:
-                print "no blocks data in "+filename+"?"
-                
-            if "enemies" in data:
-                for elem in data["enemies"]:
-                    if elem["type"] == "smart":
-                        enemy = phys_objects.Enemy.get_smart_walker_enemy(int(elem["x"]), int(elem["y"]))
-                    elif elem["type"] == "dumb":
-                        enemy = phys_objects.Enemy.get_stupid_walker_enemy(int(elem["x"]), int(elem["y"]))
-                    elif elem["type"] == "bad":
-                        enemy = phys_objects.Enemy.get_bad_enemy(int(elem["x"]), int(elem["y"]))
-                    else:
-                        continue
-                    entity_list.append(enemy)
-            
-            theme = None 
-            if "theme" in data:
-                elem = data["theme"]
-                if isinstance(elem, type({})):
-                    theme = Theme()
-                    for key in elem:
-                        val = elem[key]
-                        theme.set(key, val)
-                else:
-                    # elem = "ice", "fire", ...
-                    theme = Theme(elem)
-                    
-            
-            actor = phys_objects.Actor().set_xy(int(data["actor"]["x"]), int(data["actor"]["y"]))
-            actor.is_player = True
-            
-            entity_list.append(actor)
-            entity_list = sorted(entity_list)
-            
-            return Level(entity_list, name, theme)
-        except:
-            print "Error while loading "+filename+":"
-            for err in sys.exc_info():
-                print "\t"+str(err)
-                
-        return None
+
         
         
