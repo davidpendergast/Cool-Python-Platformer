@@ -11,11 +11,14 @@ EMDAS = {
 
 
 SCOPE = {
-    'sin': lambda args: math.sin(args[0]),
-    'cos': lambda args: math.cos(args[0]),
-    'max': lambda args: max(args),
-    'min': lambda args: min(args),
-    'abs': lambda args: abs(args[0]),
+    # Function tuples are specified as:
+    #   (lambda, minimum arguments, maximum arguments)
+    # Where None signifies no maximum or minimum.
+    'sin': (lambda args: math.sin(args[0]), 1, 1),
+    'cos': (lambda args: math.cos(args[0]), 1, 1),
+    'max': (lambda args: max(args), 1, None),
+    'min': (lambda args: min(args), 1, None),
+    'abs': (lambda args: abs(args[0]), 1, 1),
     'pi' : math.pi,
 }
 
@@ -32,6 +35,8 @@ def badfix(string):
 
 
 def comma_split(tree):
+    if not tree:
+        return tree
     if ',' in tree:
         i = tree.index(',')
         l = tree[:i]
@@ -48,7 +53,7 @@ def descend(tree, depth):
     return descend(tree[-1], depth - 1)
 
 
-def paren(string):
+def parse_tree(string):
     split = [[y.strip() for y in x.split(')')] for x in badfix(string).split('(')]
     tree = [x for x in split[0][0].split(' ') if x]
     depth = 0
@@ -67,6 +72,7 @@ def paren(string):
 
 
 def expression(tree):
+    # Handles scalar constants and resolves names at runtime
     if not isinstance(tree, list):
         try:
             f = float(tree)
@@ -74,6 +80,7 @@ def expression(tree):
         except:
             n = tree
             return lambda s: s[n]
+
     if len(tree) == 1:
         return expression(tree[0])
     for op in EMDAS.keys():
@@ -90,16 +97,47 @@ def expression(tree):
                 expression(l),
                 expression(r),
             )
+
+    # Handles function calls
     if len(tree) == 2:
-        f = expression(tree[0])
+        fname = expression(tree[0])
         args = [expression(arg) for arg in comma_split(tree[1])]
-        return lambda s: f(s)([arg(s) for arg in args])
+        def func(scope):
+            f, min_args, max_args = fname(scope)
+
+            if len(args) < min_args or len(args) > max_args:
+                raise MalformedException('Wrong number of arguments in function call', tree)
+
+            return f([arg(scope) for arg in args])
+        return func
+
+    # No pattern was matched, so the rest of the tree can't be parsed
     raise MalformedException('Unable to parse expression', tree)
-    return lambda s: None
 
 
 def pythonify(string):
-    expr = expression(paren(string))
+    """Returns a Python function that evaluates the given expression string.
+    Supports multivariate expressions such as "x + y + z". Values for each
+    variable are specified via keyword arguments to the returned function, for
+    the above example `f(x=0, y=1, z=2)` would return `3`.
+
+    Malformed expressions, those with unbalanced parenthesis or incorrect input
+    for a function or operation, will raise a new MalformedException.
+
+    Supported operations: +, -, *, /, **
+
+    Supported functions: sin, cos, max, min, abs
+
+    Built-in constants: pi
+
+    >>> pythonify('x + y + z')(x=0, y=1, z=2)
+    3
+    >>> pythonify('sin(pi*x)')(x=0.5)
+    1.0
+    >>> pythonify('max(x, y, z)')(x=0, y=2, z=1)
+    2
+    """
+    expr = expression(parse_tree(string))
     def evaluate(**kwargs):
         scope = dict(SCOPE)
         scope.update(kwargs)
