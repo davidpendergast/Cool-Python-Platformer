@@ -2,10 +2,10 @@ import math
 
 
 EMDAS = {
-    '+' : lambda a, b: lambda s: a(s) + b(s),
-    '-' : lambda a, b: lambda s: a(s) - b(s),
-    '*' : lambda a, b: lambda s: a(s) * b(s),
-    '/' : lambda a, b: lambda s: a(s) / b(s),
+    '+': lambda a, b: lambda s: a(s) + b(s),
+    '-': lambda a, b: lambda s: a(s) - b(s),
+    '*': lambda a, b: lambda s: a(s) * b(s),
+    '/': lambda a, b: lambda s: a(s) / b(s),
     '**': lambda a, b: lambda s: a(s) ** b(s),
 }
 
@@ -19,7 +19,7 @@ SCOPE = {
     'max': (lambda args: max(args), 1, None),
     'min': (lambda args: min(args), 1, None),
     'abs': (lambda args: abs(args[0]), 1, 1),
-    'pi' : math.pi,
+    'pi': math.pi,
 }
 
 
@@ -54,7 +54,8 @@ def descend(tree, depth):
 
 
 def parse_tree(string):
-    split = [[y.strip() for y in x.split(')')] for x in badfix(string).split('(')]
+    string = badfix(string)
+    split = [[y.strip() for y in x.split(')')] for x in string.split('(')]
     tree = [x for x in split[0][0].split(' ') if x]
     depth = 0
     for s in split[1:]:
@@ -102,11 +103,18 @@ def expression(tree):
     if len(tree) == 2:
         fname = expression(tree[0])
         args = [expression(arg) for arg in comma_split(tree[1])]
+
         def func(scope):
             f, min_args, max_args = fname(scope)
 
-            if len(args) < min_args or len(args) > max_args:
-                raise MalformedException('Wrong number of arguments in function call', tree)
+            min_args = min_args and len(args) < min_args
+            max_args = max_args and len(args) > max_args
+
+            if min_args or max_args:
+                raise MalformedException(
+                    'Wrong number of arguments in function call',
+                    tree
+                )
 
             return f([arg(scope) for arg in args])
         return func
@@ -138,6 +146,7 @@ def pythonify(string):
     2
     """
     expr = expression(parse_tree(string))
+
     def evaluate(**kwargs):
         scope = dict(SCOPE)
         scope.update(kwargs)
