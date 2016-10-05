@@ -27,6 +27,7 @@ class Box(pygame.sprite.Sprite):
         
         self.rf_parent = None           # physics reference frame information. For example, when an actor stands on a moving platform
         self.rf_children = sets.Set()   # or is stuck to another object, it will enter that object's reference frame.
+        self.theme_id = None
         
     def update(self, dt):
         if self.has_physics:
@@ -73,6 +74,12 @@ class Box(pygame.sprite.Sprite):
         
     def y(self):
         return self.rect.y
+        
+    def width(self):
+        return self.rect.width
+    
+    def height(self):
+        return self.rect.height
         
     def get_xy(self):
         return (self.x(), self.y())
@@ -125,7 +132,13 @@ class Box(pygame.sprite.Sprite):
     def set_color(self, color, perturb_color=0, only_greyscale=True):
         self.color = Utils.perturb_color(color, perturb_color, only_greyscale)
         self.repaint()
+    
+    def set_theme_id(self, id):
+        self.theme_id = id
         
+    def get_theme_id(self):
+        return self.theme_id
+    
     def repaint(self):
         self.image.fill(self.color, (0, 0, self.image.get_width(), self.image.get_height()))
         
@@ -139,7 +152,10 @@ class Box(pygame.sprite.Sprite):
         return -1
     
     def __str__(self):
-        return "Box"
+        return "Box"+self.rect_str()
+        
+    def rect_str(self):
+        return "[" +str(self.x()) +", "+str(self.y())+", "+str(self.width())+", "+str(self.height())+"]"
         
     def to_json(self):
         raise NotImplementedError("Cannot convert "+str(self)+" to json because to_json isn't implemented.")
@@ -183,9 +199,16 @@ class Block(Box):
             "x":self.x(),
             "y":self.y()
         }
+    
+    @staticmethod
+    def from_json(data):
+        result = Block(data["width"], data["height"])
+        result.set_xy(data["x"], data["y"])
+        result.set_theme_id(data["theme"] if "theme" in data else "default")
+        return result
         
     def __str__(self):
-        return "Block"
+        return "Block"+self.rect_str()
         
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
@@ -217,10 +240,11 @@ class MovingBlock(Block):
             "height":self.get_height()
         }
         self.path.add_to_json(my_json)
+        my_json["theme"] = self.get_theme_id()
         return my_json
         
     def __str__(self):
-        return "Moving_Block"
+        return "Moving_Block"+self.rect_str()
     
     
 class Actor(Box):
@@ -228,7 +252,6 @@ class Actor(Box):
     
     def __init__(self, width=24, height=32, color=(255, 128, 128)):
         Box.__init__(self, width, height, color)
-        
         # Actor collision state variables.
         # Note: these are reset to false on each actor update, and reapplied by the collision fixer.
         self.is_grounded = False        # is touching a solid box that's below
@@ -347,9 +370,9 @@ class Actor(Box):
         
     def __str__(self):
         if self.is_player:
-            return "Player"
+            return "Player"+self.rect_str()
         else:
-            return "Actor"
+            return "Actor"+self.rect_str()
         
         
 class BadBlock(Block):
@@ -369,10 +392,18 @@ class BadBlock(Block):
     def to_json(self):
         my_json = Block.to_json(self)
         my_json['type'] = "bad"
+        my_json["theme"] = self.get_theme_id()
         return my_json
+    
+    @staticmethod
+    def from_json(data):
+        result = BadBlock(data["width"], data["height"])
+        result.set_xy(data["x"], data["y"])
+        result.set_theme_id(data["theme"] if "theme" in data else "default")
+        return result
         
     def __str__(self):
-        return "Bad_Block"
+        return "Bad_Block"+self.rect_str()
         
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)
@@ -380,10 +411,11 @@ class Enemy(Actor):
     BAD_COLOR = (255, 0, 0)
     
     def __init__(self, width, height, color=(255, 0, 255)):
-        Actor.__init__(self, start_x, start_y, width, height, color)
+        Actor.__init__(self, width, height, color)
         self.max_vx = 1
         self.move_speed = 0.5
         self.direction = -1
+        
         self.walks_off_platforms = True
         self.is_stompable = True
         
@@ -429,12 +461,21 @@ class Enemy(Actor):
         
         return {
             "type":my_type,
-            "x":0,
-            "y":0
+            "width":self.width(),
+            "height":self.rect.height,
+            "theme":self.get_theme_id()
         }
         
+    @staticmethod    
+    def from_json(data):
+        result = Enemy(data["width"], data["height"])
+        result.is_stompable = (data["type"] in ("smart", "dumb"))
+        result.walks_off_platforms = data["type"] == "dumb"
+        result.set_theme_id(data["theme"] if "theme" in data else "default")
+        return result
+        
     def __str__(self):
-        return "Enemy"
+        return "Enemy"+self.rect_str()
             
     @staticmethod
     def get_stupid_walker_enemy(x, y, direction = -1):
@@ -469,11 +510,43 @@ class FinishBlock(Block):
     def collided_with(self, obj, dir="NONE"):
         if obj.is_actor():
             obj.finished_level = True
+    
+    @staticmethod
+    def from_json(json_data):
+        result = FinishBlock(json_data["width"], json_data["height"])
+        result.set_theme_id(data["theme"] if "theme" in data else "default")
+        result.set_xy(json_data["x"], json_data["y"])
+        return result
+        
+    def to_json(self):
+        return {
+            "type":"finish",
+            "x":self.x(),
+            "y":self.y(),
+            "width":self.width(),
+            "height":self.height(),
+            "theme":self.get_theme_id()
+        }
             
     def is_finish_block(self): return True
     
     def __str__(self):
-        return "Finish_Block"    
+        return "Finish_Block"+self.rect_str()   
+
+        
+class BlockFactory:
+    CONSTRUCTORS = {
+        "normal":Block.from_json,
+        "finish":FinishBlock.from_json,
+        "bad":BadBlock.from_json
+    }
+    @staticmethod
+    def from_json(data):
+        block_type = data["type"]
+        if block_type in BlockFactory.CONSTRUCTORS:
+            return BlockFactory.CONSTRUCTORS[block_type](data)
+        else:
+            raise ValueError("Unrecognized block type: "+str(block_type))
             
             
 class GhostRecorder:
@@ -552,13 +625,21 @@ class SpawnPoint(Box):
         self.has_physics = False
         
     def do_spawn(self):
-        self.actor.reset()
-        self.actor.set_xy(self.x(), self.y()) 
+        actor = self.get_actor()
+        actor.reset()
+        actor.set_xy(self.x(), self.y()) 
+        
+    def get_actor(self):
+        if self.actor == "player":
+            self.actor = Actor()
+            self.actor.is_player = True
+            self.actor.set_theme_id("default")
+        return self.actor
         
     def is_spawn_point(self): return True
     
     def __str__(self):
-        return "Spawn["+str(self.x())+", "+str(self.y())+"]"
+        return "Spawn"+self.rect_str()
         
     def to_json(self):
         return {
@@ -572,6 +653,9 @@ class SpawnPoint(Box):
     def from_json(json_data):
         x = json_data["x"]
         y = json_data["y"]
-        actor = Actor.from_json(json_data["actor"])
+        if json_data["actor"] == "player":
+            actor = "player"
+        else: 
+            actor = Enemy.from_json(json_data["actor"])
         return SpawnPoint(x, y, actor)
         

@@ -17,16 +17,12 @@ import level_loader
 # Level class is essentially just a list of the entities in a level, as well as information 
 # about the level including its name and number.
 class Level:
-        def __init__(self, entity_list, name, theme=None):
-            self.theme = theme
-            if theme == None:
-                theme = Theme()
+        def __init__(self, name, entity_list, spawn_list, theme_dict):
             self.name = name
             self.num = -1
             self.entity_list = entity_list[:]
-            self.background_color = theme
-            for obj in self.entity_list:
-                theme.apply(obj)
+            self.spawn_list = spawn_list[:]
+            self.theme_lookup = dict(theme_dict)
 
             self.actor = self._find_player()
             if self.actor == None:
@@ -63,49 +59,50 @@ class Level:
             my_json = {
                 "info": {
                     "name":self.name,
-                    "version":1.0
+                    "version":"1.1"
                 },
                 "blocks": [],
-                "enemies": [],
                 "spawns":[],
-                "paths":[]
+                "themes":{}
             }
             
             for entity in self.entity_list:
-                if entity.is_enemy():
-                    my_json["enemies"].append(entity.to_json())
-                elif entity.is_block():
+                if entity.is_block():
                     my_json["blocks"].append(entity.to_json())
+            for spawn in self.spawn_list:
+                my_json["spawns"].append(spawn.to_json())
+            for id in self.theme_lookup:
+                theme = self.theme_lookup[id]
+                if theme.is_built_in:
+                    my_json["themes"][id] = theme.built_in_id
+                else:
+                    my_json["themes"][id] = theme.to_json()
                     
-            if self.theme != None:
-                my_json["theme"] = self.theme.to_json()
-                
-        @staticmethod
-        def from_json(self):
-            pass
+            return my_json
             
-
+BUILT_IN_THEMES = {}
                 
 class Theme:
-    def __init__(self, id=None):
-        self.id = id
-        if id == None:
-            self.values = {
-                "normal_color":[128, 128, 128],
-                "normal_perturb":20,
-                "perturb_grayscale_only":True,
-                "moving_color":[128, 128, 128],
-                "moving_perturb":0,
-                "bad_color":[255, 0, 0],
-                "background_color":[0, 0, 0],
-                "finish_color":[0, 255, 0]
-            }
-        else:
-            global BUILT_IN_THEMES
-            if id in BUILT_IN_THEMES:
-                self.values = BUILT_IN_THEMES[id].values
+    DEFAULT_VALUES = {
+        "normal_color":[128, 128, 128],
+        "normal_perturb":20,
+        "perturb_grayscale_only":True,
+        "moving_color":[128, 128, 128],
+        "moving_perturb":0,
+        "bad_color":[255, 0, 0],
+        "background_color":[0, 0, 0],
+        "finish_color":[0, 255, 0]
+    }
+    
+    def __init__(self, **kwargs):
+        self.is_built_in = False
+        
+        self.values = dict(Theme.DEFAULT_VALUES)
+        for key in kwargs:
+            if not key in self.values:
+                raise ValueError("Theme param not recognized: "+str(key))
             else:
-                raise ValueError("Invalid theme id: "+str(id))
+                self.values[key] = kwargs[key]
     
     def apply(self, object):
         if object.is_moving_block():
@@ -140,14 +137,52 @@ class Theme:
             return self.id
         else:
             return self.values
+    
+    @staticmethod
+    def from_json(data):
+        if isinstance(data, basestring):
+            return BUILT_IN_THEMES[data]
+        else:
+            result = Theme()
+            for key in data:
+                if not key in result.values:
+                    raise ValueError("Theme param not recognized: "+str(key))
+                else:
+                    result.values[key] = data[key]
+            
+            return result
+            
+    def build_in(self, id):
+        self.is_built_in = True
+        self.built_in_id = id
+        return self
 
-BUILT_IN_THEMES = {
-    "ice":Theme().set("normal_color", [145, 200, 220]).set("perturb_grayscale_only", False).set("background_color", [30, 60, 70]),
-    "fire":Theme().set("normal_color", [170, 90, 90]).set("perturb_grayscale_only", False).set("background_color", [95, 5, 5]),
-    "forest":Theme().set("normal_color", [80, 165, 60]).set("perturb_grayscale_only", False).set("background_color", [11, 30, 6]),
-    "snow":Theme().set("normal_color", [200, 200, 200]).set("perturb_grayscale_only", True).set("background_color", [50, 50, 50]),
-    "rainbow":Theme().set("normal_color", [128, 128, 128]).set("perturb_grayscale_only", False).set("normal_perturb", 128).set("background_color", [0, 0, 0]).set("moving_color", [128, 128, 128]).set("moving_perturb", 128)
-}
+BUILT_IN_THEMES.update({
+    "default":Theme().build_in("default"),
+    "ice":Theme(
+        normal_color=[145, 200, 220], 
+        perturb_grayscale_only=False, 
+        background_color=[30, 60, 70]).build_in("ice"),
+    "fire":Theme(
+        normal_color=[170, 90, 90], 
+        perturb_grayscale_only=False, 
+        background_color=[95, 5, 5]).build_in("fire"),
+    "forest":Theme(
+        normal_color=[80, 165, 60], 
+        perturb_grayscale_only=False, 
+        background_color=[11, 30, 6]).build_in("forest"),
+    "snow":Theme(
+        normal_color=[200, 200, 200], 
+        perturb_grayscale_only=True, 
+        background_color=[50, 50, 50]).build_in("snow"),
+    "rainbow":Theme(
+        normal_color=[128, 128, 128], 
+        perturb_grayscale_only=False, 
+        normal_perturb=128, 
+        background_color=[0, 0, 0], 
+        moving_color=[128, 128, 128], 
+        moving_perturb=128).build_in("rainbow")
+})
        
 class LevelManager:
     def __init__(self, settings):
