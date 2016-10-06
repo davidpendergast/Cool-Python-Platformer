@@ -51,7 +51,7 @@ class Actor(blocks.Box):
         
     def kill(self, message="unknown causes."):
         self.is_alive = False
-        print str(self)+" was killed by "+message
+        utilities.log(str(self)+" was killed by "+message)
         
     def jump_action(self):
         if self.is_grounded == False:   # if not grounded, check for walljumps
@@ -164,7 +164,6 @@ class Enemy(Actor):
         
     def collided_with(self, obj, dir="NONE"):
         if not self.is_alive:
-            print "I'm dead! no colliding for me today!"
             return
         Actor.collided_with(self, obj, dir)
         if obj.is_actor():

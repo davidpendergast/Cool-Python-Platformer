@@ -5,9 +5,11 @@ import pygame
 import blocks, actors
 import drawing
 import gamestate
+import utilities
 from options import Settings
 from options import HardSettings
 from gamestate import GameStateManager, PlayingState, EditingState, PlatformerInstance
+
 
 pygame.init()
 

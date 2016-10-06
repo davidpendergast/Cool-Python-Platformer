@@ -21,12 +21,11 @@ class Level:
             self.entity_list = entity_list[:]
             self.spawn_list = spawn_list[:]
             self.theme_lookup = dict(theme_dict)
-            print str(self.theme_lookup)
             self.background_color = self.theme_lookup["default"].values["background_color"]
 
             self.actor = self._find_player()
             if self.actor == None:
-                print "levels.Level: Warning: No actor found in loaded level!"
+                utilities.log("levels.Level: Warning: No actor found in loaded level!")
             
         def add_object(self, obj):
             self.entity_list.append(obj)
@@ -107,13 +106,19 @@ class Theme:
     
     def apply(self, object):
         if object.is_moving_block():
-            object.set_color(self.values["moving_color"], self.values["moving_perturb"], self.values["perturb_grayscale_only"])
+            object.set_color(
+                    self.values["moving_color"], 
+                    self.values["moving_perturb"], 
+                    self.values["perturb_grayscale_only"])
         elif object.is_bad_block():
             object.set_color(self.values["bad_color"], 0)
         elif object.is_finish_block():
             object.set_color(self.values["finish_color"], 0)
         elif object.is_block():
-            object.set_color(self.values["normal_color"], self.values["normal_perturb"], self.values["perturb_grayscale_only"])
+            object.set_color(
+                    self.values["normal_color"], 
+                    self.values["normal_perturb"], 
+                    self.values["perturb_grayscale_only"])
         
     def to_json(self):
         if self.is_built_in:
@@ -195,7 +200,7 @@ class LevelManager:
     def load_level(self, num, actor, reset_ghost=True):
         level = level_loader.load(self.file_dir + "/" + self.level_filenames[num])
         if level == None:
-            print "Level "+str(num)+" failed to load, using Void Level instead."
+            utilities.log("Level "+str(num)+" failed to load, using Void Level instead.")
             level = self.create_void_level()
         
         self.level_num = num
@@ -213,14 +218,20 @@ class LevelManager:
     
         current_record = self.best_individual_scores[level_num]
         if current_record == None or time < current_record:
-            print "***NEW LEVEL RECORD***"
-            print "Level "+str(level_num)+"'s record of "+str(utilities.format_time(current_record))+" broken with "+gamestate.utilities.format_time(time)+"!"
+        
+            utilities.log("***NEW LEVEL RECORD***\n" +
+                    "Level " + str(level_num)+"'s record of " + 
+                    str(utilities.format_time(current_record)) +
+                    " broken with " + utilities.format_time(time) + "!")
+                    
             self.best_individual_scores[level_num] = time
             if ghost_recorder != None:
                 self.ghosts[level_num] = ghost_recorder.to_ghost()
             dirty = True
         else:
-            print "Level "+str(level_num)+" completed! Time: " +str(utilities.format_time(time))+"\t Best: "+gamestate.utilities.format_time(current_record)
+            utilities.log("Level " + str(level_num) + " completed! Time: "  + 
+                    str(utilities.format_time(time)) + "\t Best: " + 
+                    utilities.format_time(current_record))
             
         self.current_run_times[level_num] = time
         if level_num == self.get_num_levels()-1: #last level
@@ -234,13 +245,16 @@ class LevelManager:
             
             if final_time != None:
                 if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
-                    print "***NEW FULL RUN RECORD***"
-                    print "Previous record "+str(utilities.format_time(self.best_overall_run_total))+" broken with "+str(utilities.format_time(final_time))
+                    utilities.log("***NEW FULL RUN RECORD***\n" + "Previous record " +
+                            str(utilities.format_time(self.best_overall_run_total)) + 
+                            " broken with " + str(utilities.format_time(final_time)))
+                            
                     self.best_overall_run_total = final_time
                     self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
                     dirty = True
                 else:
-                    print "Game Completed! Final time: "+str(utilities.format_time(final_time))
+                    utilities.log("Game Completed! Final time: " + 
+                            str(utilities.format_time(final_time)))
         
         if dirty:
             self.dump_highscores_to_file(0)
@@ -248,28 +262,22 @@ class LevelManager:
     def dump_highscores_to_file(self, suppress_printing=0):
         "0 = print nothing, 1 = print message, 2 = print entire file"
         if self.settings.dev_mode():
-            print "Not saving high scores because we're in dev mode"
+            utilities.log("Not saving high scores because we're in dev mode")
             return
         
         if suppress_printing > 0:
-            print "Saving highscores to "+self.get_highscores_filename()+"..."
+            utilities.log("Saving highscores to "+self.get_highscores_filename()+"...")
         highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
         highscores["best_overall_run_total"] = utilities.format_time(self.best_overall_run_total)
         highscores["best_individual_scores"] = [utilities.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["best_overall_run_scores"] = [utilities.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["ghosts"] = [actors.Ghost.to_json(g) for g in self.ghosts]
         
-        file = open(self.get_highscores_filename(), 'w')
-        
-        if suppress_printing > 1:
-            print "dumping: "
-            print json.dumps(highscores, indent=4, sort_keys=True)
-        
-        json_string = json.dumps(highscores, indent=4, sort_keys=True)
-        json_string = utilities.make_json_pretty(json_string)
-        file.write(json_string)
-        
-        file.close()
+        with open(self.get_highscores_filename(), 'w') as file:
+            json_string = utilities.level_json_to_string(highscores)
+            if suppress_printing > 1:
+                utilities.log("writing text:\n" + json_string)
+            file.write(json_string)
         
     def create_void_level(self):
         entity_list = []
@@ -285,7 +293,7 @@ class LevelManager:
         
     def read_filenames_from_header(self):
         res = []
-        print "Reading " + self.file_dir + "/header.txt..."
+        utilities.log("Reading " + self.file_dir + "/header.txt...")
         header = open(self.file_dir + "/header.txt")
         for line in header:
             if line[-1] == '\r':
@@ -295,7 +303,7 @@ class LevelManager:
                 
             res.append(line)
         
-        print "\tlevel filenames are:"
+        utilities.log("\tlevel filenames are:")
         for filename in res:
             print "\t\t"+str(filename)
             

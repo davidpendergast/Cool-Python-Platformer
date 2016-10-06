@@ -95,7 +95,7 @@ def level_json_to_string(json_data, indent_spaces=4, sort_the_keys=True):
         
         if isinstance(value, list):
             result += "["
-            value_list = sorted(value) if sort_the_keys else value
+            value_list = value
             for element in value_list:
                 elem_str = json.dumps(element, sort_keys=sort_the_keys)
                 result += "\n"+(" "*2*indent_spaces)+elem_str+","
@@ -143,6 +143,11 @@ def find_close_paren(string, index, open='(', closed=')'):
         if balance == 0:
             return i
     raise ValueError("Unbalanced parenthesis in "+string)
+    
+def log(message, also_print=True):
+    # todo - actual logging
+    if also_print:
+        print str(message)
                 
 if __name__ == "__main__":
     json_datas = {

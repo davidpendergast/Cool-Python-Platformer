@@ -66,8 +66,8 @@ class GameStateManager(GameState):
         if self.get_current_state() != None:
             self.get_current_state().switching_to(old_state_id)
             
-        print "GameState changed: "+str(old_state_id)+" -> "+str(state_id)
-        print "Current state: "+str(self.get_current_state())
+        utilities.log("GameState changed: "+str(old_state_id)+" -> "+str(state_id))
+        utilities.log("Current state: "+str(self.get_current_state()))
 
     def pre_event_update(self):
         if self.get_current_state() != None:
@@ -86,7 +86,7 @@ class GameStateManager(GameState):
             self.get_current_state().draw(screen)
         
 class PlatformerInstance:
-    # state that's shared between PlayingState and EditingState
+    "state that's shared between PlayingState and EditingState"
     def __init__(self, settings):
         self.settings = settings
         self.player = actors.Actor(24, 32, settings.get_color())
@@ -108,6 +108,7 @@ class PlatformerInstance:
         self.level_num = num
     def load_level(self, reset_ghost=True):
         self.level_manager.load_level(self.get_level_num(), self.get_player(), reset_ghost)
+    
     
 class InGameState(GameState):
     def __init__(self, settings, platformer_instance):
@@ -286,7 +287,7 @@ class PlayingState(InGameState):
         self.level_time = 0
         self.death_count = 0
         self.platformer_instance.load_level()
-        print "\nGame Start!"
+        utilities.log("\nGame Start!")
     
     def next_level(self, update_highscore=False):
         level_num = self.get_level_num() 
@@ -359,8 +360,10 @@ class EditingState(InGameState):
         InGameState.__init__(self, settings, platformer_instance)
         self.selected = None
         self.selected_old_color = None
+        
     def pre_event_update(self):
         pass
+        
     def handle_event(self, event):
         InGameState.handle_event(self, event)
         if event.type == pygame.KEYDOWN:
@@ -397,15 +400,16 @@ class EditingState(InGameState):
         self.platformer_instance.current_level().bring_out_yer_dead()
     
     def do_save(self):
-        print "Saving..."
+        filename = EditingState.temp_output_file + str(num) + ".json"
+        utilities.log("Saving " + filename + "...")
         curr_json = self.get_current_level().to_json()
         num = self.get_level_num()
-        with open(EditingState.temp_output_file + str(num) +".json", 'w') as outfile:
+        
+        with open(filename, 'w') as outfile:
             json_string = utilities.level_json_to_string(curr_json)
-            print "writing text:\n" + json_string
-            # json.dump(curr_json, outfile, sort_keys = True, indent = 4)
+            utilities.log("writing text:\n" + json_string)
             outfile.write(json_string)
-        print "done."
+        utilities.log("done.")
     
     def do_camera_move(self, dt):
         if bool(self.keys['left']) ^ bool(self.keys['right']):
@@ -422,7 +426,6 @@ class EditingState(InGameState):
         
     def draw(self, screen):
         self.get_drawer().draw(screen, self.get_entities())
-        # self.draw_gui(screen) 
         
     def set_selected(self, obj):
         if self.selected != None:
