@@ -11,7 +11,7 @@ import paths
 import gamestate
 import equations
 import options
-from utilities import Utils
+import utilities
 import level_loader
 
 class Level:
@@ -178,9 +178,9 @@ class LevelManager:
         highscores = self.load_or_create_highscore_data()  
         self.current_run_times = [None for i in range(0,self.get_num_levels())]
         
-        self.best_overall_run_total = Utils.unformat_time(highscores["best_overall_run_total"])
-        self.best_individual_scores = [Utils.unformat_time(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
-        self.best_overall_run_scores = [Utils.unformat_time(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
+        self.best_overall_run_total = utilities.unformat_time(highscores["best_overall_run_total"])
+        self.best_individual_scores = [utilities.unformat_time(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
+        self.best_overall_run_scores = [utilities.unformat_time(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
         self.ghosts = [phys_objects.Ghost.from_json(g) for g in highscores["ghosts"]]
         
     def get_num_levels(self):
@@ -214,13 +214,13 @@ class LevelManager:
         current_record = self.best_individual_scores[level_num]
         if current_record == None or time < current_record:
             print "***NEW LEVEL RECORD***"
-            print "Level "+str(level_num)+"'s record of "+str(Utils.format_time(current_record))+" broken with "+gamestate.Utils.format_time(time)+"!"
+            print "Level "+str(level_num)+"'s record of "+str(utilities.format_time(current_record))+" broken with "+gamestate.utilities.format_time(time)+"!"
             self.best_individual_scores[level_num] = time
             if ghost_recorder != None:
                 self.ghosts[level_num] = ghost_recorder.to_ghost()
             dirty = True
         else:
-            print "Level "+str(level_num)+" completed! Time: " +str(Utils.format_time(time))+"\t Best: "+gamestate.Utils.format_time(current_record)
+            print "Level "+str(level_num)+" completed! Time: " +str(utilities.format_time(time))+"\t Best: "+gamestate.utilities.format_time(current_record)
             
         self.current_run_times[level_num] = time
         if level_num == self.get_num_levels()-1: #last level
@@ -235,12 +235,12 @@ class LevelManager:
             if final_time != None:
                 if self.best_overall_run_total == None or final_time < self.best_overall_run_total:
                     print "***NEW FULL RUN RECORD***"
-                    print "Previous record "+str(Utils.format_time(self.best_overall_run_total))+" broken with "+str(Utils.format_time(final_time))
+                    print "Previous record "+str(utilities.format_time(self.best_overall_run_total))+" broken with "+str(utilities.format_time(final_time))
                     self.best_overall_run_total = final_time
                     self.best_overall_run_scores = [self.current_run_times[i] for i in range(0,self.get_num_levels())]
                     dirty = True
                 else:
-                    print "Game Completed! Final time: "+str(Utils.format_time(final_time))
+                    print "Game Completed! Final time: "+str(utilities.format_time(final_time))
         
         if dirty:
             self.dump_highscores_to_file(0)
@@ -254,9 +254,9 @@ class LevelManager:
         if suppress_printing > 0:
             print "Saving highscores to "+self.get_highscores_filename()+"..."
         highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
-        highscores["best_overall_run_total"] = Utils.format_time(self.best_overall_run_total)
-        highscores["best_individual_scores"] = [Utils.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
-        highscores["best_overall_run_scores"] = [Utils.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
+        highscores["best_overall_run_total"] = utilities.format_time(self.best_overall_run_total)
+        highscores["best_individual_scores"] = [utilities.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
+        highscores["best_overall_run_scores"] = [utilities.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["ghosts"] = [phys_objects.Ghost.to_json(g) for g in self.ghosts]
         
         file = open(self.get_highscores_filename(), 'w')
@@ -266,7 +266,7 @@ class LevelManager:
             print json.dumps(highscores, indent=4, sort_keys=True)
         
         json_string = json.dumps(highscores, indent=4, sort_keys=True)
-        json_string = Utils.make_json_pretty(json_string)
+        json_string = utilities.make_json_pretty(json_string)
         file.write(json_string)
         
         file.close()
@@ -317,7 +317,7 @@ class LevelManager:
             
             print "dumping: "
             json_str = json.dumps(hs_dict, indent=4, sort_keys=True)
-            json_str = Utils.make_json_pretty(json_str)
+            json_str = utilities.make_json_pretty(json_str)
             #json.dump(hs_dict, file, indent=4, sort_keys=True)
             file.write(json_str)
             

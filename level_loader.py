@@ -5,7 +5,6 @@ import phys_objects
 import paths
 import equations
 import levels
-from utilities import Utils
 
 # filled at bottom of file
 LOADERS = {}

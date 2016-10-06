@@ -4,7 +4,7 @@ import math
 
 import equations
 import paths
-from utilities import Utils
+import utilities
 
 class Box(pygame.sprite.Sprite):
     def __init__(self, width, height, color=(128, 128, 128)):
@@ -130,7 +130,7 @@ class Box(pygame.sprite.Sprite):
         return self.color
     
     def set_color(self, color, perturb_color=0, only_greyscale=True):
-        self.color = Utils.perturb_color(color, perturb_color, only_greyscale)
+        self.color = utilities.perturb_color(color, perturb_color, only_greyscale)
         self.repaint()
     
     def set_theme_id(self, id):

@@ -7,7 +7,7 @@ import drawing
 import levels
 import collisions
 from options import HardSettings
-from utilities import Utils
+import utilities
 
 class GameState:
     def __init__(self, settings):
@@ -326,11 +326,11 @@ class PlayingState(InGameState):
         
         best_total_time = self.get_level_manager().get_best_run_time()
         total_time_text_color = self.get_time_display_color(self.total_time, best_total_time, start_color=(255, 255, 255), end_color=(255, 255, 255))
-        total_time_text = self.font.render("Total: " + Utils.format_time(self.total_time), True, total_time_text_color)
+        total_time_text = self.font.render("Total: " + utilities.format_time(self.total_time), True, total_time_text_color)
         
         best_level_time = self.get_level_manager().get_best_level_time(self.get_level_num())
         level_time_text_color = self.get_time_display_color(self.level_time, best_level_time)
-        level_time_text = self.font.render("Level: "+Utils.format_time(self.level_time), True, level_time_text_color)
+        level_time_text = self.font.render("Level: "+utilities.format_time(self.level_time), True, level_time_text_color)
         
         screen.blit(level_text, (xoffset, yoffset))
         screen.blit(level_title, (xoffset, yoffset + text_height))
