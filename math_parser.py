@@ -25,10 +25,20 @@ class MalformedException(Exception):
 
 
 def badfix(string):
-    string = string.replace(',', ' ')
+    string = string.replace(',', ' , ')
     for op in EMDAS:
         string = string.replace(op, ' ' + op + ' ')
     return string
+
+
+def comma_split(tree):
+    if ',' in tree:
+        i = tree.index(',')
+        l = tree[:i]
+        r = tree[i + 1:]
+        return [l] + comma_split(r)
+    return [tree]
+
 
 def descend(tree, depth):
     if depth == 0:
@@ -39,7 +49,7 @@ def descend(tree, depth):
 
 
 def paren(string):
-    split = [[y.strip() for y in x.split(')')] for x in string.split('(')]
+    split = [[y.strip() for y in x.split(')')] for x in badfix(string).split('(')]
     tree = [x for x in split[0][0].split(' ') if x]
     depth = 0
     for s in split[1:]:
@@ -82,14 +92,14 @@ def expression(tree):
             )
     if len(tree) == 2:
         f = expression(tree[0])
-        args = [expression(arg) for arg in tree[1]]
+        args = [expression(arg) for arg in comma_split(tree[1])]
         return lambda s: f(s)([arg(s) for arg in args])
     raise MalformedException('Unable to parse expression', tree)
     return lambda s: None
 
 
 def pythonify(string):
-    expr = expression(paren(badfix(string)))
+    expr = expression(paren(string))
     def evaluate(**kwargs):
         scope = dict(SCOPE)
         scope.update(kwargs)
