@@ -206,10 +206,10 @@ class Block(Box):
         return result
     
     @staticmethod
-    def from_json(data):
-        result = Block(data["width"], data["height"])
-        result.set_xy(data["x"], data["y"])
-        result.set_theme_id(data["theme"] if "theme" in data else "default")
+    def from_json(json_data):
+        result = Block(json_data["width"], json_data["height"])
+        result.set_xy(json_data["x"], json_data["y"])
+        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result
         
     def __str__(self):
@@ -252,6 +252,90 @@ class MovingBlock(Block):
         
     def __str__(self):
         return "Moving_Block"+self.rect_str()
+        
+
+class BadBlock(Block):
+    def __init__(self, width, height, color=None):
+        color = Block.BAD_COLOR if color == None else color
+        Block.__init__(self, width, height, color)
+    
+    def collided_with(self, obj, dir="NONE"):
+        if obj.is_actor():
+            obj.kill("touching a bad block.")
+            
+    def get_update_priority(self):
+        return 3
+        
+    def is_bad_block(self): return True
+    
+    def to_json(self):
+        my_json = Block.to_json(self)
+        my_json['type'] = "bad"
+        
+        if self.get_theme_id() != "default":
+            my_json["theme"] = self.get_theme_id()
+            
+        return my_json
+    
+    @staticmethod
+    def from_json(json_data):
+        result = BadBlock(json_data["width"], json_data["height"])
+        result.set_xy(json_data["x"], json_data["y"])
+        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
+        return result
+        
+    def __str__(self):
+        return "Bad_Block"+self.rect_str()
+        
+        
+class FinishBlock(Block):
+    def __init__(self, width=16, height=16, color=(0, 255, 0)):
+        Block.__init__(self, width, height, color)
+        
+    def collided_with(self, obj, dir="NONE"):
+        if obj.is_actor():
+            obj.finished_level = True
+    
+    @staticmethod
+    def from_json(json_data):
+        result = FinishBlock(json_data["width"], json_data["height"])
+        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
+        result.set_xy(json_data["x"], json_data["y"])
+        return result
+        
+    def to_json(self):
+        result = {
+            "type":"finish",
+            "x":self.x(),
+            "y":self.y(),
+            "width":self.width(),
+            "height":self.height()
+        }
+        
+        if self.get_theme_id() != "default":
+            result["theme"] = self.get_theme_id()
+            
+        return result
+            
+    def is_finish_block(self): return True
+    
+    def __str__(self):
+        return "Finish_Block"+self.rect_str()   
+
+        
+class BlockFactory:
+    CONSTRUCTORS = {
+        "normal":Block.from_json,
+        "finish":FinishBlock.from_json,
+        "bad":BadBlock.from_json
+    }
+    @staticmethod
+    def from_json(json_data):
+        block_type = json_data["type"]
+        if block_type in BlockFactory.CONSTRUCTORS:
+            return BlockFactory.CONSTRUCTORS[block_type](json_data)
+        else:
+            raise ValueError("Unrecognized block type: "+str(block_type))
     
     
 class Actor(Box):
@@ -382,39 +466,6 @@ class Actor(Box):
             return "Actor"+self.rect_str()
         
         
-class BadBlock(Block):
-    def __init__(self, width, height, color=None):
-        color = Block.BAD_COLOR if color == None else color
-        Block.__init__(self, width, height, color)
-    
-    def collided_with(self, obj, dir="NONE"):
-        if obj.is_actor():
-            obj.kill("touching a bad block.")
-            
-    def get_update_priority(self):
-        return 3
-        
-    def is_bad_block(self): return True
-    
-    def to_json(self):
-        my_json = Block.to_json(self)
-        my_json['type'] = "bad"
-        
-        if self.get_theme_id() != "default":
-            my_json["theme"] = self.get_theme_id()
-            
-        return my_json
-    
-    @staticmethod
-    def from_json(data):
-        result = BadBlock(data["width"], data["height"])
-        result.set_xy(data["x"], data["y"])
-        result.set_theme_id(data["theme"] if "theme" in data else "default")
-        return result
-        
-    def __str__(self):
-        return "Bad_Block"+self.rect_str()
-        
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)
     SMART_COLOR = (0, 125, 125)
@@ -477,11 +528,11 @@ class Enemy(Actor):
         }
         
     @staticmethod    
-    def from_json(data):
-        result = Enemy(data["width"], data["height"])
-        result.is_stompable = (data["type"] in ("smart", "dumb"))
-        result.walks_off_platforms = data["type"] == "dumb"
-        result.set_theme_id(data["theme"] if "theme" in data else "default")
+    def from_json(json_data):
+        result = Enemy(json_data["width"], json_data["height"])
+        result.is_stompable = (json_data["type"] in ("smart", "dumb"))
+        result.walks_off_platforms = json_data["type"] == "dumb"
+        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result
         
     def __str__(self):
@@ -511,56 +562,6 @@ class Enemy(Actor):
         res.color = Enemy.BAD_COLOR
         res.is_stompable = False
         return res
-
-        
-class FinishBlock(Block):
-    def __init__(self, width=16, height=16, color=(0, 255, 0)):
-        Block.__init__(self, width, height, color)
-        
-    def collided_with(self, obj, dir="NONE"):
-        if obj.is_actor():
-            obj.finished_level = True
-    
-    @staticmethod
-    def from_json(json_data):
-        result = FinishBlock(json_data["width"], json_data["height"])
-        result.set_theme_id(data["theme"] if "theme" in data else "default")
-        result.set_xy(json_data["x"], json_data["y"])
-        return result
-        
-    def to_json(self):
-        result = {
-            "type":"finish",
-            "x":self.x(),
-            "y":self.y(),
-            "width":self.width(),
-            "height":self.height()
-        }
-        
-        if self.get_theme_id() != "default":
-            result["theme"] = self.get_theme_id()
-            
-        return result
-            
-    def is_finish_block(self): return True
-    
-    def __str__(self):
-        return "Finish_Block"+self.rect_str()   
-
-        
-class BlockFactory:
-    CONSTRUCTORS = {
-        "normal":Block.from_json,
-        "finish":FinishBlock.from_json,
-        "bad":BadBlock.from_json
-    }
-    @staticmethod
-    def from_json(data):
-        block_type = data["type"]
-        if block_type in BlockFactory.CONSTRUCTORS:
-            return BlockFactory.CONSTRUCTORS[block_type](data)
-        else:
-            raise ValueError("Unrecognized block type: "+str(block_type))
             
             
 class GhostRecorder:

@@ -24,7 +24,7 @@ def load(filename):
     #   for err in sys.exc_info():
     #       print "\t"+str(err)
 
-def _load_1_1(data):
+def _load_version_1_1(data):
     _validate_1_1(data)
     
     name = data["info"]["name"]
@@ -58,7 +58,7 @@ def _load_1_1(data):
     return levels.Level(name, entity_list, spawns_list, theme_lookup)
         
         
-def _validate_1_1(data):
+def _validate_version_1_1(data):
     error_msg = ""
     for section in ("info", "spawns", "blocks", "themes"):
         if not section in data:
@@ -72,8 +72,10 @@ def _validate_1_1(data):
         raise ValueError(error_msg[1:]) # rem leading '\n'
         
         
-def _load_1_0(data):
+def _load_version_1_0(data):
     entity_list = []
+    spawn_list = []
+    theme_lookup = {}
     name = "<Unnamed>"
     if "info" in data and "name" in data["info"]:
         name = data["info"]["name"]
@@ -110,42 +112,29 @@ def _load_1_0(data):
         
     if "enemies" in data:
         for elem in data["enemies"]:
-            if elem["type"] == "smart":
-                enemy = phys_objects.Enemy.get_smart_walker_enemy(int(elem["x"]), int(elem["y"]))
-            elif elem["type"] == "dumb":
-                enemy = phys_objects.Enemy.get_stupid_walker_enemy(int(elem["x"]), int(elem["y"]))
-            elif elem["type"] == "bad":
-                enemy = phys_objects.Enemy.get_bad_enemy(int(elem["x"]), int(elem["y"]))
-            else:
-                continue
-            entity_list.append(enemy)
-    
-    if "spawns" in data:
-        pass
+            elem["width"] = 24
+            elem["height"] = 32
+            spawner = phys_objects.SpawnPoint(int(elem["x"]), int(elem["y"]), phys_objects.Enemy.from_json(elem))
+            spawn_list.append(spawner)
         
-    theme = None 
     if "theme" in data:
-        elem = data["theme"]
-        if isinstance(elem, type({})):
-            theme = Theme()
-            for key in elem:
-                val = elem[key]
-                theme.set(key, val)
-        else:
-            # elem = "ice", "fire", ...
-            theme = levels.Theme(elem)
-            
+        theme_lookup["default"] = levels.Theme.from_json(data["theme"])
+    else:
+        theme_lookup["default"] = levels.Theme.from_json("default")
     
-    actor = phys_objects.Actor().set_xy(int(data["actor"]["x"]), int(data["actor"]["y"]))
-    actor.is_player = True
+    actor_spawn = phys_objects.SpawnPoint(int(data["actor"]["x"]), int(data["actor"]["y"]), "player")
+    spawn_list.append(actor_spawn)
     
-    entity_list.append(actor)
+    for spawner in spawn_list:
+        entity_list.append(spawner.get_actor())
+        spawner.do_spawn()
+    
     entity_list = sorted(entity_list)
     
-    return levels.Level(entity_list, name, theme)
+    return levels.Level(name, entity_list, spawn_list, theme_lookup)
 
-LOADERS["1.0"] = _load_1_0
-LOADERS["1.1"] = _load_1_1
+LOADERS["1.0"] = _load_version_1_0
+LOADERS["1.1"] = _load_version_1_1
 
 if __name__ == "__main__":
     filename = "levels/v2_levels/test_level.json"
