@@ -2,7 +2,7 @@
 
 import pygame
 
-import phys_objects
+import blocks, actors
 import drawing
 import gamestate
 from options import Settings

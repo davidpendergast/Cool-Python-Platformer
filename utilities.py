@@ -164,7 +164,11 @@ if __name__ == "__main__":
             {"type":"spawn", "x":0, "y":0, "actor":"player"},
             {"type":"spawn", "x":200, "y": -100, "actor": {"type":"smart", "x":938, "y":32, "width":24, "height":32}}
         ],
-        "just_an_int":45
+        "just_an_int":45,
+        "lists_within_lists": [
+            ["a", "b", "c"],
+            ["a", ["b", "c"]]
+        ]
     }
     
     print level_json_to_string(json_datas)

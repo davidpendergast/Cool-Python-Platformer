@@ -1,7 +1,7 @@
 import sys
 import json
 
-import phys_objects
+import blocks, actors
 import paths
 import equations
 import levels
@@ -37,10 +37,10 @@ def _load_version_1_1(data):
         new_theme = levels.Theme.from_json(theme_val)
         theme_lookup[theme_id] = new_theme
     for elem in data["blocks"]:
-        new_block = phys_objects.BlockFactory.from_json(elem)
+        new_block = blocks.BlockFactory.from_json(elem)
         entity_list.append(new_block)
     for elem in data["spawns"]:
-        new_spawn = phys_objects.SpawnPoint.from_json(elem)
+        new_spawn = actors.SpawnPoint.from_json(elem)
         spawns_list.append(new_spawn)
         entity_list.append(new_spawn.get_actor())
         
@@ -83,13 +83,13 @@ def _load_version_1_0(data):
     if "blocks" in data:
         for elem in data["blocks"]:
             if elem["type"] == "normal":
-                block = phys_objects.Block(int(elem["width"]), int(elem["height"]))
+                block = blocks.Block(int(elem["width"]), int(elem["height"]))
                 block.set_xy(int(elem["x"]), int(elem["y"]))
             elif elem["type"] == "bad":
-                block = phys_objects.BadBlock(int(elem["width"]), int(elem["height"]))
+                block = blocks.BadBlock(int(elem["width"]), int(elem["height"]))
                 block.set_xy(int(elem["x"]), int(elem["y"]))
             elif elem["type"] == "finish":
-                block = phys_objects.FinishBlock(int(elem["width"]), int(elem["height"]))
+                block = blocks.FinishBlock(int(elem["width"]), int(elem["height"]))
                 block.set_xy(int(elem["x"]), int(elem["y"]))
             elif elem["type"] == "moving":
                 path = None
@@ -104,7 +104,7 @@ def _load_version_1_0(data):
                     speed = elem["speed"]
                     path = paths.PointPath(x_points, y_points, speed)
                 
-                block = phys_objects.MovingBlock(int(elem["width"]), int(elem["height"]), path)
+                block = blocks.MovingBlock(int(elem["width"]), int(elem["height"]), path)
             else:
                 continue
             entity_list.append(block)
@@ -115,7 +115,7 @@ def _load_version_1_0(data):
         for elem in data["enemies"]:
             elem["width"] = 24
             elem["height"] = 32
-            spawner = phys_objects.SpawnPoint(int(elem["x"]), int(elem["y"]), phys_objects.Enemy.from_json(elem))
+            spawner = actors.SpawnPoint(int(elem["x"]), int(elem["y"]), actors.Enemy.from_json(elem))
             spawn_list.append(spawner)
         
     if "theme" in data:
@@ -123,7 +123,7 @@ def _load_version_1_0(data):
     else:
         theme_lookup["default"] = levels.Theme.from_json("default")
     
-    actor_spawn = phys_objects.SpawnPoint(int(data["actor"]["x"]), int(data["actor"]["y"]), "player")
+    actor_spawn = actors.SpawnPoint(int(data["actor"]["x"]), int(data["actor"]["y"]), "player")
     spawn_list.append(actor_spawn)
     
     for spawner in spawn_list:

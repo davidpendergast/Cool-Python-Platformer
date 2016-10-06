@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 
-import phys_objects
+import blocks, actors
 import drawing
 import levels
 import collisions
@@ -89,7 +89,7 @@ class PlatformerInstance:
     # state that's shared between PlayingState and EditingState
     def __init__(self, settings):
         self.settings = settings
-        self.player = phys_objects.Actor(24, 32, settings.get_color())
+        self.player = actors.Actor(24, 32, settings.get_color())
         self.player.is_player = True
         self.level_manager = levels.LevelManager(self.settings)
         self.drawer = drawing.Drawer()
@@ -180,7 +180,7 @@ class PlayingState(InGameState):
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         
-        self.ghost_recorder = phys_objects.GhostRecorder(self.get_player())
+        self.ghost_recorder = actors.GhostRecorder(self.get_player())
         self.death_count = 0
         
         self.total_time = 0

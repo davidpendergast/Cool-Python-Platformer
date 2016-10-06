@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 import pygame
 
-import phys_objects
+import blocks, actors
 import paths
 import gamestate
 import equations
@@ -181,7 +181,7 @@ class LevelManager:
         self.best_overall_run_total = utilities.unformat_time(highscores["best_overall_run_total"])
         self.best_individual_scores = [utilities.unformat_time(highscores["best_individual_scores"][i]) for i in range(self.get_num_levels())]
         self.best_overall_run_scores = [utilities.unformat_time(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
-        self.ghosts = [phys_objects.Ghost.from_json(g) for g in highscores["ghosts"]]
+        self.ghosts = [actors.Ghost.from_json(g) for g in highscores["ghosts"]]
         
     def get_num_levels(self):
         return len(self.level_filenames)
@@ -257,7 +257,7 @@ class LevelManager:
         highscores["best_overall_run_total"] = utilities.format_time(self.best_overall_run_total)
         highscores["best_individual_scores"] = [utilities.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["best_overall_run_scores"] = [utilities.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
-        highscores["ghosts"] = [phys_objects.Ghost.to_json(g) for g in self.ghosts]
+        highscores["ghosts"] = [actors.Ghost.to_json(g) for g in self.ghosts]
         
         file = open(self.get_highscores_filename(), 'w')
         
@@ -274,10 +274,10 @@ class LevelManager:
     def create_void_level(self):
         entity_list = []
        
-        entity_list.append(phys_objects.Block(128, 128).set_xy(0, 128))
-        entity_list.append(phys_objects.FinishBlock(16, 16).set_xy(56, -64))
+        entity_list.append(blocks.Block(128, 128).set_xy(0, 128))
+        entity_list.append(blocks.FinishBlock(16, 16).set_xy(56, -64))
         
-        actor = phys_objects.Actor().set_xy(32, 96)
+        actor = actors.Actor().set_xy(32, 96)
         actor.is_player = True
         entity_list.append(actor)
         

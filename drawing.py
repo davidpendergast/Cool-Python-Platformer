@@ -1,4 +1,4 @@
-import pygame, phys_objects
+import pygame, blocks
 
 class Drawer:
     def __init__(self):
