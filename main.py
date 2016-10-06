@@ -38,7 +38,8 @@ while still_running:
     gamestate_manager.pre_event_update()
     
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+        if event.type == pygame.QUIT or 
+                (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             still_running = False
         else:
             gamestate_manager.handle_event(event)
