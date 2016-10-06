@@ -192,13 +192,18 @@ class Block(Box):
     def is_block(self): return True
     
     def to_json(self):
-        return {
+        result = {
             "type":"normal",
-            "width":self.get_width(),
-            "height":self.get_height(),
+            "width":self.width(),
+            "height":self.height(),
             "x":self.x(),
             "y":self.y()
         }
+        
+        if self.get_theme_id() != "default":
+            result["theme"] = self.get_theme_id()
+            
+        return result
     
     @staticmethod
     def from_json(data):
@@ -236,11 +241,13 @@ class MovingBlock(Block):
     def to_json(self):
         my_json = {
             "type":"moving",
-            "width":self.get_width(),
-            "height":self.get_height()
+            "width":self.width(),
+            "height":self.height()
         }
         self.path.add_to_json(my_json)
-        my_json["theme"] = self.get_theme_id()
+        if self.get_theme_id() != "default":
+            my_json["theme"] = self.get_theme_id()
+            
         return my_json
         
     def __str__(self):
@@ -392,7 +399,10 @@ class BadBlock(Block):
     def to_json(self):
         my_json = Block.to_json(self)
         my_json['type'] = "bad"
-        my_json["theme"] = self.get_theme_id()
+        
+        if self.get_theme_id() != "default":
+            my_json["theme"] = self.get_theme_id()
+            
         return my_json
     
     @staticmethod
@@ -519,14 +529,18 @@ class FinishBlock(Block):
         return result
         
     def to_json(self):
-        return {
+        result = {
             "type":"finish",
             "x":self.x(),
             "y":self.y(),
             "width":self.width(),
-            "height":self.height(),
-            "theme":self.get_theme_id()
+            "height":self.height()
         }
+        
+        if self.get_theme_id() != "default":
+            result["theme"] = self.get_theme_id()
+            
+        return result
             
     def is_finish_block(self): return True
     
@@ -642,11 +656,17 @@ class SpawnPoint(Box):
         return "Spawn"+self.rect_str()
         
     def to_json(self):
+        if isinstance(self.actor, basestring):
+            actor_json = self.actor
+        elif self.actor.is_player:
+            actor_json = "player"
+        else:
+            actor_json = self.actor.to_json()
         return {
             "type":"spawn",
             "x":self.x(),
             "y":self.y(),
-            "actor":self.actor.to_json()
+            "actor":actor_json
         }
     
     @staticmethod

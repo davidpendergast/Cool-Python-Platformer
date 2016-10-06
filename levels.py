@@ -14,8 +14,6 @@ import options
 from utilities import Utils
 import level_loader
 
-# Level class is essentially just a list of the entities in a level, as well as information 
-# about the level including its name and number.
 class Level:
         def __init__(self, name, entity_list, spawn_list, theme_dict):
             self.name = name
@@ -23,6 +21,8 @@ class Level:
             self.entity_list = entity_list[:]
             self.spawn_list = spawn_list[:]
             self.theme_lookup = dict(theme_dict)
+            print str(self.theme_lookup)
+            self.background_color = self.theme_lookup["default"].values["background_color"]
 
             self.actor = self._find_player()
             if self.actor == None:
@@ -73,11 +73,12 @@ class Level:
                 my_json["spawns"].append(spawn.to_json())
             for id in self.theme_lookup:
                 theme = self.theme_lookup[id]
-                if theme.is_built_in:
-                    my_json["themes"][id] = theme.built_in_id
-                else:
-                    my_json["themes"][id] = theme.to_json()
-                    
+                theme_json = theme.to_json()
+                
+                # want to avoid redundant entries like "ice":"ice"
+                if theme_json != id:
+                    my_json["themes"][id] = theme_json
+    
             return my_json
             
 BUILT_IN_THEMES = {}
@@ -113,28 +114,10 @@ class Theme:
             object.set_color(self.values["finish_color"], 0)
         elif object.is_block():
             object.set_color(self.values["normal_color"], self.values["normal_perturb"], self.values["perturb_grayscale_only"])
-    
-    def __eq__(self, other):
-        if not isinstance(other, Theme):
-            return False
-        return self.normal_color == other.normal_color and \
-            self.normal_perturb == other.normal_perturb and \
-            self.perturb_grayscale_only == other.perturb_grayscale_only and \
-            self.moving_color == other.moving_color and \
-            self.moving_perturb == other.moving_perturb and \
-            self.bad_color == other.bad_color and \
-            self.background_color == other.background_color and \
-            self.finish_color == other.finish_color
-    
-    def set(self, field, value):
-        if field not in self.values:
-            raise ValueError("Theme field not recognized: "+str(field))
-        self.values[field] = value
-        return self
         
     def to_json(self):
-        if self.id != None:
-            return self.id
+        if self.is_built_in:
+            return self.built_in_id
         else:
             return self.values
     
@@ -362,7 +345,3 @@ class LevelManager:
         
     def get_highscores_filename(self):
         return self.file_dir+"/highscores.json"
-        
-
-        
-        

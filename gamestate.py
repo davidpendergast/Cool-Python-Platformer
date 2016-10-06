@@ -132,6 +132,8 @@ class InGameState(GameState):
         return self.platformer_instance.get_level_num()
     def get_player(self):
         return self.platformer_instance.get_player()
+    def get_current_level(self):
+        return self.platformer_instance.current_level()
     def get_drawer(self):
         return self.platformer_instance.drawer
     def handle_event(self, event):
@@ -352,6 +354,7 @@ class PlayingState(InGameState):
             
 class EditingState(InGameState):
     SELECTED_COLOR = (255, 128, 255)
+    temp_output_file = "levels/v2_levels/output_level.json"
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         self.selected = None
@@ -363,26 +366,9 @@ class EditingState(InGameState):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_e:
                 self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
-            
-                self.keys['left'] = True
-            elif event.key == pygame.K_d:
-                self.keys['right'] = True
-            
-                
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_a:
-                self.keys['left'] = False
-            elif event.key == pygame.K_d:
-                self.keys['right'] = False
-            elif event.key == pygame.K_w:
-                self.keys['up'] = False
-            elif event.key == pygame.K_s:
-                self.keys['down'] = False
-            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
-                self.keys['ctrl'] = False
-            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
-                self.keys['shift'] = False
-                
+            elif event.key == pygame.K_s and self.keys["ctrl"]:
+                self.do_save()
+ 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
             grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
@@ -409,7 +395,14 @@ class EditingState(InGameState):
                 item.update(dt)
         
         self.platformer_instance.current_level().bring_out_yer_dead()
-        
+    
+    def do_save(self):
+        print "Saving..."
+        curr_json = self.get_current_level().to_json()
+        with open(EditingState.temp_output_file, 'w') as outfile:
+            json.dump(curr_json, outfile, sort_keys = True, indent = 4)
+        print "done."
+    
     def do_camera_move(self, dt):
         if bool(self.keys['left']) ^ bool(self.keys['right']):
             if self.keys['left']: 
