@@ -400,7 +400,10 @@ class EditingState(InGameState):
         print "Saving..."
         curr_json = self.get_current_level().to_json()
         with open(EditingState.temp_output_file, 'w') as outfile:
-            json.dump(curr_json, outfile, sort_keys = True, indent = 4)
+            json_string = utilities.level_json_to_string(curr_json)
+            print "writing text:\n" + json_string
+            # json.dump(curr_json, outfile, sort_keys = True, indent = 4)
+            outfile.write(json_string)
         print "done."
     
     def do_camera_move(self, dt):

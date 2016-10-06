@@ -25,7 +25,7 @@ def load(filename):
     #       print "\t"+str(err)
 
 def _load_version_1_1(data):
-    _validate_1_1(data)
+    _validate_version_1_1(data)
     
     name = data["info"]["name"]
     theme_lookup = dict(levels.BUILT_IN_THEMES)
@@ -128,6 +128,10 @@ def _load_version_1_0(data):
     for spawner in spawn_list:
         entity_list.append(spawner.get_actor())
         spawner.do_spawn()
+        
+    for entity in entity_list:
+        entity.set_theme_id("default")
+        theme_lookup["default"].apply(entity)
     
     entity_list = sorted(entity_list)
     
