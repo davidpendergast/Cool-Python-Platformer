@@ -250,6 +250,24 @@ class MovingBlock(Block):
             
         return my_json
         
+    @staticmethod
+    def from_json(json_data):
+        path = None
+        if "x_path" in json_data and "y_path" in json_data:
+            x_path = equations.pythonify(str(json_data["x_path"]))
+            y_path = equations.pythonify(str(json_data["y_path"]))
+            path = paths.Path(x_path, y_path)
+            path.set_raw_json(json_data["x_path"], json_data["y_path"])
+        elif "x_points" in json_data and "y_points" in json_data and "speed" in json_data:
+            x_points = json_data["x_points"]
+            y_points = json_data["y_points"]
+            speed = json_data["speed"]
+            path = paths.PointPath(x_points, y_points, speed)
+        
+        result = MovingBlock(int(json_data["width"]), int(json_data["height"]), path)
+        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
+        return result
+        
     def __str__(self):
         return "Moving_Block"+self.rect_str()
         
@@ -327,7 +345,8 @@ class BlockFactory:
     CONSTRUCTORS = {
         "normal":Block.from_json,
         "finish":FinishBlock.from_json,
-        "bad":BadBlock.from_json
+        "bad":BadBlock.from_json,
+        "moving":MovingBlock.from_json
     }
     @staticmethod
     def from_json(json_data):

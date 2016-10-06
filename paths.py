@@ -7,7 +7,7 @@ class Path:
         self.t = 0;
         self.x_fun = x_expression
         self.y_fun = y_expression
-        self.integral=integral
+        self.integral = integral
         
     def get_xy(self):
         x = self.x_fun(self.t)
@@ -21,8 +21,16 @@ class Path:
         self.t += dt
     
     def add_to_json(self, json_dict):
-        json_dict["x_path"] = str(self.x_expression)
-        json_dict["y_path"] = str(self.y_expression)
+        if hasattr(self, 'raw_json'):
+            json_dict["x_path"] = self.raw_json[0]
+            json_dict["y_path"] = self.raw_json[1]
+        else:
+            json_dict["x_path"] = str(self.x_fun)
+            json_dict["y_path"] = str(self.y_fun)
+        
+    # xxx - no no no
+    def set_raw_json(self, x_json, y_json):
+        self.raw_json = (x_json, y_json)
         
         
 class PointPath(Path):  
@@ -30,11 +38,14 @@ class PointPath(Path):
         self.x_points = x_points
         self.y_points = y_points
         self.speed = speed
+        
         if len(self.x_points) < 2 or len(self.y_points) < 2 or len(self.x_points) != len(self.y_points):
             raise ValueError("Path given arrays of invalid lengths: x_points="+str(len(self.x_points))+", y_points="+str(len(self.y_points)))
-        self.dest_index = 1
         
-        Path.__init__(self, self.get_spline_funct(self.x_points[0],self.x_points[1]), self.get_spline_funct(self.y_points[0],self.y_points[1]))
+        self.dest_index = 1
+        Path.__init__(self, 
+                self.get_spline_funct(self.x_points[0], self.x_points[1]), 
+                self.get_spline_funct(self.y_points[0], self.y_points[1]))
         
         self.at_end_of_spline = False
         
@@ -50,8 +61,13 @@ class PointPath(Path):
             self.t = 0
             self.dest_index = (self.dest_index + 1) % len(self.x_points)
             
-            self.x_fun = self.get_spline_funct(self.x_points[self.dest_index-1], self.x_points[self.dest_index])
-            self.y_fun = self.get_spline_funct(self.y_points[self.dest_index-1], self.y_points[self.dest_index])
+            self.x_fun = self.get_spline_funct(
+                    self.x_points[self.dest_index-1], 
+                    self.x_points[self.dest_index])
+            self.y_fun = self.get_spline_funct(
+                    self.y_points[self.dest_index-1], 
+                    self.y_points[self.dest_index])
+                    
             self.at_end_of_spline = False
       
         self.t += dt
@@ -69,4 +85,5 @@ class PointPath(Path):
     def add_to_json(self, json_dict):
         json_dict["x_points"] = self.x_points
         json_dict["y_points"] = self.y_points
+        json_dict["speed"] = self.speed
         

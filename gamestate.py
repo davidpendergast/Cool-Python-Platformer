@@ -354,7 +354,7 @@ class PlayingState(InGameState):
             
 class EditingState(InGameState):
     SELECTED_COLOR = (255, 128, 255)
-    temp_output_file = "levels/v2_levels/output_level.json"
+    temp_output_file = "levels/v2_levels/output_level"
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         self.selected = None
@@ -399,7 +399,8 @@ class EditingState(InGameState):
     def do_save(self):
         print "Saving..."
         curr_json = self.get_current_level().to_json()
-        with open(EditingState.temp_output_file, 'w') as outfile:
+        num = self.get_level_num()
+        with open(EditingState.temp_output_file + str(num) +".json", 'w') as outfile:
             json_string = utilities.level_json_to_string(curr_json)
             print "writing text:\n" + json_string
             # json.dump(curr_json, outfile, sort_keys = True, indent = 4)
