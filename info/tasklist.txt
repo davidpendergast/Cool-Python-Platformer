@@ -57,10 +57,15 @@ DONE    toggleable mode when dev_mode is enabled
 DONE        pan camera independently of actor position
 DONE        select blocks
             place blocks
-            delete blocks
+DONE        delete blocks
             edit block attributes (just edit their json?)
+DONE            position
+DONE            dimensions
+                paaaaaaths
+                themes
+                spawn stuff
             zoom view in and out
-            save levels out (formatting issues?)
+DONE        save levels out (formatting issues?)
             
     Level Storage:
 DONE    store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead
@@ -131,10 +136,6 @@ NO          super meat boy style replay of all attempts upon completion of level
                     --would have to pause timer and sorta interfere with speedrunning flow (?)
                 --current code probably can't handle 100s of actors going at once, especially if 
                     physics/collision calculations are required for each one
-        
-    Level Builder:
-        --would require a lot of UI stuff
-        --would require exporting levels to json
         
     Music/Sound:
         --adds a lot to the atmosphere, also to the annoyance

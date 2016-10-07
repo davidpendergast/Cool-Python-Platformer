@@ -10,7 +10,6 @@ from options import Settings
 from options import HardSettings
 from gamestate import GameStateManager, PlayingState, EditingState, PlatformerInstance
 
-
 pygame.init()
 
 settings = Settings()

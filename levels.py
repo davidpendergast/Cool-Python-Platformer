@@ -28,7 +28,10 @@ class Level:
             self.entity_list.append(obj)
             
         def remove_object(self, obj):
-            self.entity_list.remove(obj)
+            index = self.entity_list.index(obj)
+            print "deleting object at index: "+str(index)
+            del self.entity_list[index]
+            #self.entity_list.remove(obj)
             
         def get_objects_at(self, (x, y)):
             return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]
@@ -302,7 +305,7 @@ class LevelManager:
         
         to_log = "\tlevel filenames are:"
         for filename in res:
-            to_log += "\n\t\t"+str(filename))
+            to_log += "\n\t\t" + str(filename)
         utilities.log(to_log)
             
         return res

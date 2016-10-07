@@ -79,6 +79,15 @@ class Box(pygame.sprite.Sprite):
     
     def height(self):
         return self.rect.height
+    
+    def set_size(self, width, height):
+        "-1 = no change"
+        if width != -1:
+            self.rect.width = width
+        if height != -1:
+            self.rect.height = height
+        self.image = pygame.Surface((self.width(), self.height()))
+        self.repaint()
         
     def get_xy(self):
         return (self.x(), self.y())
@@ -146,6 +155,9 @@ class Box(pygame.sprite.Sprite):
             return self.get_update_priority() - other.get_update_priority() 
         else:
             return 1
+    
+    def __eq__(self, other):
+        return self is other
     
     def get_update_priority(self):
         return -1

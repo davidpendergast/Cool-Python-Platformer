@@ -367,11 +367,24 @@ class EditingState(InGameState):
         
     def handle_event(self, event):
         InGameState.handle_event(self, event)
+        transform_funct = self.expand_selected if self.keys["ctrl"] else self.move_selected
+        transform_value = 4 if self.keys["shift"] else 32
+        
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_e:
                 self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
             elif event.key == pygame.K_s and self.keys["ctrl"]:
                 self.do_save()
+            elif event.key == pygame.K_DELETE:
+                self.delete_selected()
+            elif event.key == pygame.K_i:
+                transform_funct(0, -transform_value)
+            elif event.key == pygame.K_j:
+                transform_funct(-transform_value, 0)
+            elif event.key == pygame.K_k:
+                transform_funct(0, transform_value)
+            elif event.key == pygame.K_l:
+                transform_funct(transform_value, 0)
  
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
@@ -434,6 +447,9 @@ class EditingState(InGameState):
     def draw(self, screen):
         self.get_drawer().draw(screen, self.get_entities())
         
+    def switching_from(self, new_state_id):
+        self.set_selected(None)
+        
     def set_selected(self, obj):
         if self.selected != None:
             self.selected.set_color(self.selected_old_color)
@@ -445,10 +461,21 @@ class EditingState(InGameState):
             utilities.log(str(self.selected) + " selected!")
             self.selected_old_color = self.selected.color
             self.selected.set_color(EditingState.SELECTED_COLOR)
-    
-    def switching_from(self, new_state_id):
-        self.set_selected(None)
             
+    def delete_selected(self):
+        if self.selected != None:
+            utilities.log("deleting "+str(self.selected))
+            self.get_current_level().remove_object(self.selected)
+            self.set_selected(None)
             
-                
-        
+    def expand_selected(self, width_expand, height_expand):
+        if self.selected != None:
+            utilities.log("stretching "+str(self.selected)+" by "+str(width_expand)+", "+str(height_expand))
+            width = self.selected.width()
+            height = self.selected.height()
+            self.selected.set_size(max(8, width + width_expand), max(8, height + height_expand))
+            
+    def move_selected(self, x_move, y_move):
+        if self.selected != None:
+            utilities.log("moving "+str(self.selected)+" by "+str(x_move)+", "+str(y_move))
+            self.selected.set_xy(self.selected.x() + x_move, self.selected.y() + y_move)
