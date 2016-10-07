@@ -361,30 +361,36 @@ class EditingState(InGameState):
         InGameState.__init__(self, settings, platformer_instance)
         self.selected = None
         self.selected_old_color = None
+        self.build_keymapping()
         
     def pre_event_update(self):
         pass
+    
+    def build_keymapping(self):
+        self.key_mapping = {
+            pygame.K_DELETE: lambda: self.delete_selected(),
+            pygame.K_e:     lambda: self.state_manager.set_current_state(GameStateManager.PLAYING_STATE),
+            pygame.K_i:     lambda: self.expand_selected(0, -self._val()),
+            pygame.K_j:     lambda: self.expand_selected(-self._val(), 0),
+            pygame.K_k:     lambda: self.expand_selected(0, self._val()),
+            pygame.K_l:     lambda: self.expand_selected(self._val(), 0),
+            pygame.K_UP:    lambda: self.move_selected(0, -self._val()),
+            pygame.K_DOWN:  lambda: self.move_selected(0, self._val()),
+            pygame.K_LEFT:  lambda: self.move_selected(-self._val(), 0),
+            pygame.K_RIGHT: lambda: self.move_selected(self._val(), 0)
+        }
         
+    def _val(self):
+        return 4 if self.keys["shift"] else 32
+    
     def handle_event(self, event):
         InGameState.handle_event(self, event)
-        transform_funct = self.expand_selected if self.keys["ctrl"] else self.move_selected
-        transform_value = 4 if self.keys["shift"] else 32
         
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_e:
-                self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
+            if event.key in self.key_mapping:
+                self.key_mapping[event.key]()
             elif event.key == pygame.K_s and self.keys["ctrl"]:
                 self.do_save()
-            elif event.key == pygame.K_DELETE:
-                self.delete_selected()
-            elif event.key == pygame.K_i:
-                transform_funct(0, -transform_value)
-            elif event.key == pygame.K_j:
-                transform_funct(-transform_value, 0)
-            elif event.key == pygame.K_k:
-                transform_funct(0, transform_value)
-            elif event.key == pygame.K_l:
-                transform_funct(transform_value, 0)
  
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
