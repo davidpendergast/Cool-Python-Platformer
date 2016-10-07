@@ -1,6 +1,7 @@
 import pygame
 import sys
 import json
+import os
 
 import blocks, actors
 import drawing
@@ -355,7 +356,7 @@ class PlayingState(InGameState):
             
 class EditingState(InGameState):
     SELECTED_COLOR = (255, 128, 255)
-    temp_output_file = "levels/v2_levels/output_level"
+    output_dir = "saved_levels"
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         self.selected = None
@@ -375,7 +376,7 @@ class EditingState(InGameState):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
             grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
-            print "Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]"
+            utilities.log("Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]")
             if self.keys['ctrl']:
                 pass
             elif self.keys['shift']:
@@ -400,8 +401,14 @@ class EditingState(InGameState):
         self.platformer_instance.current_level().bring_out_yer_dead()
     
     def do_save(self):
+    
+        directory = EditingState.output_dir
+        if not os.path.exists(directory):
+            utilities.log("Creating directory: "+directory+"...")
+            os.makedirs(directory)
+        
         num = self.get_level_num()
-        filename = EditingState.temp_output_file + str(num) + ".json"
+        filename = directory + "/saved_level_" + str(num) + ".json"
         utilities.log("Saving " + filename + "...")
         curr_json = self.get_current_level().to_json()
         
@@ -435,7 +442,7 @@ class EditingState(InGameState):
         self.selected = obj
         
         if self.selected != None:
-            print str(self.selected) + " selected!"
+            utilities.log(str(self.selected) + " selected!")
             self.selected_old_color = self.selected.color
             self.selected.set_color(EditingState.SELECTED_COLOR)
     

@@ -1,12 +1,10 @@
 import math
 
-import equations
 import math_parser
 
 class Path:
     def __init__(self, x_path_string, y_path_string):
         self.t = 0;
-        print str(x_path_string) +", " + str(y_path_string)
         self.path_strings = (x_path_string, y_path_string) # used for serialization
         self.x_fun = math_parser.pythonify(x_path_string)
         self.y_fun = math_parser.pythonify(y_path_string)

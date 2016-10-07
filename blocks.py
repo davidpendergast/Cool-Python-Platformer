@@ -2,7 +2,6 @@ import pygame
 import sets 
 import math
 
-import equations
 import paths
 import utilities
 

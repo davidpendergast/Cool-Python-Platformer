@@ -1,15 +1,12 @@
 import sys
 import json
 import os
-from pprint import pprint
-from StringIO import StringIO
 
 import pygame
 
 import blocks, actors
 import paths
 import gamestate
-import equations
 import options
 import utilities
 import level_loader
@@ -303,33 +300,31 @@ class LevelManager:
                 
             res.append(line)
         
-        utilities.log("\tlevel filenames are:")
+        to_log = "\tlevel filenames are:"
         for filename in res:
-            print "\t\t"+str(filename)
+            to_log += "\n\t\t"+str(filename))
+        utilities.log(to_log)
             
         return res
         
     def load_or_create_highscore_data(self):
         hs_dict = None
         if os.path.isfile("./"+self.get_highscores_filename()) and os.path.getsize("./"+self.get_highscores_filename()) > 0:
-            print "Reading "+self.file_dir+"/highscores.json..."
+            utilities.log("Reading "+self.file_dir+"/highscores.json...")
             with open(self.file_dir+"/highscores.json") as data_file:
                 hs_dict = json.load(data_file)
                 hs_dict = self.repair_highscore_data_if_necessary(hs_dict)
         else:
-            print "Creating " + self.file_dir+"/highscores.json..."
+            utilities.log("Creating " + self.file_dir+"/highscores.json...")
             num_levels = self.get_num_levels()
             hs_dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
             
-            file = open(self.file_dir+"/highscores.json", 'w')
-            
-            print "dumping: "
-            json_str = json.dumps(hs_dict, indent=4, sort_keys=True)
-            json_str = utilities.make_json_pretty(json_str)
-            #json.dump(hs_dict, file, indent=4, sort_keys=True)
-            file.write(json_str)
-            
-            file.close()
+            with open(self.file_dir+"/highscores.json", 'w') as file:
+                json_str = json.dumps(hs_dict, indent=4, sort_keys=True)
+                json_str = utilities.make_json_pretty(json_str)
+                #json.dump(hs_dict, file, indent=4, sort_keys=True)
+                file.write(json_str)
+                
         return hs_dict
         
     @staticmethod
@@ -346,7 +341,7 @@ class LevelManager:
         damaged |= len(highscore_data["best_overall_run_scores"]) != self.get_num_levels()
         
         if damaged:
-            print "highscores.json is invalid, wiping scores." # a bit excessive but w/ever
+            utilities.log("highscores.json is invalid, wiping scores.")
             return self.generate_empty_highscores_dict(self.get_num_levels())
             
         return highscore_data    

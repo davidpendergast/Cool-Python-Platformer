@@ -1,4 +1,0 @@
-crush_test.json
-every_object.json
-level_3.json
-level_4.json
