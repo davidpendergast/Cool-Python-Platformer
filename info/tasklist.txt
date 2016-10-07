@@ -67,6 +67,12 @@ DONE    store paths and themes separately from their blocks, give blocks path_id
             --will make editing paths easier in game
             --super needed for themes
 DONE    custom json formatter to make easier to read
+        sort json attributes more reasonably (type, x, y, width, height)
+        header file is stupid
+            --should levels know their own number?
+                --what if they disagree?
+        make levels save to somewhere more reasonable
+        
          
             
 @~~~~~~~~~~~~@
