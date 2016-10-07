@@ -1,9 +1,9 @@
 {
     "blocks": [
         {"height": 16, "type": "finish", "width": 16, "x": 1416, "y": 424},
-        {"height": 32, "type": "moving", "width": 96, "path": {"type":"path", "x_path": "1104 + 144 * sin(0.02*t)", "y_path": "512"}},
-        {"height": 32, "type": "moving", "width": 96, "path": {"type":"path", "x_path": "608 + 128*sin(0.02 * t)", "y_path": "448 + 64*sin(0.02*t)"}},
-        {"height": 32, "type": "moving", "width": 96, "path": {"type":"path", "x_path": "128", "y_path": "256 + 128*sin(0.02 * t)"}},
+        {"height": 32, "path": {"type": "path", "x_path": "1104 + 144 * sin(0.02*t)", "y_path": "512"}, "type": "moving", "width": 96},
+        {"height": 32, "path": {"type": "path", "x_path": "608 + 128*sin(0.02 * t)", "y_path": "448 + 64*sin(0.02*t)"}, "type": "moving", "width": 96},
+        {"height": 32, "path": {"type": "path", "x_path": "128", "y_path": "256 + 128*sin(0.02 * t)"}, "type": "moving", "width": 96},
         {"height": 32, "type": "normal", "width": 256, "x": 224, "y": 384},
         {"height": 256, "type": "normal", "width": 96, "x": 1344, "y": 512},
         {"height": 256, "type": "normal", "width": 128, "x": 832, "y": 512},

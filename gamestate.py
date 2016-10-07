@@ -400,10 +400,10 @@ class EditingState(InGameState):
         self.platformer_instance.current_level().bring_out_yer_dead()
     
     def do_save(self):
+        num = self.get_level_num()
         filename = EditingState.temp_output_file + str(num) + ".json"
         utilities.log("Saving " + filename + "...")
         curr_json = self.get_current_level().to_json()
-        num = self.get_level_num()
         
         with open(filename, 'w') as outfile:
             json_string = utilities.level_json_to_string(curr_json)

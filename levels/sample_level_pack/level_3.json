@@ -9,10 +9,10 @@
         {"height": 416, "type": "normal", "width": 352, "x": -64, "y": 224},
         {"height": 480, "type": "normal", "width": 192, "x": 832, "y": 192},
         {"height": 480, "type": "normal", "width": 288, "x": 1440, "y": 192},
-        {"height": 32, "speed": 3, "type": "moving", "width": 64, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192]},
-        {"height": 32, "speed": 3, "type": "moving", "width": 64, "x_points": [1024, 1376, 1376, 1024], "y_points": [384, 384, 192, 192]},
-        {"height": 32, "speed": 3, "type": "moving", "width": 64, "x_points": [1376, 1024, 1024, 1376], "y_points": [192, 192, 384, 384]},
-        {"height": 32, "speed": 3, "type": "moving", "width": 64, "x_points": [1376, 1376, 1024, 1024], "y_points": [384, 192, 192, 384]}
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 0}},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 1}},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 2}},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 3}}
     ],
     "info": {
         "name":"Walkoffs",

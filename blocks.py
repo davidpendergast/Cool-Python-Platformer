@@ -242,9 +242,9 @@ class MovingBlock(Block):
         my_json = {
             "type":"moving",
             "width":self.width(),
-            "height":self.height()
+            "height":self.height(),
+            "path":self.path.to_json()
         }
-        self.path.add_to_json(my_json)
         if self.get_theme_id() != "default":
             my_json["theme"] = self.get_theme_id()
             
@@ -252,18 +252,7 @@ class MovingBlock(Block):
         
     @staticmethod
     def from_json(json_data):
-        path = None
-        if "x_path" in json_data and "y_path" in json_data:
-            x_path = equations.pythonify(str(json_data["x_path"]))
-            y_path = equations.pythonify(str(json_data["y_path"]))
-            path = paths.Path(x_path, y_path)
-            path.set_raw_json(json_data["x_path"], json_data["y_path"])
-        elif "x_points" in json_data and "y_points" in json_data and "speed" in json_data:
-            x_points = json_data["x_points"]
-            y_points = json_data["y_points"]
-            speed = json_data["speed"]
-            path = paths.PointPath(x_points, y_points, speed)
-        
+        path = paths.from_json(json_data["path"])
         result = MovingBlock(int(json_data["width"]), int(json_data["height"]), path)
         result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result

@@ -96,8 +96,9 @@ def _load_version_1_0(data):
                 if "x_path" in elem and "y_path" in elem:
                     x_path = equations.pythonify(str(elem["x_path"]))
                     y_path = equations.pythonify(str(elem["y_path"]))
+                    # aaaaand now this is dead
                     path = paths.Path(x_path, y_path)
-                    path.set_raw_json(elem["x_path"], elem["y_path"])
+                    
                 elif "x_points" in elem and "y_points" in elem and "speed" in elem:
                     x_points = elem["x_points"]
                     y_points = elem["y_points"]

@@ -17,7 +17,7 @@
         {"height": 352, "type": "normal", "width": 288, "x": 576, "y": -224},
         {"height": 416, "type": "normal", "width": 8, "x": 800, "y": -768},
         {"height": 544, "type": "normal", "width": 8, "x": 856, "y": -768},
-        {"height": 32, "speed": 3, "type": "moving", "width": 64, "x_points": [960, 1184, 1184, 960], "y_points": [-768, -768, -672, -672]}
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "x_points": [960, 1184, 1184, 960], "y_points": [-768, -768, -672, -672], "speed": 3, "offset":0}}
     ],
     "info": {
         "name":"Walljumps",
