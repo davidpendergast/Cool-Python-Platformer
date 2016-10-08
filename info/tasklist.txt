@@ -65,7 +65,7 @@ DONE            dimensions
                 paaaaaaths
                 themes
                 spawn stuff
-                type (bad, finish, normal)
+1/2             type (bad, finish, normal)
 ???         zoom view in and out
 DONE        save levels out (formatting issues?)
         clicking on overlapping blocks should toggle which one gets selected
@@ -81,6 +81,9 @@ DONE    custom json formatter to make easier to read
             --should levels know their own number?
                 --what if they disagree?
         make levels save to somewhere more reasonable
+        
+    General:
+        take screenshots
         
          
             
