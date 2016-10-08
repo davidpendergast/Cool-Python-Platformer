@@ -425,9 +425,7 @@ class EditingState(InGameState):
     def do_save(self):
     
         directory = EditingState.output_dir
-        if not os.path.exists(directory):
-            utilities.log("Creating directory: "+directory+"...")
-            os.makedirs(directory)
+        utilities.create_dir_if_doesnt_exist(directory)
         
         num = self.get_level_num()
         filename = directory + "/saved_level_" + str(num) + ".json"
