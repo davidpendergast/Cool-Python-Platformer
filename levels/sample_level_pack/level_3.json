@@ -1,26 +1,25 @@
-{   "info": {
-        "name":"Walkoffs",
-        "version":"1.0"
-    },
-    "actor": {"x":"0", "y":"0"},
+{
     "blocks": [
-        {"type":"normal", "x":"-64", "y":"128", "width":"192", "height":"96"},
-        {"type":"normal", "x":"128", "y":"192", "width":"160", "height":"32"},
-        {"type":"normal", "x":"-64", "y":"224", "width":"352", "height":"416"},
-        
-        {"type":"normal", "x":"416", "y":"-32", "width":"8", "height":"256"},
-        {"type":"normal", "x":"544", "y":"-32", "width":"8", "height":"256"},
-        {"type":"normal", "x":"672", "y":"-32", "width":"8", "height":"256"},
-        
-        {"type":"normal", "x":"832", "y":"192", "width":"192", "height":"480"},
-        
-        {"type":"moving", "width":"64", "height":"32", "x_points":[1024, 1024, 1376, 1376], "y_points":[192, 384, 384, 192], "speed":3},
-        {"type":"moving", "width":"64", "height":"32", "x_points":[1024, 1376, 1376, 1024], "y_points":[384, 384, 192, 192], "speed":3},
-        {"type":"moving", "width":"64", "height":"32", "x_points":[1376, 1376, 1024, 1024], "y_points":[384, 192, 192, 384], "speed":3},
-        {"type":"moving", "width":"64", "height":"32", "x_points":[1376, 1024, 1024, 1376], "y_points":[192, 192, 384, 384], "speed":3},
-        
-        {"type":"normal", "x":"1440", "y":"192", "width":"288", "height":"480"},
-        {"type":"finish", "x":"1800", "y":"104", "width":"16", "height":"16"}
+        {"height": 16, "type": "finish", "width": 16, "x": 1800, "y": 104},
+        {"height": 32, "type": "normal", "width": 160, "x": 128, "y": 192},
+        {"height": 96, "type": "normal", "width": 192, "x": -64, "y": 128},
+        {"height": 256, "type": "normal", "width": 8, "x": 416, "y": -32},
+        {"height": 256, "type": "normal", "width": 8, "x": 544, "y": -32},
+        {"height": 256, "type": "normal", "width": 8, "x": 672, "y": -32},
+        {"height": 416, "type": "normal", "width": 352, "x": -64, "y": 224},
+        {"height": 480, "type": "normal", "width": 192, "x": 832, "y": 192},
+        {"height": 480, "type": "normal", "width": 288, "x": 1440, "y": 192},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 0}},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 1}},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 2}},
+        {"height": 32, "type": "moving", "width": 64, "path": {"type":"pointpath", "speed": 3, "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "offset": 3}}
     ],
-    "enemies": []
+    "info": {
+        "name":"Walkoffs",
+        "version":"1.1"
+    },
+    "spawns": [
+        {"actor": "player", "type": "spawn", "x": 0, "y": 0}
+    ],
+    "themes": {}
 }

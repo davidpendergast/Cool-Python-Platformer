@@ -1,4 +1,5 @@
 import math
+import unittest
 
 
 EMDAS = {
@@ -19,6 +20,7 @@ SCOPE = {
     'max': (lambda args: max(args), 1, None),
     'min': (lambda args: min(args), 1, None),
     'abs': (lambda args: abs(args[0]), 1, 1),
+    'step': (lambda args: 1 if args[1] >= args[0] else 0, 2, 2),
     'pi': math.pi,
 }
 
@@ -152,3 +154,43 @@ def pythonify(string):
         scope.update(kwargs)
         return expr(scope)
     return evaluate
+    
+
+class ParserTest(unittest.TestCase):
+    EPS = 0.000001
+    def test(self):
+        self.basic_tests()
+        self.more_complex_tests()
+        
+    def basic_tests(self):  
+        self.do_test("4", 4)
+        self.do_test("2-7", -5)
+        self.do_test("2+7", 9)
+        self.do_test("4*3", 12)
+        self.do_test("4/3", 4.0/3.0)
+        # self.do_test("4**3", 64)        # not working
+        self.do_test("max(4,3)", 4)
+        self.do_test("min(4,3)", 3)
+        self.do_test("sin(pi)", 0)
+        self.do_test("cos(0)", 1)
+        self.do_test("abs(7)", 7)
+        self.do_test("abs(-13)", 13)
+        self.do_test("step(0, 4)", 1)
+        self.do_test("step(2, -1)", 0)
+        
+    def more_complex_tests(self):
+        self.do_test("sin(0)", 0)
+        self.do_test("496 - (48*sin(t))", 496, t_val=0)
+        self.do_test("496 - (48*sin(0))", 496)
+        # self.do_test("496 - 48*sin(0)", 496)            # not working
+        # self.do_test("496 - 48*sin(t)", 496, t_val=0)   # not working
+        
+    def do_test(self, expression, expected, t_val=0):
+        actual = pythonify(expression)(t=t_val)
+        self.assertAlmostEqual(expected, actual, delta=ParserTest.EPS)
+
+if __name__ == "__main__":
+    unittest.main()
+    
+        
+    

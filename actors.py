@@ -2,232 +2,15 @@ import pygame
 import sets 
 import math
 
-import equations
 import paths
-from utilities import Utils
+import utilities
+import blocks
 
-class Box(pygame.sprite.Sprite):
-    def __init__(self, width, height, color=(128, 128, 128)):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((width, height))
-        self.color = color
-        self.repaint()
-        
-        self.is_solid = True        # Whether this box prevents movement of other solid boxes
-        self.is_pushable = True     # Whether the collision fixer can move this object
-        self.is_visible = True      # Whether this box renders.
-        self.has_physics = True
-        
-        self.rect = pygame.Rect(0, 0, width, height)
-        self.v = (0, 0)
-        self.a = (0, 0.3)
-        
-        self.max_vy = 10
-        self.max_vx = 5
-        
-        self.rf_parent = None           # physics reference frame information. For example, when an actor stands on a moving platform
-        self.rf_children = sets.Set()   # or is stuck to another object, it will enter that object's reference frame.
-        
-    def update(self, dt):
-        if self.has_physics:
-            self.apply_physics(dt)
-        
-    def apply_physics(self, dt):
-        vx = self.v[0] + self.a[0]*dt
-        if vx > self.max_vx:
-            vx = self.max_vx
-        elif vx < -self.max_vx:
-            vx = -self.max_vx
-        self.v = (vx, self.v[1] + self.a[1]*dt) 
-        if abs(vx) < 1:
-            vx = 0
-        self.move(vx*dt, self.v[1]*dt, True)
-        
-    def move(self, dx, dy, move_at_least_1=False):
-        "Moves this object and all children in reference frame"
-        if move_at_least_1 and dx != 0 and abs(dx) < 1:
-            dx = math.copysign(1, dx)
-        if move_at_least_1 and dy != 0 and abs(dy) < 1:
-            dy = math.copysign(1, dy) 
-        self.rect.move_ip(dx, dy)
-        for kid in self.rf_children:
-            kid.rect.move_ip(dx, dy)
-            
-    def set_x(self, x):
-        dx = x - self.x()
-        self.move(dx, 0)
-        return self
-        
-    def set_y(self, y):
-        dy = y - self.y()
-        self.move(0, dy)
-        return self
-        
-    def set_xy(self, x, y):
-        self.set_x(x)
-        self.set_y(y)
-        return self
-        
-    def x(self):
-        return self.rect.x
-        
-    def y(self):
-        return self.rect.y
-        
-    def get_xy(self):
-        return (self.x(), self.y())
-        
-    def set_vx(self, vx):
-        if vx > self.max_vx:
-            vx = self.max_vx
-        elif vx < -self.max_vx:
-            vx = -self.max_vx
-        self.v = (vx, self.v[1])
-        
-    def set_vy(self, vy):
-        if vy > self.max_vy:
-            vy = self.max_vy
-        elif vy < -self.max_vy:
-            vy = -self.max_vy
-        self.v = (self.v[0], vy)
-        
-    def vx(self):
-        return self.v[0]
-        
-    def vy(self):
-        return self.v[1]
-        
-    def set_ax(self, ax):
-        self.a = (ax, self.a[1])
-        
-    def add_to_rf(self, other):
-        other.rf_parent = self
-        self.rf_children.add(other)
-        
-    def remove_from_rf(self, other):
-        assert other.rf_parent == self and other in self.rf_children, "Error: Attempting disjointed rf removal"
-        other.rf_parent = None
-        self.rf_children.remove(other)
-        
-    def is_still_rf_child_of(self, parent):
-        assert self.rf_parent == parent, "Error: Disjointed rf parent-child check"
-        bool = self.rect.left < parent.rect.right and self.rect.right > parent.rect.left    #horizontally aligned
-        bool = bool and abs(self.rect.bottom - parent.rect.top) < 0.5                       #directly on top of parent
-        return bool
-        
-    def collided_with(self, obj, direction="NONE"):
-        "direction = side of self that touched obj. Valid inputs are TOP, BOTTOM, LEFT, RIGHT, NONE"
-        pass
-    
-    def get_color(self):
-        return self.color
-    
-    def set_color(self, color, perturb_color=0, only_greyscale=True):
-        self.color = Utils.perturb_color(color, perturb_color, only_greyscale)
-        self.repaint()
-        
-    def repaint(self):
-        self.image.fill(self.color, (0, 0, self.image.get_width(), self.image.get_height()))
-        
-    def __cmp__(self, other):
-        if isinstance(other, Box):
-            return self.get_update_priority() - other.get_update_priority() 
-        else:
-            return 1
-    
-    def get_update_priority(self):
-        return -1
-    
-    def __str__(self):
-        return "Box"
-        
-    def to_json(self):
-        raise NotImplementedError("Cannot convert "+str(self)+" to json because to_json isn't implemented.")
-        
-    def is_block(self): return False
-    def is_actor(self): return False
-    def is_moving_block(self): return False
-    def is_bad_block(self): return False
-    def is_finish_block(self): return False
-    def is_enemy(self): return False
-    def is_ghost(self): return False
-    
-    
-class Block(Box):
-    BAD_COLOR = (255, 0, 0)
-    NORMAL_COLOR = (128, 128, 128)
-    
-    def __init__(self, width, height, color=None): 
-        color = Block.NORMAL_COLOR if color == None else color
-        Box.__init__(self, width, height, color)
-        self.is_solid = True
-        self.is_pushable = False
-        self.is_visible = True
-        self.has_physics = False
-        self.a = (0, 0)
-    
-    def update(self, dt):
-        pass
-        
-    def get_update_priority(self):
-        return 5
-        
-    def is_block(self): return True
-    
-    def to_json(self):
-        return {
-            "type":"normal",
-            "width":self.get_width(),
-            "height":self.get_height(),
-            "x":self.x(),
-            "y":self.y()
-        }
-        
-    def __str__(self):
-        return "Block"
-        
-class MovingBlock(Block):
-    def __init__(self, width, height, path, color=None):
-        Block.__init__(self, width, height, color)
-        self.path = path
-    
-    def update(self, dt):
-        self.v = (0,0)
-        if self.path != None:
-            old_x = self.x()
-            old_y = self.y()
-           
-            self.path.step(dt)
-            xy = self.path.get_xy()
-            self.set_x(xy[0])
-            self.set_y(xy[1])
-            
-            self.v = (self.x() - old_x, self.y() - old_y) # used for crushing 
-    
-    def get_update_priority(self):
-        return 4
-        
-    def is_moving_block(self): return True
-    
-    def to_json(self):
-        my_json = {
-            "type":"moving",
-            "width":self.get_width(),
-            "height":self.get_height()
-        }
-        self.path.add_to_json(my_json)
-        return my_json
-        
-    def __str__(self):
-        return "Moving_Block"
-    
-    
-class Actor(Box):
+class Actor(blocks.Box):
     STANDARD_SIZE = (24, 32)
     
     def __init__(self, width=24, height=32, color=(255, 128, 128)):
-        Box.__init__(self, width, height, color)
-        
+        blocks.Box.__init__(self, width, height, color)
         # Actor collision state variables.
         # Note: these are reset to false on each actor update, and reapplied by the collision fixer.
         self.is_grounded = False        # is touching a solid box that's below
@@ -267,7 +50,7 @@ class Actor(Box):
         
     def kill(self, message="unknown causes."):
         self.is_alive = False
-        print str(self)+" was killed by "+message
+        utilities.log(str(self)+" was killed by "+message)
         
     def jump_action(self):
         if self.is_grounded == False:   # if not grounded, check for walljumps
@@ -314,7 +97,7 @@ class Actor(Box):
         self.is_left_toe_grounded = False
         self.is_right_toe_grounded = False
         
-        Box.update(self, dt)
+        blocks.Box.update(self, dt)
         
         #fall detection
         if self.y() >= 2048:
@@ -346,32 +129,10 @@ class Actor(Box):
         
     def __str__(self):
         if self.is_player:
-            return "Player"
+            return "Player"+self.rect_str()
         else:
-            return "Actor"
+            return "Actor"+self.rect_str()
         
-        
-class BadBlock(Block):
-    def __init__(self, width, height, color=None):
-        color = Block.BAD_COLOR if color == None else color
-        Block.__init__(self, width, height, color)
-    
-    def collided_with(self, obj, dir="NONE"):
-        if obj.is_actor():
-            obj.kill("touching a bad block.")
-            
-    def get_update_priority(self):
-        return 3
-        
-    def is_bad_block(self): return True
-    
-    def to_json(self):
-        my_json = Block.to_json(self)
-        my_json['type'] = "bad"
-        return my_json
-        
-    def __str__(self):
-        return "Bad_Block"
         
 class Enemy(Actor):
     NORMAL_COLOR = (255, 0, 255)
@@ -383,6 +144,7 @@ class Enemy(Actor):
         self.max_vx = 1
         self.move_speed = 0.5
         self.direction = -1
+        
         self.walks_off_platforms = True
         self.is_stompable = True
         
@@ -401,7 +163,6 @@ class Enemy(Actor):
         
     def collided_with(self, obj, dir="NONE"):
         if not self.is_alive:
-            print "I'm dead! no colliding for me today!"
             return
         Actor.collided_with(self, obj, dir)
         if obj.is_actor():
@@ -428,12 +189,21 @@ class Enemy(Actor):
         
         return {
             "type":my_type,
-            "x":0,
-            "y":0
+            "width":self.width(),
+            "height":self.rect.height,
+            "theme":self.get_theme_id()
         }
         
+    @staticmethod    
+    def from_json(json_data):
+        result = Enemy(json_data["width"], json_data["height"])
+        result.is_stompable = (json_data["type"] in ("smart", "dumb"))
+        result.walks_off_platforms = json_data["type"] == "dumb"
+        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
+        return result
+        
     def __str__(self):
-        return "Enemy"
+        return "Enemy"+self.rect_str()
             
     @staticmethod
     def get_stupid_walker_enemy(x, y, direction = -1):
@@ -459,20 +229,6 @@ class Enemy(Actor):
         res.color = Enemy.BAD_COLOR
         res.is_stompable = False
         return res
-
-        
-class FinishBlock(Block):
-    def __init__(self, width=16, height=16, color=(0, 255, 0)):
-        Block.__init__(self, width, height, color)
-        
-    def collided_with(self, obj, dir="NONE"):
-        if obj.is_actor():
-            obj.finished_level = True
-            
-    def is_finish_block(self): return True
-    
-    def __str__(self):
-        return "Finish_Block"    
             
             
 class GhostRecorder:
@@ -501,9 +257,6 @@ class Ghost(Actor):
         self.x_points = x_points
         self.y_points = y_points
         self.index = 0
-        
-        # if len(x_points) != len(y_points):
-            # raise ValueError("Unequal array sizes for Ghost: "+str(len(x_points)+" != "+str(len(y_points))
 
     def update(self, dt):
         self.index += 1
@@ -542,4 +295,55 @@ class Ghost(Actor):
                 "y_points":ghost.y_points,
                 "color":[c[0], c[1], c[2]]
             }
+
+class SpawnPoint(blocks.Box):
+    def __init__(self, x, y, actor):
+        blocks.Box.__init__(self, 10, 10)
+        self.set_xy(x,y)
+        self.actor = actor
+        self.is_solid = False
+        self.is_pushable = False
+        self.is_visible = False
+        self.has_physics = False
+        
+    def do_spawn(self):
+        actor = self.get_actor()
+        actor.reset()
+        actor.set_xy(self.x(), self.y()) 
+        
+    def get_actor(self):
+        if self.actor == "player":
+            self.actor = Actor()
+            self.actor.is_player = True
+            self.actor.set_theme_id("default")
+        return self.actor
+        
+    def is_spawn_point(self): return True
+    
+    def __str__(self):
+        return "Spawn"+self.rect_str()
+        
+    def to_json(self):
+        if isinstance(self.actor, basestring):
+            actor_json = self.actor
+        elif self.actor.is_player:
+            actor_json = "player"
+        else:
+            actor_json = self.actor.to_json()
+        return {
+            "type":"spawn",
+            "x":self.x(),
+            "y":self.y(),
+            "actor":actor_json
+        }
+    
+    @staticmethod
+    def from_json(json_data):
+        x = json_data["x"]
+        y = json_data["y"]
+        if json_data["actor"] == "player":
+            actor = "player"
+        else: 
+            actor = Enemy.from_json(json_data["actor"])
+        return SpawnPoint(x, y, actor)
         

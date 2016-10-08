@@ -1,11 +1,7 @@
 @~~~~~~~~~~~~~~~~~@
 | Future Features |
 @~~~~~~~~~~~~~~~~~@
-    High Scores:
-DONE    functionality 
-DONE    in-game indicators
-DONE    high score ghosts
-    
+
     Menus:
         main menu
             --could be pretty minimalistic
@@ -16,10 +12,10 @@ NO?     game completed menu
             --would show your times on each level, and their difference from high scores
             --option to play again
             --option to save replay? <- this should probably only happen when a record is broken
-    
+        high score menu
+            --see your scores
+            
     Settings:
-DONE    separate files for default settings and user settings, so that user settings can be
-            gitignored.
         way to edit settings in-game
         unify drawer settings with other settings
     
@@ -37,25 +33,23 @@ DONE        Crushing
             ???
     
     Entities:
-DONE    fix or remove switches
-            --right now they suck
         blocks that fall when you stand on them too long
+            --is prone to create situations where a level becomes impossible
+                to complete, violating level design principles
         blocks that poof in and out of existence
-        
-        unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
+???     unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
             --all do pretty much the same thing, right?
-        blocks with individual themes
+            --at very least, bad/finish blocks need to be able to move
+DONE    blocks with individual themes
+DONE    moving blocks
+DONE        change functions to infix, or allow both
+NVM         unify json fields, no reason to have x, x_points, x_path
         
     Optimizations:
         collision detection
             --right now it's ~bad~
         drawing
             --also pretty bad
-            
-    Get rid of pygame built-in data structures:
-DONE    use lists instead of groups
-            --sorting by object type makes collision handling more stable with the push-out
-                strategy
     
     Level Editor:
 DONE    toggleable mode when dev_mode is enabled
@@ -63,10 +57,31 @@ DONE    toggleable mode when dev_mode is enabled
 DONE        pan camera independently of actor position
 DONE        select blocks
             place blocks
-            delete blocks
+            duplicate selected
+DONE        delete blocks
             edit block attributes (just edit their json?)
-            zoom view in and out
-            save levels out (formatting issues?)
+DONE            position
+DONE            dimensions
+                paaaaaaths
+                themes
+                spawn stuff
+                type (bad, finish, normal)
+???         zoom view in and out
+DONE        save levels out (formatting issues?)
+        clicking on overlapping blocks should toggle which one gets selected
+        selected block should render above all others
+            
+    Level Storage:
+DONE    store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead
+            --will make editing paths easier in game
+            --super needed for themes
+DONE    custom json formatter to make easier to read
+        sort json attributes more reasonably (type, x, y, width, height)
+        header file is stupid
+            --should levels know their own number?
+                --what if they disagree?
+        make levels save to somewhere more reasonable
+        
          
             
 @~~~~~~~~~~~~@
@@ -76,22 +91,18 @@ DONE        select blocks
     Physics Glitches:
 !!!     walljumping on a platform moving away from you
             --player needs to snap to moving vertical surfaces
-DONE    weird smushes
+!!!     weird smushes
             --probably need to look at velocities of blocks before smushing. A platform moving 
                 diagonally upwards shouldn't crush you from below.
-        friction affected by fps
+IGNORE? friction affected by fps
             --character slides farther when fps is lower
-        pretty much everything affected by fps
+IGNORE? pretty much everything affected by fps
             --movement speed, jump height, etc. not a huge deal because fps will pretty much always
                 be fixed at 60, but something isn't correct somewhere that's causing this behaviour.
-                
-    Clock:
-DONE    time probably isn't accurate, or only accurate due to multiple mistakes 
-            cancelling each other out lol
-    
-    Windows:
-        dragging window freezes game (spelunky does this too so maybe it's ok)
-    
+    Graphical:
+        rendering order got booched somewhere
+            --moving blocks should always be behind static ones
+            --probably means physics calculations are out of order as well
 @~~~~~~~~~~~~~~~~~~@
 | In Consideration |
 @~~~~~~~~~~~~~~~~~~@
@@ -103,9 +114,6 @@ DONE    time probably isn't accurate, or only accurate due to multiple mistakes
                 stretches when moving, jumping, hanging on walls, etc.
         sprites?
             --would like to keep it minimalistic if using sprites at all.
-DONE    level themes?
-            --would give levels some character, even just having an "ice" theme that makes the 
-                platforms light-blue instead of grey for example
    
     Replays:
         investigation
@@ -132,10 +140,6 @@ NO          super meat boy style replay of all attempts upon completion of level
                     --would have to pause timer and sorta interfere with speedrunning flow (?)
                 --current code probably can't handle 100s of actors going at once, especially if 
                     physics/collision calculations are required for each one
-        
-    Level Builder:
-        --would require a lot of UI stuff
-        --would require exporting levels to json
         
     Music/Sound:
         --adds a lot to the atmosphere, also to the annoyance

@@ -2,16 +2,18 @@
 
 import pygame
 
-import phys_objects
+import blocks, actors
 import drawing
 import gamestate
+import utilities
 from options import Settings
 from options import HardSettings
 from gamestate import GameStateManager, PlayingState, EditingState, PlatformerInstance
 
 pygame.init()
-
 settings = Settings()
+
+pygame.display.set_caption("Really Fun Game! - "+settings.level_path())
 gamestate_manager = GameStateManager(settings)
 platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)

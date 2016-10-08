@@ -1,13 +1,14 @@
 import pygame
 import sys
 import json
+import os
 
-import phys_objects
+import blocks, actors
 import drawing
 import levels
 import collisions
 from options import HardSettings
-from utilities import Utils
+import utilities
 
 class GameState:
     def __init__(self, settings):
@@ -66,8 +67,8 @@ class GameStateManager(GameState):
         if self.get_current_state() != None:
             self.get_current_state().switching_to(old_state_id)
             
-        print "GameState changed: "+str(old_state_id)+" -> "+str(state_id)
-        print "Current state: "+str(self.get_current_state())
+        utilities.log("GameState changed: "+str(old_state_id)+" -> "+str(state_id))
+        utilities.log("Current state: "+str(self.get_current_state()))
 
     def pre_event_update(self):
         if self.get_current_state() != None:
@@ -86,10 +87,10 @@ class GameStateManager(GameState):
             self.get_current_state().draw(screen)
         
 class PlatformerInstance:
-    # state that's shared between PlayingState and EditingState
+    "state that's shared between PlayingState and EditingState"
     def __init__(self, settings):
         self.settings = settings
-        self.player = phys_objects.Actor(24, 32, settings.get_color())
+        self.player = actors.Actor(24, 32, settings.get_color())
         self.player.is_player = True
         self.level_manager = levels.LevelManager(self.settings)
         self.drawer = drawing.Drawer()
@@ -108,6 +109,7 @@ class PlatformerInstance:
         self.level_num = num
     def load_level(self, reset_ghost=True):
         self.level_manager.load_level(self.get_level_num(), self.get_player(), reset_ghost)
+    
     
 class InGameState(GameState):
     def __init__(self, settings, platformer_instance):
@@ -132,6 +134,8 @@ class InGameState(GameState):
         return self.platformer_instance.get_level_num()
     def get_player(self):
         return self.platformer_instance.get_player()
+    def get_current_level(self):
+        return self.platformer_instance.current_level()
     def get_drawer(self):
         return self.platformer_instance.drawer
     def handle_event(self, event):
@@ -178,7 +182,7 @@ class PlayingState(InGameState):
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         
-        self.ghost_recorder = phys_objects.GhostRecorder(self.get_player())
+        self.ghost_recorder = actors.GhostRecorder(self.get_player())
         self.death_count = 0
         
         self.total_time = 0
@@ -284,7 +288,7 @@ class PlayingState(InGameState):
         self.level_time = 0
         self.death_count = 0
         self.platformer_instance.load_level()
-        print "\nGame Start!"
+        utilities.log("\nGame Start!")
     
     def next_level(self, update_highscore=False):
         level_num = self.get_level_num() 
@@ -324,11 +328,11 @@ class PlayingState(InGameState):
         
         best_total_time = self.get_level_manager().get_best_run_time()
         total_time_text_color = self.get_time_display_color(self.total_time, best_total_time, start_color=(255, 255, 255), end_color=(255, 255, 255))
-        total_time_text = self.font.render("Total: " + Utils.format_time(self.total_time), True, total_time_text_color)
+        total_time_text = self.font.render("Total: " + utilities.format_time(self.total_time), True, total_time_text_color)
         
         best_level_time = self.get_level_manager().get_best_level_time(self.get_level_num())
         level_time_text_color = self.get_time_display_color(self.level_time, best_level_time)
-        level_time_text = self.font.render("Level: "+Utils.format_time(self.level_time), True, level_time_text_color)
+        level_time_text = self.font.render("Level: "+utilities.format_time(self.level_time), True, level_time_text_color)
         
         screen.blit(level_text, (xoffset, yoffset))
         screen.blit(level_title, (xoffset, yoffset + text_height))
@@ -352,41 +356,49 @@ class PlayingState(InGameState):
             
 class EditingState(InGameState):
     SELECTED_COLOR = (255, 128, 255)
+    output_dir = "saved_levels"
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
         self.selected = None
         self.selected_old_color = None
+        self.build_keymapping()
+        
     def pre_event_update(self):
         pass
+    
+    def build_keymapping(self):
+        self.key_mapping = {
+            pygame.K_DELETE: lambda: self.delete_selected(),
+            pygame.K_e:     lambda: self.state_manager.set_current_state(GameStateManager.PLAYING_STATE),
+            pygame.K_i:     lambda: self.resize_selected(0, -self._val()),
+            pygame.K_j:     lambda: self.resize_selected(-self._val(), 0),
+            pygame.K_k:     lambda: self.resize_selected(0, self._val()),
+            pygame.K_l:     lambda: self.resize_selected(self._val(), 0),
+            pygame.K_UP:    lambda: self.move_selected(0, -self._val()),
+            pygame.K_DOWN:  lambda: self.move_selected(0, self._val()),
+            pygame.K_LEFT:  lambda: self.move_selected(-self._val(), 0),
+            pygame.K_RIGHT: lambda: self.move_selected(self._val(), 0),
+            pygame.K_u:     lambda: self.duplicate_selected(),
+            pygame.K_t:     lambda: self.cylcle_type_of_selected()
+            
+        }
+        
+    def _val(self):
+        return 4 if self.keys["shift"] else 32
+    
     def handle_event(self, event):
         InGameState.handle_event(self, event)
+        
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_e:
-                self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
-            
-                self.keys['left'] = True
-            elif event.key == pygame.K_d:
-                self.keys['right'] = True
-            
-                
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_a:
-                self.keys['left'] = False
-            elif event.key == pygame.K_d:
-                self.keys['right'] = False
-            elif event.key == pygame.K_w:
-                self.keys['up'] = False
-            elif event.key == pygame.K_s:
-                self.keys['down'] = False
-            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
-                self.keys['ctrl'] = False
-            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
-                self.keys['shift'] = False
-                
+            if event.key in self.key_mapping:
+                self.key_mapping[event.key]()
+            elif event.key == pygame.K_s and self.keys["ctrl"]:
+                self.do_save()
+ 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
             grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
-            print "Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]"
+            utilities.log("Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]")
             if self.keys['ctrl']:
                 pass
             elif self.keys['shift']:
@@ -409,7 +421,25 @@ class EditingState(InGameState):
                 item.update(dt)
         
         self.platformer_instance.current_level().bring_out_yer_dead()
+    
+    def do_save(self):
+    
+        directory = EditingState.output_dir
+        if not os.path.exists(directory):
+            utilities.log("Creating directory: "+directory+"...")
+            os.makedirs(directory)
         
+        num = self.get_level_num()
+        filename = directory + "/saved_level_" + str(num) + ".json"
+        utilities.log("Saving " + filename + "...")
+        curr_json = self.get_current_level().to_json()
+        
+        with open(filename, 'w') as outfile:
+            json_string = utilities.level_json_to_string(curr_json)
+            utilities.log("writing text:\n" + json_string)
+            outfile.write(json_string)
+        utilities.log("done.")
+    
     def do_camera_move(self, dt):
         if bool(self.keys['left']) ^ bool(self.keys['right']):
             if self.keys['left']: 
@@ -425,7 +455,9 @@ class EditingState(InGameState):
         
     def draw(self, screen):
         self.get_drawer().draw(screen, self.get_entities())
-        # self.draw_gui(screen) 
+        
+    def switching_from(self, new_state_id):
+        self.set_selected(None)
         
     def set_selected(self, obj):
         if self.selected != None:
@@ -435,13 +467,58 @@ class EditingState(InGameState):
         self.selected = obj
         
         if self.selected != None:
-            print str(self.selected) + " selected!"
+            utilities.log(str(self.selected) + " selected!")
             self.selected_old_color = self.selected.color
             self.selected.set_color(EditingState.SELECTED_COLOR)
-    
-    def switching_from(self, new_state_id):
-        self.set_selected(None)
             
+    def delete_selected(self):
+        if self.selected != None:
+            utilities.log("deleting "+str(self.selected))
+            self.get_current_level().remove_object(self.selected)
+            self.set_selected(None)
             
+    def resize_selected(self, width_expand, height_expand):
+        if self.selected != None:
+            utilities.log("stretching "+str(self.selected)+" by "+str(width_expand)+", "+str(height_expand))
+            width = self.selected.width()
+            height = self.selected.height()
+            self.selected.set_size(max(8, width + width_expand), max(8, height + height_expand))
+            
+    def move_selected(self, x_move, y_move):
+        if self.selected != None:
+            utilities.log("moving "+str(self.selected)+" by "+str(x_move)+", "+str(y_move))
+            self.selected.set_xy(self.selected.x() + x_move, self.selected.y() + y_move)
+            
+    def duplicate_selected(self):
+        if self.selected != None:
+            utilities.log("duplicating "+str(self.selected))
+            if self.selected.is_block():
+                selected_json = self.selected.to_json()
+                new_entity = blocks.BlockFactory.from_json(selected_json)
+                self.get_current_level().add_object(new_entity)
+            elif self.selected.is_spawn_point():
+                selected_json = self.selected.to_json()
+                new_spawn = actors.SpawnPoint.from_json(selected_json)
+                self.get_current_level().spawn_list.append(new_spawn) # this should be ok
+            else:
+                entities.log("Cannot dupe entity type: "+str(self.selected))
                 
-        
+    def cylcle_type_of_selected(self):
+        if self.selected != None:
+            if self.selected.is_block() and not self.selected.is_moving_block(): ## can't deal with moving blocks yet
+                utilities.log("Changing type of "+str(self.selected))
+                types = ["normal", "bad", "finish"]
+                selected_json = self.selected.to_json()
+                curr_type_idx = types.index(selected_json["type"])
+                if curr_type_idx == -1:
+                    utilities.log("unrecognized type: "+str(selected_json["type"]))
+                else:
+                    selected_json["type"] = types[(curr_type_idx + 1) % len(types)]
+                    new_entity = blocks.BlockFactory.from_json(selected_json)
+                    
+                    self.get_current_level().remove_object(self.selected)
+                    self.get_current_level().add_object(new_entity)
+                    self.set_selected(new_entity)
+            else:
+                utilities.log("Can't change type of entity: "+str(self.selected))
+                

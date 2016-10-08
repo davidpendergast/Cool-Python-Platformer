@@ -1,0 +1,21 @@
+@~~~~~~~~~~~~~~~~~~~~~~~~~@
+| Level Design Philosophy |
+@~~~~~~~~~~~~~~~~~~~~~~~~~@
+
+Hard Rules:
+    levels should start and end with player moving to the right
+    no leaps of faith
+    no pixel-perfect maneuvers
+    no insta-death at beginning of level without player action
+    no situations where level becomes impossible to complete, forcing player to suicide 
+    
+Soft Guidelines:
+    make sure it's obvious where the player should go
+    always keep speedrunning in mind, don't stop player movement for no reason
+        --especially don't create blockades that destroy the speedrunning potential
+          of a level. see doctor mario's target test stage in ssbm for an example of this
+    be mindful of what the player can and cannot see
+        --in a cave level, make sure the player can't see outside the level from anywhere
+          in the cave
+    
+    
