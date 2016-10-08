@@ -92,6 +92,12 @@ def expression(tree):
             l = tree[:i]
             r = tree[i+1:]
 
+            if r[0] == op == '*':
+                return EMDAS['**'](
+                    expression(l),
+                    expression(r[1:]),
+                )
+
             if l == [] and op == '-':
                 r = expression(r)
                 return lambda s: -1 * r(s)
