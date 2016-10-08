@@ -69,7 +69,7 @@ DONE            dimensions
 ???         zoom view in and out
 DONE        save levels out (formatting issues?)
         clicking on overlapping blocks should toggle which one gets selected
-        selected block should render above all others
+DONE    selected block should render above all others
             
     Level Storage:
 DONE    store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead

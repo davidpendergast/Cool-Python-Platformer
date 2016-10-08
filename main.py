@@ -13,7 +13,7 @@ from gamestate import GameStateManager, PlayingState, EditingState, PlatformerIn
 pygame.init()
 settings = Settings()
 
-pygame.display.set_caption("Really Fun Game! - "+settings.level_path())
+pygame.display.set_caption("Extreme Block Jumper 2 - "+settings.level_path())
 gamestate_manager = GameStateManager(settings)
 platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)

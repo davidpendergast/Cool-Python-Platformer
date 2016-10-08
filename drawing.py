@@ -59,7 +59,7 @@ class Drawer:
         if actor.is_right_walled:
             actor.image.fill((255,255,255), (actor.rect.width-4, 0, 4, actor.rect.height))
         if actor.jumps > 0:
-            actor.image.fill((0,255,0), (actor.rect.width/2-4, actor.rect.height/2-4, 8, 8))
+            actor.image.fill((50,255,50), (actor.rect.width/2-4, actor.rect.height/2-4, 8, 8))
         if actor.is_left_toe_grounded:
             actor.image.fill((255,255,125), (0,actor.rect.height-8,8,8))
         if actor.is_right_toe_grounded:
