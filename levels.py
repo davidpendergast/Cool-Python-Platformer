@@ -29,9 +29,7 @@ class Level:
             
         def remove_object(self, obj):
             index = self.entity_list.index(obj)
-            print "deleting object at index: "+str(index)
             del self.entity_list[index]
-            #self.entity_list.remove(obj)
             
         def get_objects_at(self, (x, y)):
             return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]

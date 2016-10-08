@@ -41,9 +41,9 @@ DONE        Crushing
             --all do pretty much the same thing, right?
             --at very least, bad/finish blocks need to be able to move
 DONE    blocks with individual themes
-        moving blocks
-            change functions to infix, or allow both
-            unify json fields, no reason to have x, x_points, x_path
+DONE    moving blocks
+DONE        change functions to infix, or allow both
+NVM         unify json fields, no reason to have x, x_points, x_path
         
     Optimizations:
         collision detection
@@ -57,6 +57,7 @@ DONE    toggleable mode when dev_mode is enabled
 DONE        pan camera independently of actor position
 DONE        select blocks
             place blocks
+            duplicate selected
 DONE        delete blocks
             edit block attributes (just edit their json?)
 DONE            position
@@ -64,8 +65,11 @@ DONE            dimensions
                 paaaaaaths
                 themes
                 spawn stuff
-            zoom view in and out
+                type (bad, finish, normal)
+???         zoom view in and out
 DONE        save levels out (formatting issues?)
+        clicking on overlapping blocks should toggle which one gets selected
+        selected block should render above all others
             
     Level Storage:
 DONE    store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead

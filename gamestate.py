@@ -370,14 +370,16 @@ class EditingState(InGameState):
         self.key_mapping = {
             pygame.K_DELETE: lambda: self.delete_selected(),
             pygame.K_e:     lambda: self.state_manager.set_current_state(GameStateManager.PLAYING_STATE),
-            pygame.K_i:     lambda: self.expand_selected(0, -self._val()),
-            pygame.K_j:     lambda: self.expand_selected(-self._val(), 0),
-            pygame.K_k:     lambda: self.expand_selected(0, self._val()),
-            pygame.K_l:     lambda: self.expand_selected(self._val(), 0),
+            pygame.K_i:     lambda: self.resize_selected(0, -self._val()),
+            pygame.K_j:     lambda: self.resize_selected(-self._val(), 0),
+            pygame.K_k:     lambda: self.resize_selected(0, self._val()),
+            pygame.K_l:     lambda: self.resize_selected(self._val(), 0),
             pygame.K_UP:    lambda: self.move_selected(0, -self._val()),
             pygame.K_DOWN:  lambda: self.move_selected(0, self._val()),
             pygame.K_LEFT:  lambda: self.move_selected(-self._val(), 0),
-            pygame.K_RIGHT: lambda: self.move_selected(self._val(), 0)
+            pygame.K_RIGHT: lambda: self.move_selected(self._val(), 0),
+            pygame.K_u:     lambda: self.duplicate_selected()
+            
         }
         
     def _val(self):
@@ -474,7 +476,7 @@ class EditingState(InGameState):
             self.get_current_level().remove_object(self.selected)
             self.set_selected(None)
             
-    def expand_selected(self, width_expand, height_expand):
+    def resize_selected(self, width_expand, height_expand):
         if self.selected != None:
             utilities.log("stretching "+str(self.selected)+" by "+str(width_expand)+", "+str(height_expand))
             width = self.selected.width()
@@ -485,3 +487,18 @@ class EditingState(InGameState):
         if self.selected != None:
             utilities.log("moving "+str(self.selected)+" by "+str(x_move)+", "+str(y_move))
             self.selected.set_xy(self.selected.x() + x_move, self.selected.y() + y_move)
+            
+    def duplicate_selected(self):
+        if self.selected != None:
+            utilities.log("duplicating "+str(self.selected))
+            if self.selected.is_block():
+                selected_json = self.selected.to_json()
+                new_entity = blocks.BlockFactory.from_json(selected_json)
+                self.get_current_level().add_object(new_entity)
+            elif self.selected.is_spawn_point():
+                selected_json = self.selected.to_json()
+                new_spawn = actors.SpawnPoint.from_json(selected_json)
+                self.get_current_level().spawn_list.append(new_spawn) # this should be ok
+            else:
+                entities.log("Cannot dupe entity type: "+str(self.selected))
+                
