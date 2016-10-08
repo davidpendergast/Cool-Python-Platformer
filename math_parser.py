@@ -33,6 +33,7 @@ def badfix(string):
     string = string.replace(',', ' , ')
     for op in EMDAS:
         string = string.replace(op, ' ' + op + ' ')
+    string = string.replace('*  *', '**')
     return string
 
 
@@ -91,12 +92,6 @@ def expression(tree):
             i = tree.index(op)
             l = tree[:i]
             r = tree[i+1:]
-
-            if r[0] == op == '*':
-                return EMDAS['**'](
-                    expression(l),
-                    expression(r[1:]),
-                )
 
             if l == [] and op == '-':
                 r = expression(r)
