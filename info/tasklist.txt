@@ -106,6 +106,8 @@ IGNORE? pretty much everything affected by fps
         rendering order got booched somewhere
             --moving blocks should always be behind static ones
             --probably means physics calculations are out of order as well
+DONE    theme background color is ignored
+            --nuked by drawer when it calculates redness due to falling
 @~~~~~~~~~~~~~~~~~~@
 | In Consideration |
 @~~~~~~~~~~~~~~~~~~@

@@ -2,15 +2,14 @@ import pygame, blocks
 
 class Drawer:
     def __init__(self):
-        self.background_color = (0,0,0)
         self.camera_pos = (0,0)
         self.show_grid = False
         self.grid_spacing = 32
         self.grid_color = (50,50,50)
     
-    def draw(self, screen, entity_list):
-        self.update_background_color()
-        screen.fill(self.background_color)
+    def draw(self, screen, entity_list, background_color=(0,0,0)):
+        background_color = self.update_background_color(background_color)
+        screen.fill(background_color)
         if self.show_grid:
             for x in range(0, screen.get_width() // self.grid_spacing+1):
                 draw_x = x*self.grid_spacing - self.camera_pos[0]%self.grid_spacing
@@ -44,11 +43,18 @@ class Drawer:
     def move_camera(self, dx, dy):
         self.camera_pos = (self.camera_pos[0] + dx, self.camera_pos[1] + dy) 
     
-    def update_background_color(self):
+    def update_background_color(self, background_color):
         if self.camera_pos[1] < 512:
-            self.background_color = (0,0,0)
+            return background_color
         else:
-            self.background_color = (min(255*3/4, (self.camera_pos[1] - 512)//8),0,0)  
+            redness = (self.camera_pos[1] - 512) / (2048.0 - 512.0)
+            max_red = 192
+            ## want r,g,b -> 192,0,0 as y -> 2048
+            return (
+                int(background_color[0] + redness*(max_red - background_color[0])),
+                int(background_color[1] * (1 - redness)),
+                int(background_color[2] * (1 - redness))
+            )  
             
     def draw_collision_indicators(self, actor):
         actor.image.fill(actor.color) #reseting actor
