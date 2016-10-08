@@ -169,7 +169,7 @@ class ParserTest(unittest.TestCase):
         self.do_test("2+7", 9)
         self.do_test("4*3", 12)
         self.do_test("4/3", 4.0/3.0)
-        # self.do_test("4**3", 64)        # not working
+        self.do_test("4**3", 64)        # not working
         self.do_test("max(4,3)", 4)
         self.do_test("min(4,3)", 3)
         self.do_test("sin(pi)", 0)
@@ -183,8 +183,8 @@ class ParserTest(unittest.TestCase):
         self.do_test("sin(0)", 0)
         self.do_test("496 - (48*sin(t))", 496, t_val=0)
         self.do_test("496 - (48*sin(0))", 496)
-        # self.do_test("496 - 48*sin(0)", 496)            # not working
-        # self.do_test("496 - 48*sin(t)", 496, t_val=0)   # not working
+        self.do_test("496 - 48*sin(0)", 496)            # not working
+        self.do_test("496 - 48*sin(t)", 496, t_val=0)   # not working
         
     def do_test(self, expression, expected, t_val=0):
         actual = pythonify(expression)(t=t_val)
