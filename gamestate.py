@@ -378,7 +378,8 @@ class EditingState(InGameState):
             pygame.K_DOWN:  lambda: self.move_selected(0, self._val()),
             pygame.K_LEFT:  lambda: self.move_selected(-self._val(), 0),
             pygame.K_RIGHT: lambda: self.move_selected(self._val(), 0),
-            pygame.K_u:     lambda: self.duplicate_selected()
+            pygame.K_u:     lambda: self.duplicate_selected(),
+            pygame.K_t:     lambda: self.cylcle_type_of_selected()
             
         }
         
@@ -501,4 +502,23 @@ class EditingState(InGameState):
                 self.get_current_level().spawn_list.append(new_spawn) # this should be ok
             else:
                 entities.log("Cannot dupe entity type: "+str(self.selected))
+                
+    def cylcle_type_of_selected(self):
+        if self.selected != None:
+            if self.selected.is_block() and not self.selected.is_moving_block(): ## can't deal with moving blocks yet
+                utilities.log("Changing type of "+str(self.selected))
+                types = ["normal", "bad", "finish"]
+                selected_json = self.selected.to_json()
+                curr_type_idx = types.index(selected_json["type"])
+                if curr_type_idx == -1:
+                    utilities.log("unrecognized type: "+str(selected_json["type"]))
+                else:
+                    selected_json["type"] = types[(curr_type_idx + 1) % len(types)]
+                    new_entity = blocks.BlockFactory.from_json(selected_json)
+                    
+                    self.get_current_level().remove_object(self.selected)
+                    self.get_current_level().add_object(new_entity)
+                    self.set_selected(new_entity)
+            else:
+                utilities.log("Can't change type of entity: "+str(self.selected))
                 
