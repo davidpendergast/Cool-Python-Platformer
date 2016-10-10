@@ -2,13 +2,13 @@ import math
 import unittest
 
 
-EMDAS = {
-    '+': lambda a, b: lambda s: a(s) + b(s),
-    '-': lambda a, b: lambda s: a(s) - b(s),
-    '*': lambda a, b: lambda s: a(s) * b(s),
-    '/': lambda a, b: lambda s: a(s) / b(s),
-    '**': lambda a, b: lambda s: a(s) ** b(s),
-}
+EMDAS = [
+    ('+', lambda a, b: lambda s: a(s) + b(s)),
+    ('-', lambda a, b: lambda s: a(s) - b(s)),
+    ('*', lambda a, b: lambda s: a(s) * b(s)),
+    ('/', lambda a, b: lambda s: a(s) / b(s)),
+    ('**', lambda a, b: lambda s: a(s) ** b(s)),
+]
 
 
 SCOPE = {
@@ -31,7 +31,7 @@ class MalformedException(Exception):
 
 def badfix(string):
     string = string.replace(',', ' , ')
-    for op in EMDAS:
+    for (op, _) in EMDAS:
         string = string.replace(op, ' ' + op + ' ')
     string = string.replace('*  *', '**')
     return string
@@ -87,7 +87,7 @@ def expression(tree):
 
     if len(tree) == 1:
         return expression(tree[0])
-    for op in EMDAS.keys():
+    for (op, f) in EMDAS:
         if op in tree:
             i = tree.index(op)
             l = tree[:i]
@@ -97,7 +97,7 @@ def expression(tree):
                 r = expression(r)
                 return lambda s: -1 * r(s)
 
-            return EMDAS[op](
+            return f(
                 expression(l),
                 expression(r),
             )
