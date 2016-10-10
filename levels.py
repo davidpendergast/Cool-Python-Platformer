@@ -16,6 +16,7 @@ class Level:
             self.name = name
             self.num = -1
             self.entity_list = entity_list[:]
+            self._entity_list_dirty = True # List needs sorting
             self.spawn_list = spawn_list[:]
             self.theme_lookup = dict(theme_dict)
             self.background_color = self.theme_lookup["default"].values["background_color"]
@@ -23,9 +24,24 @@ class Level:
             self.actor = self._find_player()
             if self.actor == None:
                 utilities.log("levels.Level: Warning: No actor found in loaded level!")
-            
-        def add_object(self, obj):
+                
+            self.sort_if_dirty()
+        
+        def _sort_entities(self):
+            sorter = lambda x,y: x.get_update_priority() - y.get_update_priority()
+            self.entity_list.sort(cmp=sorter)
+            self._entity_list_dirty = False
+        
+        def add_object(self, obj, sort_now=True):
             self.entity_list.append(obj)
+            if sort_now:
+                self._sort_entities()
+            else:
+                self._entity_list_dirty = True
+            
+        def sort_if_dirty(self):
+            if self._entity_list_dirty:
+                self._sort_entities()
             
         def remove_object(self, obj):
             index = self.entity_list.index(obj)

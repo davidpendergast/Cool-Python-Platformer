@@ -451,10 +451,9 @@ class EditingState(InGameState):
                 self.get_drawer().move_camera(0, 4)
         
     def draw(self, screen):
-        sorter = lambda e1,e2: 1 if e1 is self.selected else -1 if e2 is self.selected else e1.get_update_priority() - e2.get_update_priority()
-        entities = self.get_entities()
-        entities.sort(cmp=sorter)
-        self.get_drawer().draw(screen, entities, self.get_current_level().background_color)
+        self.get_drawer().draw(screen, self.get_entities(), self.get_current_level().background_color)
+        if self.selected != None:
+            self.get_drawer().draw(screen, [self.selected], background_color=None)
         
     def switching_from(self, new_state_id):
         self.set_selected(None)

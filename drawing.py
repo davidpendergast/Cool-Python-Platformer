@@ -8,8 +8,10 @@ class Drawer:
         self.grid_color = (50,50,50)
     
     def draw(self, screen, entity_list, background_color=(0,0,0)):
-        background_color = self.update_background_color(background_color)
-        screen.fill(background_color)
+        if background_color != None:
+            background_color = self.update_background_color(background_color)
+            screen.fill(background_color)
+        
         if self.show_grid:
             for x in range(0, screen.get_width() // self.grid_spacing+1):
                 draw_x = x*self.grid_spacing - self.camera_pos[0]%self.grid_spacing
