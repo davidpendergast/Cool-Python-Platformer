@@ -110,7 +110,6 @@ class PlatformerInstance:
     def load_level(self, reset_ghost=True):
         self.level_manager.load_level(self.get_level_num(), self.get_player(), reset_ghost)
     
-    
 class InGameState(GameState):
     def __init__(self, settings, platformer_instance):
         GameState.__init__(self, settings)
@@ -261,7 +260,7 @@ class PlayingState(InGameState):
     
     def draw(self, screen):
         self.get_drawer().update_camera(self.get_player(), screen.get_width(), screen.get_height())
-        self.get_drawer().draw(screen, self.get_entities())
+        self.get_drawer().draw(screen, self.get_entities(), self.get_current_level().background_color)
         self.draw_gui(screen)
      
     def add_time(self, t):
@@ -425,9 +424,7 @@ class EditingState(InGameState):
     def do_save(self):
     
         directory = EditingState.output_dir
-        if not os.path.exists(directory):
-            utilities.log("Creating directory: "+directory+"...")
-            os.makedirs(directory)
+        utilities.create_dir_if_doesnt_exist(directory)
         
         num = self.get_level_num()
         filename = directory + "/saved_level_" + str(num) + ".json"
@@ -454,7 +451,10 @@ class EditingState(InGameState):
                 self.get_drawer().move_camera(0, 4)
         
     def draw(self, screen):
-        self.get_drawer().draw(screen, self.get_entities())
+        sorter = lambda e1,e2: 1 if e1 is self.selected else -1 if e2 is self.selected else e1.get_update_priority() - e2.get_update_priority()
+        entities = self.get_entities()
+        entities.sort(cmp=sorter)
+        self.get_drawer().draw(screen, entities, self.get_current_level().background_color)
         
     def switching_from(self, new_state_id):
         self.set_selected(None)

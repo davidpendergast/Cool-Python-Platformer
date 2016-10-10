@@ -65,11 +65,11 @@ DONE            dimensions
                 paaaaaaths
                 themes
                 spawn stuff
-                type (bad, finish, normal)
+1/2             type (bad, finish, normal)
 ???         zoom view in and out
 DONE        save levels out (formatting issues?)
         clicking on overlapping blocks should toggle which one gets selected
-        selected block should render above all others
+DONE    selected block should render above all others
             
     Level Storage:
 DONE    store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead
@@ -81,6 +81,9 @@ DONE    custom json formatter to make easier to read
             --should levels know their own number?
                 --what if they disagree?
         make levels save to somewhere more reasonable
+        
+    General:
+DONE    take screenshots
         
          
             
@@ -103,6 +106,8 @@ IGNORE? pretty much everything affected by fps
         rendering order got booched somewhere
             --moving blocks should always be behind static ones
             --probably means physics calculations are out of order as well
+DONE    theme background color is ignored
+            --nuked by drawer when it calculates redness due to falling
 @~~~~~~~~~~~~~~~~~~@
 | In Consideration |
 @~~~~~~~~~~~~~~~~~~@

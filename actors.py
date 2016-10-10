@@ -127,7 +127,7 @@ class Actor(blocks.Box):
         
     def is_actor(self): return True
         
-    def __str__(self):
+    def __repr__(self):
         if self.is_player:
             return "Player"+self.rect_str()
         else:
@@ -202,7 +202,7 @@ class Enemy(Actor):
         result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result
         
-    def __str__(self):
+    def __repr__(self):
         return "Enemy"+self.rect_str()
             
     @staticmethod
@@ -320,7 +320,7 @@ class SpawnPoint(blocks.Box):
         
     def is_spawn_point(self): return True
     
-    def __str__(self):
+    def __repr__(self):
         return "Spawn"+self.rect_str()
         
     def to_json(self):

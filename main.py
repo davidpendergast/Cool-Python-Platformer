@@ -13,7 +13,7 @@ from gamestate import GameStateManager, PlayingState, EditingState, PlatformerIn
 pygame.init()
 settings = Settings()
 
-pygame.display.set_caption("Really Fun Game! - "+settings.level_path())
+pygame.display.set_caption("Extreme Block Jumper 2 - "+settings.level_path())
 gamestate_manager = GameStateManager(settings)
 platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)
@@ -34,12 +34,25 @@ FPS = HardSettings.fps()
 
 actor = playing.get_player()  # The player's character
 
+def stop_running(): 
+    global still_running
+    still_running = False
+def take_screenshot():
+    utilities.take_screenshot(screen)
+
+GLOBAL_COMMANDS = {
+    pygame.K_ESCAPE: stop_running,
+    pygame.K_F5: take_screenshot
+}
+
 while still_running:
     gamestate_manager.pre_event_update()
     
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            still_running = False
+        if event.type == pygame.QUIT:
+            stop_running()
+        elif event.type == pygame.KEYDOWN and event.key in GLOBAL_COMMANDS:
+            GLOBAL_COMMANDS[event.key]()
         else:
             gamestate_manager.handle_event(event)
             

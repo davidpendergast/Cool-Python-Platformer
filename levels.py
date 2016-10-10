@@ -148,19 +148,19 @@ BUILT_IN_THEMES.update({
     "ice":Theme(
         normal_color=[145, 200, 220], 
         perturb_grayscale_only=False, 
-        background_color=[30, 60, 70]).build_in("ice"),
+        background_color=[15, 30, 35]).build_in("ice"),
     "fire":Theme(
         normal_color=[170, 90, 90], 
         perturb_grayscale_only=False, 
-        background_color=[95, 5, 5]).build_in("fire"),
+        background_color=[20, 5, 5]).build_in("fire"),
     "forest":Theme(
         normal_color=[80, 165, 60], 
         perturb_grayscale_only=False, 
-        background_color=[11, 30, 6]).build_in("forest"),
+        background_color=[5, 15, 6]).build_in("forest"),
     "snow":Theme(
         normal_color=[200, 200, 200], 
         perturb_grayscale_only=True, 
-        background_color=[50, 50, 50]).build_in("snow"),
+        background_color=[25, 25, 25]).build_in("snow"),
     "rainbow":Theme(
         normal_color=[128, 128, 128], 
         perturb_grayscale_only=False, 

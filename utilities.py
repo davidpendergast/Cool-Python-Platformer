@@ -2,6 +2,8 @@ import random
 import re
 import options
 import json
+import os
+import pygame
 
 def format_time(ticks):
     "75 -> '1:15'"
@@ -148,6 +150,23 @@ def log(message, also_print=True):
     # todo - actual logging
     if also_print:
         print str(message)
+        
+def take_screenshot(screen):
+    log("Taking screenshot...")
+    create_dir_if_doesnt_exist("screenshots")
+    existing_files = [file for file in os.listdir("screenshots") if str(file).endswith(".png")]
+    num_files = len(existing_files)
+    i = num_files
+    while "screenshot_"+str(i)+".png" in existing_files:
+        i += 1
+    filename = "screenshots/screenshot_"+str(i)+".png"
+    log("Saving "+filename+"...")
+    pygame.image.save(screen, filename)
+    
+def create_dir_if_doesnt_exist(directory):
+    if not os.path.exists(directory):
+        log(directory + " doesn't exist. Creating...")
+        os.makedirs(directory)
                 
 if __name__ == "__main__":
     json_datas = {

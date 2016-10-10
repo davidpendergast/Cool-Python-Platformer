@@ -162,7 +162,7 @@ class Box(pygame.sprite.Sprite):
     def get_update_priority(self):
         return -1
     
-    def __str__(self):
+    def __repr__(self):
         return "Box"+self.rect_str()
         
     def rect_str(self):
@@ -223,7 +223,7 @@ class Block(Box):
         result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result
         
-    def __str__(self):
+    def __repr__(self):
         return "Block"+self.rect_str()
         
 class MovingBlock(Block):
@@ -268,7 +268,7 @@ class MovingBlock(Block):
         result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result
         
-    def __str__(self):
+    def __repr__(self):
         return "Moving_Block"+self.rect_str()
         
 
@@ -302,7 +302,7 @@ class BadBlock(Block):
         result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
         return result
         
-    def __str__(self):
+    def __repr__(self):
         return "Bad_Block"+self.rect_str()
         
         
@@ -337,7 +337,7 @@ class FinishBlock(Block):
             
     def is_finish_block(self): return True
     
-    def __str__(self):
+    def __repr__(self):
         return "Finish_Block"+self.rect_str()   
 
         
