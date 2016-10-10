@@ -1,6 +1,6 @@
 {
     "blocks": [
-        {"height": 32, "type": "normal", "width": 480, "x": 2240, "y": 352},
+        {"type": "normal", "height": 32, "width": 480, "x": 2240, "y": 352},
         {"height": 352, "type": "normal", "width": 128, "x": 800, "y": 128},
         {"height": 320, "type": "normal", "width": 128, "x": 928, "y": 160},
         {"height": 384, "type": "normal", "width": 224, "x": 832, "y": 480},

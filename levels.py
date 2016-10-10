@@ -12,87 +12,87 @@ import utilities
 import level_loader
 
 class Level:
-        def __init__(self, name, entity_list, spawn_list, theme_dict):
-            self.name = name
-            self.num = -1
-            self.entity_list = entity_list[:]
-            self._entity_list_dirty = True # List needs sorting
-            self.spawn_list = spawn_list[:]
-            self.theme_lookup = dict(theme_dict)
-            self.background_color = self.theme_lookup["default"].values["background_color"]
+    def __init__(self, name, entity_list, spawn_list, theme_dict):
+        self.name = name
+        self.num = -1
+        self.entity_list = entity_list[:]
+        self._entity_list_dirty = True # List needs sorting
+        self.spawn_list = spawn_list[:]
+        self.theme_lookup = dict(theme_dict)
+        self.background_color = self.theme_lookup["default"].values["background_color"]
 
-            self.actor = self._find_player()
-            if self.actor == None:
-                utilities.log("levels.Level: Warning: No actor found in loaded level!")
-                
-            self.sort_if_dirty()
-        
-        def _sort_entities(self):
-            sorter = lambda x,y: x.get_update_priority() - y.get_update_priority()
-            self.entity_list.sort(cmp=sorter)
-            self._entity_list_dirty = False
-        
-        def add_object(self, obj, sort_now=True):
-            self.entity_list.append(obj)
-            if sort_now:
-                self._sort_entities()
-            else:
-                self._entity_list_dirty = True
+        self.actor = self._find_player()
+        if self.actor == None:
+            utilities.log("levels.Level: Warning: No actor found in loaded level!")
             
-        def sort_if_dirty(self):
-            if self._entity_list_dirty:
-                self._sort_entities()
-            
-        def remove_object(self, obj):
-            index = self.entity_list.index(obj)
-            del self.entity_list[index]
-            
-        def get_objects_at(self, (x, y)):
-            return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]
-            
-        def bring_out_yer_dead(self):
-            self.entity_list = filter(lambda x : not (hasattr(x, "is_alive") and not x.is_alive) or x is self.actor, self.entity_list)
-            
-        def _find_player(self):
-            for elem in self.entity_list:
-                if elem.is_actor() and elem.is_player:
-                    return elem
-            return None
-            
-        def set_actor(self, new_actor):
-            new_actor.reset()
-            if self.actor != None:
-                new_actor.set_xy(self.actor.x(), self.actor.y()) 
-            self.entity_list.remove(self.actor)
-            self.entity_list.append(new_actor)
-            self.actor = new_actor
-        
-        
-        def to_json(self):
-            my_json = {
-                "info": {
-                    "name":self.name,
-                    "version":"1.1"
-                },
-                "blocks": [],
-                "spawns":[],
-                "themes":{}
-            }
-            
-            for entity in self.entity_list:
-                if entity.is_block():
-                    my_json["blocks"].append(entity.to_json())
-            for spawn in self.spawn_list:
-                my_json["spawns"].append(spawn.to_json())
-            for id in self.theme_lookup:
-                theme = self.theme_lookup[id]
-                theme_json = theme.to_json()
-                
-                # want to avoid redundant entries like "ice":"ice"
-                if theme_json != id:
-                    my_json["themes"][id] = theme_json
+        self.sort_if_dirty()
     
-            return my_json
+    def _sort_entities(self):
+        sorter = lambda x,y: x.get_update_priority() - y.get_update_priority()
+        self.entity_list.sort(cmp=sorter)
+        self._entity_list_dirty = False
+    
+    def add_object(self, obj, sort_now=True):
+        self.entity_list.append(obj)
+        if sort_now:
+            self._sort_entities()
+        else:
+            self._entity_list_dirty = True
+        
+    def sort_if_dirty(self):
+        if self._entity_list_dirty:
+            self._sort_entities()
+        
+    def remove_object(self, obj):
+        index = self.entity_list.index(obj)
+        del self.entity_list[index]
+        
+    def get_objects_at(self, (x, y)):
+        return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]
+        
+    def bring_out_yer_dead(self):
+        self.entity_list = filter(lambda x : not (hasattr(x, "is_alive") and not x.is_alive) or x is self.actor, self.entity_list)
+        
+    def _find_player(self):
+        for elem in self.entity_list:
+            if elem.is_actor() and elem.is_player:
+                return elem
+        return None
+        
+    def set_actor(self, new_actor):
+        new_actor.reset()
+        if self.actor != None:
+            new_actor.set_xy(self.actor.x(), self.actor.y()) 
+        self.entity_list.remove(self.actor)
+        self.entity_list.append(new_actor)
+        self.actor = new_actor
+    
+    
+    def to_json(self):
+        my_json = {
+            "info": {
+                "name":self.name,
+                "version":"1.1"
+            },
+            "blocks": [],
+            "spawns":[],
+            "themes":{}
+        }
+        
+        for entity in self.entity_list:
+            if entity.is_block():
+                my_json["blocks"].append(entity.to_json())
+        for spawn in self.spawn_list:
+            my_json["spawns"].append(spawn.to_json())
+        for id in self.theme_lookup:
+            theme = self.theme_lookup[id]
+            theme_json = theme.to_json()
+            
+            # want to avoid redundant entries like "ice":"ice"
+            if theme_json != id:
+                my_json["themes"][id] = theme_json
+
+        return my_json
             
 BUILT_IN_THEMES = {}
                 
@@ -158,6 +158,7 @@ class Theme:
         self.is_built_in = True
         self.built_in_id = id
         return self
+        
 
 BUILT_IN_THEMES.update({
     "default":Theme().build_in("default"),
@@ -192,7 +193,7 @@ class LevelManager:
         self.level_num = 0
         self.current_level = None
         
-        self.file_dir = settings.level_path()    # "levels/something", most likely
+        self.file_dir = settings.level_path()
         self.level_filenames = self.read_filenames_from_header()
         highscores = self.load_or_create_highscore_data()  
         self.current_run_times = [None for i in range(0,self.get_num_levels())]
@@ -202,6 +203,20 @@ class LevelManager:
         self.best_overall_run_scores = [utilities.unformat_time(highscores["best_overall_run_scores"][i]) for i in range(self.get_num_levels())]
         self.ghosts = [actors.Ghost.from_json(g) for g in highscores["ghosts"]]
         
+    def get_checksum(self, level_num):
+        with open(self.get_filepath(level_num)) as level_file:
+            text = level_file.read()
+            bigprime = 8002823
+            checksum = 1
+            
+            for i in range(0, len(text)):
+                char = text[i]
+                checksum += (ord(char) * i)
+                checksum = checksum % bigprime
+                
+            return checksum
+        return -1
+    
     def get_num_levels(self):
         return len(self.level_filenames)
         
@@ -212,10 +227,12 @@ class LevelManager:
         return self.best_overall_run_total
         
     def load_level(self, num, actor, reset_ghost=True):
-        level = level_loader.load(self.file_dir + "/" + self.level_filenames[num])
+        loaded_successfully = True
+        level = level_loader.load(self.get_filepath(num))
         if level == None:
             utilities.log("Level "+str(num)+" failed to load, using Void Level instead.")
             level = self.create_void_level()
+            loaded_successfully = False
         
         self.level_num = num
         level.set_actor(actor)
@@ -226,6 +243,10 @@ class LevelManager:
             level.add_object(self.ghosts[num])
             
         self.current_level = level
+        return loaded_successfully
+        
+    def get_filepath(self, level_num):
+        return self.file_dir + "/" + self.level_filenames[level_num]
         
     def update_level_highscore(self, level_num, time, ghost_recorder=None):
         dirty = False
@@ -281,11 +302,12 @@ class LevelManager:
         
         if suppress_printing > 0:
             utilities.log("Saving highscores to "+self.get_highscores_filename()+"...")
-        highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
+        highscores = LevelManager.generate_empty_highscores_dict(self.get_num_levels(), checksums=[])
         highscores["best_overall_run_total"] = utilities.format_time(self.best_overall_run_total)
         highscores["best_individual_scores"] = [utilities.format_time(self.best_individual_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["best_overall_run_scores"] = [utilities.format_time(self.best_overall_run_scores[i]) for i in range(0, self.get_num_levels())]
         highscores["ghosts"] = [actors.Ghost.to_json(g) for g in self.ghosts]
+        highscores["checksums"] = [self.get_checksum(i) for i in range(0, self.get_num_levels())]
         
         with open(self.get_highscores_filename(), 'w') as file:
             json_string = utilities.level_json_to_string(highscores)
@@ -345,21 +367,33 @@ class LevelManager:
         return hs_dict
         
     @staticmethod
-    def generate_empty_highscores_dict(num_levels):
+    def generate_empty_highscores_dict(num_levels, checksums):
         return {
                 "best_overall_run_total":None,
                 "best_overall_run_scores":[None for i in range(0,num_levels)],
                 "best_individual_scores":[None for i in range(0,num_levels)],
+                "checksums":checksums,
                 "ghosts":[None for i in range(0, num_levels)]
             }
     
     def repair_highscore_data_if_necessary(self, highscore_data):
-        damaged = len(highscore_data["best_individual_scores"]) != self.get_num_levels()
-        damaged |= len(highscore_data["best_overall_run_scores"]) != self.get_num_levels()
+        num_levels = self.get_num_levels()
+        actual_checksums = [self.get_checksum(i) for i in range(0, num_levels)]
+        
+        damaged = "checksums" not in highscore_data or len(highscore_data["checksums"]) != num_levels
+        damaged |= "best_overall_run_scores" not in highscore_data or len(highscore_data["best_overall_run_scores"]) != num_levels
+        damaged |= "best_individual_scores" not in highscore_data or len(highscore_data["best_individual_scores"]) != num_levels
+        damaged |= "best_overall_run_total" not in highscore_data
+        
+        if not damaged:
+            for (actual, given) in zip(actual_checksums, highscore_data["checksums"]):
+                if actual != given:
+                    damaged = True
+                    break
         
         if damaged:
             utilities.log("highscores.json is invalid, wiping scores.")
-            return self.generate_empty_highscores_dict(self.get_num_levels())
+            return LevelManager.generate_empty_highscores_dict(num_levels, actual_checksums)
             
         return highscore_data    
         
