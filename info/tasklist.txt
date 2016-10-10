@@ -103,7 +103,7 @@ IGNORE? pretty much everything affected by fps
             --movement speed, jump height, etc. not a huge deal because fps will pretty much always
                 be fixed at 60, but something isn't correct somewhere that's causing this behaviour.
     Graphical:
-        rendering order got booched somewhere
+DONE    rendering order got booched somewhere
             --moving blocks should always be behind static ones
             --probably means physics calculations are out of order as well
 DONE    theme background color is ignored
