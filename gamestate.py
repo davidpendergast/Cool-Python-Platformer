@@ -7,13 +7,14 @@ import blocks, actors
 import drawing
 import levels
 import collisions
-from options import HardSettings
+import options
 import utilities
 
 class GameState:
     def __init__(self, settings):
         self.settings = settings
         self.state_manager = None # gets set when gamestate is added to a manager
+        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
     def pre_event_update(self):
         pass
     def handle_event(self, event):
@@ -85,6 +86,53 @@ class GameStateManager(GameState):
     def draw(self, screen):
         if self.get_current_state() != None:
             self.get_current_state().draw(screen)
+            
+class MainMenuState(GameState):
+    def __init__(self, settings):
+        GameState.__init__(self, settings)
+        self.title_font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 72)
+    def pre_event_update(self):
+        pass
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
+                
+    def update(self, dt):
+        pass
+    def draw(self, screen):
+        standard_width = options.standard_size()[0]
+        standard_height = options.standard_size()[1]
+        xoffset = (screen.get_width() - standard_width) / 2
+        yoffset = (screen.get_height() - standard_height) / 2
+        icing = 20
+        
+        if screen.get_width() > standard_width or screen.get_height() > standard_height:
+            # so that in dev mode you can see what the actual screen size would be.
+            pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,standard_width,standard_height), 1)
+        
+        title = self.title_font.render(options.title(), True, (255, 255, 255))
+        
+        full_run = self.font.render("start full run", True, (255, 255, 255))
+        level_grind = self.font.render("grind single level", True, (255, 255, 255))
+        edit_levels = self.font.render("edit levels", True, (255, 255, 255))
+        select_level_pack = self.font.render("select level pack", True, (255, 255, 255))
+        edit_settings = self.font.render("settings", True, (255, 255, 255))
+        menu_options = [full_run, level_grind, edit_levels, select_level_pack, edit_settings]
+        
+        screen.blit(title, (xoffset + icing, yoffset + icing))
+        option_heights = [x.get_height() for x in menu_options]
+        options_height = sum(option_heights)
+        options_width = max([x.get_width() for x in menu_options])
+        for i in range(0, len(menu_options)):
+            opt = menu_options[i]
+            xpos = xoffset + standard_width - options_width - icing
+            ypos = yoffset + standard_height - options_height + sum(option_heights[0:i]) - icing
+            screen.blit(opt, (xpos, ypos))
+                
+    def get_title_text_image(title_str, max_width):
+        pass
+    
         
 class PlatformerInstance:
     "state that's shared between PlayingState and EditingState"
@@ -124,7 +172,6 @@ class InGameState(GameState):
             'ctrl':False
         }
         self.mouse_down_pos = None
-        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
     def get_entities(self):
         return self.platformer_instance.get_entities()   
     def get_level_manager(self):
@@ -314,8 +361,8 @@ class PlayingState(InGameState):
         self.reset_level(reset_player=True, reset_ghost=True)
     
     def draw_gui(self, screen):
-        standard_width = HardSettings.standard_size()[0]
-        standard_height = HardSettings.standard_size()[1]
+        standard_width = options.standard_size()[0]
+        standard_height = options.standard_size()[1]
         xoffset = (screen.get_width() - standard_width) / 2
         yoffset = (screen.get_height() - standard_height) / 2
         

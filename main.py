@@ -6,31 +6,33 @@ import blocks, actors
 import drawing
 import gamestate
 import utilities
-from options import Settings
-from options import HardSettings
-from gamestate import GameStateManager, PlayingState, EditingState, PlatformerInstance
+import options
+
+from gamestate import GameStateManager, PlayingState, EditingState, MainMenuState, PlatformerInstance
 
 pygame.init()
-settings = Settings()
+settings = options.Settings()
 
 pygame.display.set_caption("Extreme Block Jumper 2 - "+settings.level_path())
 gamestate_manager = GameStateManager(settings)
 platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)
 editing = EditingState(settings, platformer_inst)
+main_menu = MainMenuState(settings)
 gamestate_manager.set_state(GameStateManager.PLAYING_STATE, playing)
 gamestate_manager.set_state(GameStateManager.EDITING_STATE, editing)
+gamestate_manager.set_state(GameStateManager.MAIN_MENU_STATE, main_menu)
 
-gamestate_manager.set_current_state(GameStateManager.PLAYING_STATE)
+gamestate_manager.set_current_state(GameStateManager.MAIN_MENU_STATE)
 
-size = HardSettings.standard_size()
+size = options.standard_size()
 if settings.dev_mode():
-    size = HardSettings.dev_size()
+    size = options.dev_size()
 screen = pygame.display.set_mode(size)
 
 still_running = True
 clock = pygame.time.Clock()
-FPS = HardSettings.fps()
+FPS = options.fps()
 
 actor = playing.get_player()  # The player's character
 
@@ -41,7 +43,7 @@ def take_screenshot():
     utilities.take_screenshot(screen)
 
 GLOBAL_COMMANDS = {
-    pygame.K_ESCAPE: stop_running,
+    # pygame.K_ESCAPE: stop_running,
     pygame.K_F5: take_screenshot
 }
 

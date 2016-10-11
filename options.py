@@ -2,6 +2,29 @@ import json
 import os
 from shutil import copyfile
 import utilities
+import random
+
+## immutable settings
+
+def standard_size():
+    return (640, 480)
+def dev_size():
+    return (840,680)
+def fps():
+    return 60
+    
+edgy_titles = [
+        "Xnoros", 
+        "Fastbreak", 
+        "Breakfast", 
+        "Box Traversing Simulator 500", 
+        "pygame platformer #214"
+]
+title_idx = random.randint(0, len(edgy_titles)-1)
+    
+def title():
+    return edgy_titles[title_idx]
+    
 
 class Settings:
     default_settings_path = "configs/settings_default.json"
@@ -53,14 +76,3 @@ class Settings:
             utilities.log("Creating " + Settings.local_settings_path + "...")
             copyfile(Settings.default_settings_path, Settings.local_settings_path)
                  
-class HardSettings:
-    @staticmethod
-    def standard_size():
-        return (640, 480)
-    @staticmethod
-    def dev_size():
-        return (840,680)
-    @staticmethod
-    def fps():
-        return 60
-        

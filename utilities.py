@@ -47,11 +47,11 @@ def perturb_color(orig_color, max_perturb, only_greyscale):
     
 
 def ticks_to_millis(ticks):
-    return (1000 * ticks) / float(options.HardSettings.fps())
+    return (1000 * ticks) / float(options.fps())
     
 
 def millis_to_ticks(millis):
-    return (millis * options.HardSettings.fps()) / float(1000)
+    return (millis * options.fps()) / float(1000)
     
 
 def pad_to_length(string, length, filler, to_front=False):
