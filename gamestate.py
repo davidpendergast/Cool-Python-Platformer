@@ -221,7 +221,7 @@ class PlayingState(InGameState):
             elif event.key == pygame.K_RIGHT and self.settings.dev_mode():
                 self.next_level()
                 return True
-            elif event.key == pygame.K_LEFT and self.settings.dev_mode():
+            elif event.key == pygame.K_LEFT:
                 self.prev_level()
                 return True
             elif event.key == pygame.K_DOWN and self.settings.dev_mode():
@@ -306,11 +306,12 @@ class PlayingState(InGameState):
             self.platformer_instance.load_level()
       
     def prev_level(self):
-        "only used in dev mode"
         level_num = self.get_level_num()
+        if not self.settings.dev_mode() and level_num == 0:
+            return
         self.platformer_instance.set_level_num((level_num - 1) % self.get_level_manager().get_num_levels())
-        self.get_player().reset()
         self.platformer_instance.load_level()
+        self.reset_level(reset_player=True, reset_ghost=True)
     
     def draw_gui(self, screen):
         standard_width = HardSettings.standard_size()[0]
