@@ -199,7 +199,7 @@ class PlayingState(InGameState):
         if player.is_alive == False and not self.settings.invincible_mode():
             player.is_alive = True
             self.death_count += 1
-            self.reset_level(reset_ghost=False)
+            self.reset_level(reset_ghost=True)
         if self.get_player().finished_level:
             self.next_level(True)
     
@@ -208,7 +208,7 @@ class PlayingState(InGameState):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_r:
                 self.death_count += 1
-                self.reset_level(reset_player=True, reset_ghost=False)
+                self.reset_level(reset_player=True, reset_ghost=True)
                 return True
             elif event.key == pygame.K_BACKSPACE:
                 self.full_reset()
@@ -278,6 +278,8 @@ class PlayingState(InGameState):
         
         if not reset_player:
             player.set_xy(x,y)
+        else:
+            self.level_time = 0
     
     def full_reset(self):
         self.get_player().reset()
