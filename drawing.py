@@ -1,9 +1,9 @@
 import pygame, blocks
 
 class Drawer:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.camera_pos = (0,0)
-        self.show_grid = False
         self.grid_spacing = 32
         self.grid_color = (50,50,50)
     
@@ -12,7 +12,7 @@ class Drawer:
             background_color = self.update_background_color(background_color)
             screen.fill(background_color)
         
-        if self.show_grid:
+        if self.settings.show_grid():
             for x in range(0, screen.get_width() // self.grid_spacing+1):
                 draw_x = x*self.grid_spacing - self.camera_pos[0]%self.grid_spacing
                 pygame.draw.line(screen,self.grid_color,(draw_x, 0), (draw_x, screen.get_height()))

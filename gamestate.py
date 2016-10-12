@@ -1,3 +1,5 @@
+from keybindings import *
+
 import pygame
 import sys
 import json
@@ -12,13 +14,33 @@ import utilities
 
 class GameState:
     def __init__(self, settings):
-        self.settings = settings
         self.state_manager = None # gets set when gamestate is added to a manager
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
+        self.settings = settings
+        
+        self.keydown_action_map = {}
+        self.keyup_action_map = {}
+        self.key_bindings = KeyBindings([], self.settings)
+        self.keystate = {
+            "shift":False,
+            "ctrl":False
+        }
+        
+        self.configure_keybindings()
     def pre_event_update(self):
         pass
     def handle_event(self, event):
-        pass
+        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            
+            name = pygame.key.name(event.key)
+            if self.key_bindings.has_binding(name):
+                action = self.key_bindings.get_action(name)
+                action_map = self.keydown_action_map if event.type == pygame.KEYDOWN else self.keyup_action_map
+                if action in action_map:
+                    action_map[action]() 
+                    return True
+        return False
+                    
     def update(self, dt):
         pass
     def draw(self, screen):
@@ -27,6 +49,18 @@ class GameState:
         pass
     def switching_from(self, new_state_id):
         pass
+    def configure_keybindings(self):
+        self.key_bindings.add_actions([SHIFT, CTRL])
+        self.keydown_action_map.update({
+            SHIFT: lambda: self.set_keystate("shift", True),
+            CTRL: lambda: self.set_keystate("ctrl", True),
+        })
+        self.keyup_action_map.update({
+            SHIFT: lambda: self.set_keystate("shift", False),
+            CTRL: lambda: self.set_keystate("ctrl", False),
+        })
+    def set_keystate(self, key, value):
+        self.keystate[key] = value
         
 class GameStateManager(GameState):
     # state identifiers
@@ -44,6 +78,10 @@ class GameStateManager(GameState):
         }
         self.settings = settings
         self.current_state_id = None
+        self.full_quit = False
+        
+    def still_running(self):
+        return not self.full_quit
     
     def set_state(self, state_id, gamestate):
         gamestate.state_manager = self
@@ -104,17 +142,21 @@ class MainMenuState(GameState):
             c = self.unselected_color if i != self.selected_index else self.selected_color
             self.option_text_images.append(self.font.render(name, True, c))
         
-    def pre_event_update(self):
-        pass
+    def configure_keybindings(self):
+        actions = [MENU_UP, MENU_DOWN, MENU_CONFIRM, QUIT]
+        self.key_bindings.add_actions(actions)
+        self.keydown_action_map.update({
+                MENU_UP: lambda: self.set_selected_index(self.selected_index-1),
+                MENU_DOWN: lambda: self.set_selected_index(self.selected_index+1),
+                MENU_CONFIRM: lambda: self.state_manager.set_current_state(GameStateManager.PLAYING_STATE),
+                QUIT: lambda: self._full_exit()
+        })
+        
+    def _full_exit(self):
+        self.state_manager.full_quit = True
         
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
-            elif event.key == pygame.K_UP or event.key == pygame.K_w:
-                self.set_selected_index(self.selected_index - 1)
-            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                self.set_selected_index(self.selected_index + 1)
+        GameState.handle_event(self, event)
     
     def set_selected_index(self, new_index):
         new_index = new_index % len(self.option_names)
@@ -161,13 +203,11 @@ class MainMenuState(GameState):
             if image.get_width() > max_width:
                 if start_line == end_line:
                     # word itself is too long, just cram it in there
-                    print "using "+str(words[start_line:end_line])
                     lines.append(image)
                     start_line = end_line + 1
                     end_line = end_line + 1
                 else:
                     # line is one word too wide
-                    print "using "+str(words[start_line:end_line])
                     text = " ".join(words[start_line:end_line])
                     image = self.title_font.render(text, True, self.unselected_color)
                     lines.append(image)
@@ -178,9 +218,6 @@ class MainMenuState(GameState):
             text = " ".join(words[start_line:end_line])
             image = self.title_font.render(text, True, self.unselected_color)
             lines.append(image)
-        
-        print title_str
-        print str(lines)
             
         total_height = sum([x.get_height() for x in lines])
         total_width = max([x.get_width() for x in lines])
@@ -201,7 +238,7 @@ class PlatformerInstance:
         self.player = actors.Actor(24, 32, settings.get_color())
         self.player.is_player = True
         self.level_manager = levels.LevelManager(self.settings)
-        self.drawer = drawing.Drawer()
+        self.drawer = drawing.Drawer(settings)
         
         self.level_num = 0
         
@@ -220,40 +257,40 @@ class PlatformerInstance:
 
 
 class InGameState(GameState):
-
     def __init__(self, settings, platformer_instance):
         GameState.__init__(self, settings)
         self.platformer_instance = platformer_instance
 
-        self.keys = {
+        self.keystate.update({
             'left':False, 
             'right':False, 
             'jump':False,
             'up':False,
             'down':False,
-            'shift':False,
-            'ctrl':False
-        }
-
-        self.bindings = {
-            pygame.K_w: ('jump', 'up'),
-            pygame.K_UP: ('jump', 'up'),
-            pygame.K_SPACE: 'jump',
-            pygame.K_a: 'left',
-            pygame.K_LEFT: 'left',
-            pygame.K_d: 'right',
-            pygame.K_RIGHT: 'right',
-            pygame.K_s: 'down',
-            pygame.K_DOWN: 'down',
-            pygame.K_RSHIFT: 'shift',
-            pygame.K_LSHIFT: 'shift',
-            pygame.K_LCTRL: 'ctrl',
-            pygame.K_RCTRL: 'ctrl',
-        }
+        })
 
         self.mouse_down_pos = None
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
-
+    
+    def configure_keybindings(self):
+        GameState.configure_keybindings(self)
+        actions = [QUIT, PAUSE, RESET_LEVEL, PREVIOUS_LEVEL, SHOW_GRID, FREEZE_MODE]
+        if self.settings.dev_mode():
+            actions = actions + [INVINCIBLE_MODE, NEXT_LEVEL, RESET_LEVEL_SOFT]
+        self.key_bindings.add_actions(actions)
+        
+        self.keydown_action_map.update({
+                QUIT: lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
+                PAUSE: lambda: None,
+                RESET_LEVEL: lambda: self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
+                RESET_LEVEL_SOFT: lambda: self.reset_level(False, reset_ghost=False),
+                SHOW_GRID: lambda: self.settings.set_show_grid(not self.settings.show_grid()),
+                FREEZE_MODE: lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode()),
+                INVINCIBLE_MODE: lambda: self.settings.set_invincible_mode(not self.settings.invincible_mode()),
+                NEXT_LEVEL: lambda: self.next_level(),
+                PREVIOUS_LEVEL: lambda: self.prev_level()
+        })
+    
     def get_entities(self):
         return self.platformer_instance.get_entities()
 
@@ -272,31 +309,12 @@ class InGameState(GameState):
     def get_drawer(self):
         return self.platformer_instance.drawer
 
-    def _set_key(self, key, value):
-        binding = self.bindings[key]
-        if isinstance(binding, tuple):
-            for bind in binding:
-                self.keys[bind] = value
-        else:
-            self.keys[binding] = value
-
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key in self.bindings:
-                self._set_key(event.key, True)
-            elif event.key == pygame.K_g:
-                self.get_drawer().show_grid = not self.get_drawer().show_grid
-            elif event.key == pygame.K_f and self.settings.dev_mode():
-                self.settings.set_frozen_mode(not self.settings.frozen_mode())
-            elif event.key == pygame.K_ESCAPE:
-                self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE)
-        elif event.type == pygame.KEYUP:
-            if event.key in self.bindings:
-                self._set_key(event.key, False)
+        return GameState.handle_event(self, event)
     
     def switching_to(self, prev_state_id):
-        for key in self.keys:
-            self.keys[key] = False
+        for key in self.keystate:
+            self.keystate[key] = False
 
 
 class PlayingState(InGameState):
@@ -314,6 +332,33 @@ class PlayingState(InGameState):
         
         self.full_reset() # starts game from scratch
         
+    def configure_keybindings(self):
+        InGameState.configure_keybindings(self)
+        actions = [] + PLAYER_MOVES + [RESET_RUN]
+        if self.settings.dev_mode():
+            actions = actions + [INVINCIBLE_MODE, RESET_LEVEL_SOFT, TOGGLE_EDIT_MODE]
+            
+        self.key_bindings.add_actions(actions)
+        self.keydown_action_map.update({
+                JUMP : lambda: self.set_keystate("jump", True),
+                MOVE_LEFT : lambda: self.set_keystate("left", True),
+                MOVE_RIGHT : lambda: self.set_keystate("right", True),
+                QUIT: lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
+                PAUSE: lambda: None,
+                RESET_LEVEL: lambda: self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
+                RESET_LEVEL_SOFT: lambda: self.reset_level(False, reset_ghost=False),
+                RESET_RUN: lambda: self.full_reset(),
+                SHOW_GRID: lambda: self.settings.set_show_grid(not self.settings.show_grid()),
+                TOGGLE_EDIT_MODE: lambda: self.state_manager.set_current_state(GameStateManager.EDITING_STATE),
+                INVINCIBLE_MODE: lambda: self.settings.set_invincible_mode(not self.settings.invincible_mode()),
+                NEXT_LEVEL: lambda: self.next_level(),
+                PREVIOUS_LEVEL: lambda: self.prev_level()
+        })
+        self.keyup_action_map.update({
+                MOVE_LEFT : lambda: self.set_keystate("left", False),
+                MOVE_RIGHT : lambda: self.set_keystate("right", False)
+        })
+        
     def pre_event_update(self):
         player = self.get_player()
         if player.is_crushed == True:
@@ -326,41 +371,20 @@ class PlayingState(InGameState):
             self.next_level(True)
     
     def handle_event(self, event):
-        InGameState.handle_event(self, event)
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN or event.key == pygame.K_r:
-                self.death_count += 1
-                self.reset_level(reset_player=True, reset_ghost=True)
-                return True
-            elif event.key == pygame.K_BACKSPACE:
-                self.full_reset()
-                return True
-            elif event.key == pygame.K_e and self.settings.dev_mode():
-                self.state_manager.set_current_state(GameStateManager.EDITING_STATE)
-                return True
-            elif event.key == pygame.K_k and self.settings.dev_mode():
-                self.settings.set_invincible_mode(not self.settings.invincible_mode())
-            elif event.key == pygame.K_RIGHT and self.settings.dev_mode():
-                self.next_level()
-                return True
-            elif event.key == pygame.K_LEFT:
-                self.prev_level()
-                return True
-            elif event.key == pygame.K_DOWN and self.settings.dev_mode():
-                self.reset_level(False, reset_ghost=False)
-                return True                    
+        done = InGameState.handle_event(self, event)
+        return done                
     
     def update(self, dt):
         self.add_time(dt)
         
-        if self.keys['jump']:
+        if self.keystate['jump']:
             self.get_player().jump_action()
-            self.keys['jump'] = False
+            self.keystate['jump'] = False
         
-        if bool(self.keys['left']) ^ bool(self.keys['right']):
-            if self.keys['left']: 
+        if bool(self.keystate['left']) ^ bool(self.keystate['right']):
+            if self.keystate['left']: 
                 self.get_player().move_action(-1)
-            elif self.keys['right']: 
+            elif self.keystate['right']: 
                 self.get_player().move_action(1)
         else:
             self.get_player().apply_friction(dt)
@@ -389,7 +413,8 @@ class PlayingState(InGameState):
         self.total_time += 1
         self.level_time += 1
     
-    def reset_level(self, reset_player=True, reset_ghost=True):
+    def reset_level(self, reset_player=True, death_increment=0, reset_ghost=True):
+        self.death_count += death_increment
         player = self.get_player()
         x = player.x()
         y = player.y()
@@ -508,7 +533,7 @@ class EditingState(InGameState):
         }
         
     def _val(self):
-        return 4 if self.keys["shift"] else 32
+        return 4 if self.keystate["shift"] else 32
     
     def handle_event(self, event):
         InGameState.handle_event(self, event)
@@ -516,16 +541,16 @@ class EditingState(InGameState):
         if event.type == pygame.KEYDOWN:
             if event.key in self.key_mapping:
                 self.key_mapping[event.key]()
-            elif event.key == pygame.K_s and self.keys["ctrl"]:
+            elif event.key == pygame.K_s and self.keystate["ctrl"]:
                 self.do_save()
  
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
             grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
             utilities.log("Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]")
-            if self.keys['ctrl']:
+            if self.keystate['ctrl']:
                 pass
-            elif self.keys['shift']:
+            elif self.keystate['shift']:
                 pass
             else:
                 clicked_objs = self.get_level_manager().current_level.get_objects_at((x,y))
@@ -563,16 +588,16 @@ class EditingState(InGameState):
         utilities.log("done.")
     
     def do_camera_move(self, dt):
-        if bool(self.keys['left']) ^ bool(self.keys['right']):
-            if self.keys['left']: 
+        if bool(self.keystate['left']) ^ bool(self.keystate['right']):
+            if self.keystate['left']: 
                 self.get_drawer().move_camera(-4, 0)
-            elif self.keys['right']: 
+            elif self.keystate['right']: 
                 self.get_drawer().move_camera(4, 0)
         
-        if bool(self.keys['up']) ^ bool(self.keys['down']):
-            if self.keys['up']: 
+        if bool(self.keystate['up']) ^ bool(self.keystate['down']):
+            if self.keystate['up']: 
                 self.get_drawer().move_camera(0, -4)
-            elif self.keys['down']: 
+            elif self.keystate['down']: 
                 self.get_drawer().move_camera(0, 4)
         
     def draw(self, screen):

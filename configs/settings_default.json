@@ -1,5 +1,49 @@
 {
     "dev_mode":false,
     "level_path":"levels/sample_level_pack",
-    "color":[128, 128, 255]
+    "color":[128, 128, 255],
+    
+    "keybindings":{
+        "jump":["w", "space", "up"],
+        "move_left":["a", "left"],
+        "move_right":["d", "right"],
+        "screenshot":"F5",
+        "quit":"escape",
+        "pause":"m",
+        
+        "edit_mode_camera_up":"w",
+        "edit_mode_camera_left":"a",
+        "edit_mode_camera_right":"d",
+        "edit_mode_camera_down":"s",
+        
+        "edit_mode_expand_left":"j",
+        "edit_mode_expand_up":"i",
+        "edit_mode_expand_right":"l",
+        "edit_mode_expand_down":"k",
+        
+        "edit_mode_move_left":"left",
+        "edit_mode_move_up":"up",
+        "edit_mode_move_right":"right",
+        "edit_mode_move_down":"down",
+        "toggle_edit_mode":"e",
+        
+        "menu_up":["w", "up"],
+        "menu_down":["s", "down"],
+        "menu_left":["a", "left"],
+        "menu_right":["d", "right"],
+        "menu_confirm":["r", "return"],
+        
+        "reset_level":["r", "return"],
+        "previous_level":"p",
+        "next_level":"n",
+        "reset_run":"backspace",
+        
+        "show_grid":"g",
+        "invincible_mode":"k",
+        "freeze_mode":"f",
+        
+        "shift":["left shift", "right shift"],
+        "ctrl":["left ctrl", "right ctrl"]
+        
+    }
 }

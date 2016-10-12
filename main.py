@@ -8,6 +8,7 @@ import gamestate
 import utilities
 import options
 
+from keybindings import KeyBindings, TAKE_SCREENSHOT
 from gamestate import GameStateManager, PlayingState, EditingState, MainMenuState, PlatformerInstance
 
 pygame.init()
@@ -42,20 +43,23 @@ def stop_running():
 def take_screenshot():
     utilities.take_screenshot(screen)
 
+GLOBAL_BINDINGS = KeyBindings([TAKE_SCREENSHOT], settings)
 GLOBAL_COMMANDS = {
-    pygame.K_F5: take_screenshot
+    TAKE_SCREENSHOT: lambda: take_screenshot()
 }
 
-while still_running:
+while still_running and gamestate_manager.still_running():
     gamestate_manager.pre_event_update()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             stop_running()
-        elif event.type == pygame.KEYDOWN and event.key in GLOBAL_COMMANDS:
-            GLOBAL_COMMANDS[event.key]()
-        else:
-            gamestate_manager.handle_event(event)
+        elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            name = pygame.key.name(event.key)
+            if GLOBAL_BINDINGS.has_binding(name) and event.type == pygame.KEYDOWN:
+                GLOBAL_COMMANDS[GLOBAL_BINDINGS.get_action(name)]()
+            else:
+                gamestate_manager.handle_event(event)
             
     dt = 1
     gamestate_manager.update(dt)
