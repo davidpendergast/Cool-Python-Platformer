@@ -109,11 +109,14 @@ class PlatformerInstance:
         self.level_num = num
     def load_level(self, reset_ghost=True):
         self.level_manager.load_level(self.get_level_num(), self.get_player(), reset_ghost)
-    
+
+
 class InGameState(GameState):
+
     def __init__(self, settings, platformer_instance):
         GameState.__init__(self, settings)
         self.platformer_instance = platformer_instance
+
         self.keys = {
             'left':False, 
             'right':False, 
@@ -123,60 +126,69 @@ class InGameState(GameState):
             'shift':False,
             'ctrl':False
         }
+
+        self.bindings = {
+            pygame.K_w: ('jump', 'up'),
+            pygame.K_UP: ('jump', 'up'),
+            pygame.K_SPACE: 'jump',
+            pygame.K_a: 'left',
+            pygame.K_LEFT: 'left',
+            pygame.K_d: 'right',
+            pygame.K_RIGHT: 'right',
+            pygame.K_s: 'down',
+            pygame.K_DOWN: 'down',
+            pygame.K_RSHIFT: 'shift',
+            pygame.K_LSHIFT: 'shift',
+            pygame.K_LCTRL: 'ctrl',
+            pygame.K_RCTRL: 'ctrl',
+        }
+
         self.mouse_down_pos = None
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
+
     def get_entities(self):
-        return self.platformer_instance.get_entities()   
+        return self.platformer_instance.get_entities()
+
     def get_level_manager(self):
         return self.platformer_instance.level_manager
+
     def get_level_num(self):
         return self.platformer_instance.get_level_num()
+
     def get_player(self):
         return self.platformer_instance.get_player()
+
     def get_current_level(self):
         return self.platformer_instance.current_level()
+
     def get_drawer(self):
         return self.platformer_instance.drawer
+
+    def _set_key(self, key, value):
+        binding = self.bindings[key]
+        if isinstance(binding, tuple):
+            for bind in binding:
+                self.keys[bind] = value
+        else:
+            self.keys[binding] = value
+
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                self.keys['left'] = True
-            elif event.key == pygame.K_d:
-                self.keys['right'] = True
-            elif event.key == pygame.K_w:
-                self.keys['jump'] = True
-                self.keys['up'] = True
+            if event.key in self.bindings:
+                self._set_key(event.key, True)
             elif event.key == pygame.K_g:
                 self.get_drawer().show_grid = not self.get_drawer().show_grid
             elif event.key == pygame.K_f and self.settings.dev_mode():
                 self.settings.set_frozen_mode(not self.settings.frozen_mode())
-            elif event.key == pygame.K_w:
-                self.keys['up'] = True
-            elif event.key == pygame.K_s:
-                self.keys['down'] = True
-            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
-                self.keys['ctrl'] = True
-            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
-                self.keys['shift'] = True
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_a:
-                self.keys['left'] = False
-            elif event.key == pygame.K_d:
-                self.keys['right'] = False
-            elif event.key == pygame.K_w:
-                self.keys['jump'] = False
-                self.keys['up'] = False
-            elif event.key == pygame.K_s:
-                self.keys['down'] = False
-            elif event.key == pygame.K_RCTRL or event.key == pygame.K_LCTRL:
-                self.keys['ctrl'] = False
-            elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
-                self.keys['shift'] = False
+            if event.key in self.bindings:
+                self._set_key(event.key, False)
     
     def switching_to(self, prev_state_id):
         for key in self.keys:
             self.keys[key] = False
-        
+
+
 class PlayingState(InGameState):
     def __init__(self, settings, platformer_instance):
         InGameState.__init__(self, settings, platformer_instance)
