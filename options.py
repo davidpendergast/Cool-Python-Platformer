@@ -14,9 +14,12 @@ def fps():
     return 60
     
 edgy_titles = [
-        "Box Traversing Simulator 500",
-        "Half Life 3",
-        "Block to the Rhythm"
+        "Block Traversing Simulator 500",
+        "Between a Block and a Hard Place",
+        "Block and Roll",
+        "Block Paper Scissors",
+        "Plymouth Block",
+        "Jailhouse Block"
 ]
 title_idx = random.randint(0, len(edgy_titles)-1)
     
