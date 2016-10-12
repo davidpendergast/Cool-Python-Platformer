@@ -14,11 +14,9 @@ def fps():
     return 60
     
 edgy_titles = [
-        "Xnoros", 
-        "Fastbreak", 
-        "Breakfast", 
-        "Box Traversing Simulator 500", 
-        "pygame platformer #214"
+        "Box Traversing Simulator 500",
+        "Half Life 3",
+        "Block to the Rhythm"
 ]
 title_idx = random.randint(0, len(edgy_titles)-1)
     

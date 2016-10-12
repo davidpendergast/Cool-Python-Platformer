@@ -43,7 +43,6 @@ def take_screenshot():
     utilities.take_screenshot(screen)
 
 GLOBAL_COMMANDS = {
-    # pygame.K_ESCAPE: stop_running,
     pygame.K_F5: take_screenshot
 }
 

@@ -90,50 +90,106 @@ class GameStateManager(GameState):
 class MainMenuState(GameState):
     def __init__(self, settings):
         GameState.__init__(self, settings)
-        self.title_font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 72)
+        self.title_font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 60)
+        self.icing = 30
+        self.selected_color = (255,255,0)
+        self.unselected_color = (255,255,255)
+        self.background_color = (0,0,0)
+        self.title_image = self.get_title_text_image(options.title(), options.standard_size()[0] - 2*self.icing)
+        self.option_names = ["start full run", "grind single level", "edit levels", "select level pack", "settings"]
+        self.selected_index = 0
+        self.option_text_images = []
+        for i in range(0, len(self.option_names)):
+            name = self.option_names[i]
+            c = self.unselected_color if i != self.selected_index else self.selected_color
+            self.option_text_images.append(self.font.render(name, True, c))
+        
     def pre_event_update(self):
         pass
+        
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
                 self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
-                
+            elif event.key == pygame.K_UP or event.key == pygame.K_w:
+                self.set_selected_index(self.selected_index - 1)
+            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                self.set_selected_index(self.selected_index + 1)
+    
+    def set_selected_index(self, new_index):
+        new_index = new_index % len(self.option_names)
+        self.option_text_images[self.selected_index] = self.font.render(self.option_names[self.selected_index], True, self.unselected_color)
+        self.option_text_images[new_index] = self.font.render(self.option_names[new_index], True, self.selected_color)
+        self.selected_index = new_index
+        
     def update(self, dt):
         pass
+        
     def draw(self, screen):
+        screen.fill(self.background_color)
         standard_width = options.standard_size()[0]
         standard_height = options.standard_size()[1]
         xoffset = (screen.get_width() - standard_width) / 2
         yoffset = (screen.get_height() - standard_height) / 2
-        icing = 20
         
         if screen.get_width() > standard_width or screen.get_height() > standard_height:
             # so that in dev mode you can see what the actual screen size would be.
             pygame.draw.rect(screen,(255,0,0), pygame.Rect(xoffset,yoffset,standard_width,standard_height), 1)
         
-        title = self.title_font.render(options.title(), True, (255, 255, 255))
-        
-        full_run = self.font.render("start full run", True, (255, 255, 255))
-        level_grind = self.font.render("grind single level", True, (255, 255, 255))
-        edit_levels = self.font.render("edit levels", True, (255, 255, 255))
-        select_level_pack = self.font.render("select level pack", True, (255, 255, 255))
-        edit_settings = self.font.render("settings", True, (255, 255, 255))
-        menu_options = [full_run, level_grind, edit_levels, select_level_pack, edit_settings]
-        
-        screen.blit(title, (xoffset + icing, yoffset + icing))
-        option_heights = [x.get_height() for x in menu_options]
+        screen.blit(self.title_image, (xoffset + self.icing, yoffset + self.icing))
+        option_heights = [x.get_height() for x in self.option_text_images]
         options_height = sum(option_heights)
-        options_width = max([x.get_width() for x in menu_options])
-        for i in range(0, len(menu_options)):
-            opt = menu_options[i]
-            xpos = xoffset + standard_width - options_width - icing
-            ypos = yoffset + standard_height - options_height + sum(option_heights[0:i]) - icing
+        options_width = max([x.get_width() for x in self.option_text_images])
+        for i in range(0, len(self.option_text_images)):
+            opt = self.option_text_images[i]
+            xpos = xoffset + standard_width - options_width - self.icing
+            ypos = yoffset + standard_height - options_height + sum(option_heights[0:i]) - self.icing
             screen.blit(opt, (xpos, ypos))
                 
-    def get_title_text_image(title_str, max_width):
-        pass
-    
+    def get_title_text_image(self, title_str, max_width):
+        lines = []
+        words = title_str.split(" ")
+        start_line = 0
+        end_line = 0
+        while end_line < len(words):
+            text = " ".join(words[start_line:end_line+1])
+            image = self.title_font.render(text, True, self.unselected_color)
+            if image.get_width() > max_width:
+                if start_line == end_line:
+                    # word itself is too long, just cram it in there
+                    print "using "+str(words[start_line:end_line])
+                    lines.append(image)
+                    start_line = end_line + 1
+                    end_line = end_line + 1
+                else:
+                    # line is one word too wide
+                    print "using "+str(words[start_line:end_line])
+                    text = " ".join(words[start_line:end_line])
+                    image = self.title_font.render(text, True, self.unselected_color)
+                    lines.append(image)
+                    start_line = end_line
+            else:
+                end_line += 1
+        if start_line < end_line:
+            text = " ".join(words[start_line:end_line])
+            image = self.title_font.render(text, True, self.unselected_color)
+            lines.append(image)
         
+        print title_str
+        print str(lines)
+            
+        total_height = sum([x.get_height() for x in lines])
+        total_width = max([x.get_width() for x in lines])
+        result = pygame.Surface((total_width, total_height))
+        
+        y = 0
+        for line in lines:
+            result.blit(line, (0, y))
+            y += line.get_height()
+        
+        return result
+
+
 class PlatformerInstance:
     "state that's shared between PlayingState and EditingState"
     def __init__(self, settings):
@@ -205,6 +261,8 @@ class InGameState(GameState):
                 self.keys['ctrl'] = True
             elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
                 self.keys['shift'] = True
+            elif event.key == pygame.K_ESCAPE:
+                self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 self.keys['left'] = False
