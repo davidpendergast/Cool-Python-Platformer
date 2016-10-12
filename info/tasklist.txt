@@ -6,7 +6,7 @@
         countdown before each level
 NO?     game completed menu
         high score menu
-            --see your scores
+            view replays
     
     Main Menu:
         options
@@ -15,10 +15,10 @@ DONE        start full run
             edit mode
             select level path
             settings
-        show current level pack under title
-        
+
     Settings:
         unify drawer settings with other settings
+        custom keybindings
     
     Level Building:
         10 intro levels each with unique challenge and charm (3/10 complete)
@@ -41,10 +41,6 @@ DONE        Crushing
 ???     unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
             --all do pretty much the same thing, right?
             --at very least, bad/finish blocks need to be able to move
-DONE    blocks with individual themes
-DONE    moving blocks
-DONE        change functions to infix, or allow both
-NVM         unify json fields, no reason to have x, x_points, x_path
         
     Optimizations:
         collision detection
@@ -53,41 +49,21 @@ NVM         unify json fields, no reason to have x, x_points, x_path
             --also pretty bad
     
     Level Editor:
-DONE    toggleable mode when dev_mode is enabled
         ability to: 
-DONE        pan camera independently of actor position
-DONE        select blocks
             place blocks
-DONE        duplicate selected
-DONE        delete blocks
             edit block attributes (just edit their json?)
-DONE            position
-DONE            dimensions
                 paaaaaaths
                 themes
                 spawn stuff
-1/2             type (bad, finish, normal)
-NO?         zoom view in and out
-DONE        save levels out (formatting issues?)
         clicking on overlapping blocks should toggle which one gets selected
-DONE    selected block should render above all others
             
     Level Storage:
-DONE    store paths and themes separately from their blocks, give blocks path_id and theme_id fields instead
-            --will make editing paths easier in game
-            --super needed for themes
-DONE    custom json formatter to make easier to read
         sort json attributes more reasonably (type, x, y, width, height)
         header file is stupid
             --should levels know their own number?
                 --what if they disagree?
         make levels save to somewhere more reasonable
-        
-    General:
-DONE    take screenshots
-        
-         
-            
+
 @~~~~~~~~~~~~@
 | Known Bugs |
 @~~~~~~~~~~~~@
@@ -103,12 +79,7 @@ IGNORE? friction affected by fps
 IGNORE? pretty much everything affected by fps
             --movement speed, jump height, etc. not a huge deal because fps will pretty much always
                 be fixed at 60, but something isn't correct somewhere that's causing this behaviour.
-    Graphical:
-DONE    rendering order got booched somewhere
-            --moving blocks should always be behind static ones
-            --probably means physics calculations are out of order as well
-DONE    theme background color is ignored
-            --nuked by drawer when it calculates redness due to falling
+
 @~~~~~~~~~~~~~~~~~~@
 | In Consideration |
 @~~~~~~~~~~~~~~~~~~@
@@ -120,32 +91,6 @@ DONE    theme background color is ignored
                 stretches when moving, jumping, hanging on walls, etc.
         sprites?
             --would like to keep it minimalistic if using sprites at all.
-   
-    Replays:
-        investigation
-            how to store?
-                --sequence of actor positions?
-                    slightly more costly to store
-                    cheap to play a replay
-                    cannot be used to verify level-completion
-                    would get complicated if graphics ever become more complex 
-                        --how will animations work?
-                            --good reason not to do animations?
-                            --just store animation state along with actor pos?
-            should they be saved with highscore data?
-                --makes sense for your own scores, but what if you want to race someone else's 
-                    ghosts?
-NO          super meat boy style replay of all attempts upon completion of level?
-                --would have to design levels to make dying more frequent
-                    --doing this anyways
-                    --would probably want to make deaths more 'juicy' as well
-                        --ghosts would have to have juicy deaths as well...
-                            --could design to be not so bad
-                --would be super cool
-                --requires some kind of skippable replay mode after each level
-                    --would have to pause timer and sorta interfere with speedrunning flow (?)
-                --current code probably can't handle 100s of actors going at once, especially if 
-                    physics/collision calculations are required for each one
         
     Music/Sound:
         --adds a lot to the atmosphere, also to the annoyance
