@@ -2,21 +2,22 @@
 | Future Features |
 @~~~~~~~~~~~~~~~~~@
 
-    Menus:
-        main menu
-            --could be pretty minimalistic
-            --pretty much just a: 
-                start button
-                level_pack selection
+    UI:
+        countdown before each level
 NO?     game completed menu
-            --would show your times on each level, and their difference from high scores
-            --option to play again
-            --option to save replay? <- this should probably only happen when a record is broken
         high score menu
             --see your scores
-            
+    
+    Main Menu:
+        options
+DONE        start full run
+            single level mode
+            edit mode
+            select level path
+            settings
+        show current level pack under title
+        
     Settings:
-        way to edit settings in-game
         unify drawer settings with other settings
     
     Level Building:
@@ -57,7 +58,7 @@ DONE    toggleable mode when dev_mode is enabled
 DONE        pan camera independently of actor position
 DONE        select blocks
             place blocks
-            duplicate selected
+DONE        duplicate selected
 DONE        delete blocks
             edit block attributes (just edit their json?)
 DONE            position
@@ -66,7 +67,7 @@ DONE            dimensions
                 themes
                 spawn stuff
 1/2             type (bad, finish, normal)
-???         zoom view in and out
+NO?         zoom view in and out
 DONE        save levels out (formatting issues?)
         clicking on overlapping blocks should toggle which one gets selected
 DONE    selected block should render above all others

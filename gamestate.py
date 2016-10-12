@@ -145,6 +145,10 @@ class MainMenuState(GameState):
             xpos = xoffset + standard_width - options_width - self.icing
             ypos = yoffset + standard_height - options_height + sum(option_heights[0:i]) - self.icing
             screen.blit(opt, (xpos, ypos))
+            
+        level_pack = self.settings.level_path()
+        level_pack_image = self.font.render(level_pack, True, self.unselected_color)
+        screen.blit(level_pack_image, (xoffset + self.icing, yoffset + self.title_image.get_height() + self.icing))
                 
     def get_title_text_image(self, title_str, max_width):
         lines = []
