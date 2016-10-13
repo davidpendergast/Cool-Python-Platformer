@@ -35,12 +35,12 @@ DONE    custom keybindings
         
     Optimizations:
         collision detection
-            --right now it's ~bad~
+            --right now it's n^2
         drawing
-            --also pretty bad
+            --everything is drawn every frame
             
-    Organization:
-        separate gamestates into different files
+    Code Quality:
+DONE    separate gamestates into different files
     
     Level Editor:
         ability to: 

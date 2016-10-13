@@ -9,7 +9,9 @@ import utilities
 import options
 
 from keybindings import KeyBindings, TAKE_SCREENSHOT
-from gamestate import GameStateManager, PlayingState, EditingState, MainMenuState, PlatformerInstance
+from gamestate import GameStateManager, MainMenuState
+from playingstate import PlayingState, PlatformerInstance
+from editingstate import EditingState
 
 pygame.init()
 settings = options.Settings()
