@@ -33,7 +33,7 @@
         {"height": 32, "type": "normal", "width": 32, "x": 928, "y": -576},
         {"height": 64, "type": "normal", "width": 32, "x": 960, "y": -992},
         {"height": 640, "type": "normal", "width": 8, "x": 1516, "y": -576},
-        {"height": 128, "type": "normal", "width": 8, "x": 1740, "y": -864},
+        {"height": 96, "type": "normal", "width": 8, "x": 1740, "y": -832},
         {"height": 672, "type": "normal", "width": 416, "x": 1696, "y": -736},
         {"height": 384, "type": "normal", "width": 480, "x": 1632, "y": -1376},
         {"height": 384, "type": "normal", "width": 160, "x": 1472, "y": -1344},
@@ -43,9 +43,9 @@
         {"height": 608, "type": "normal", "width": 64, "x": 1632, "y": -704},
         {"height": 192, "type": "normal", "width": 8, "x": 1804, "y": -992},
         {"height": 180, "type": "normal", "width": 8, "x": 1996, "y": -992},
-        {"height": 64, "type": "normal", "width": 8, "x": 1932, "y": -800},
+        {"height": 48, "type": "normal", "width": 8, "x": 1932, "y": -784},
         {"height": 160, "type": "normal", "width": 8, "x": 1868, "y": -928},
-        {"height": 8, "type": "normal", "width": 108, "x": 2112, "y": -692},
+        {"height": 8, "type": "normal", "width": 108, "x": 2112, "y": -628},
         {"height": 160, "type": "normal", "width": 8, "x": 2060, "y": -896},
         {"height": 192, "type": "normal", "width": 8, "x": 2220, "y": -768},
         {"height": 160, "type": "normal", "width": 8, "x": 2380, "y": -608},
@@ -59,7 +59,7 @@
         {"height": 16, "type": "finish", "width": 16, "x": 2568, "y": -920}
     ],
     "info": {
-        "name":"Sick Jumps Dude",
+        "name":"Twisted Metal",
         "version":"1.1"
     },
     "spawns": [

@@ -29,7 +29,7 @@
         {"height": 32, "path": {"offset": 0, "speed": 3, "type": "pointpath", "x_points": [960, 1184, 1184, 960], "y_points": [-768, -768, -672, -672]}, "type": "moving", "width": 64}
     ],
     "info": {
-        "name":"Walljumps",
+        "name":"The Dark Woods",
         "version":"1.1"
     },
     "spawns": [
