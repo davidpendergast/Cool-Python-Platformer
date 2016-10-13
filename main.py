@@ -60,7 +60,8 @@ while still_running and gamestate_manager.still_running():
                 GLOBAL_COMMANDS[GLOBAL_BINDINGS.get_action(name)]()
             else:
                 gamestate_manager.handle_event(event)
-            
+        else:
+            gamestate_manager.handle_event(event)
     dt = 1
     gamestate_manager.update(dt)
     gamestate_manager.draw(screen)

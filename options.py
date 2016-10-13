@@ -42,9 +42,9 @@ class Settings:
             self.local_settings = json.load(data_file)
             
         ## temporary settings
-        self.__show_grid = False
-        self.__invincible_mode = False
-        self.__frozen_mode = False  
+        self._show_grid = False
+        self._invincible_mode = False
+        self._frozen_mode = False  
     def _get_attribute(self, outer_key, inner_key=None):
         if inner_key != None:
             if outer_key in self.local_settings and inner_key in self.local_settings[outer_key]:
@@ -66,19 +66,19 @@ class Settings:
     def level_path(self):
         return self._get_attribute("level_path")
     def show_grid(self):
-        return self._get_attribute("show_grid")
+        return self._show_grid
     def set_show_grid(self, val):
-        self._set_attribute("show_grid", val)
+        self._show_grid = val
     def invincible_mode(self):
-        self.__invincible_mode
+        self._invincible_mode
     def set_invincible_mode(self, val):
         if self.dev_mode():
-            self.__invincible_mode = val
+            self._invincible_mode = val
     def frozen_mode(self):
-        return self.__frozen_mode
+        return self._frozen_mode
     def set_frozen_mode(self, val):
         if self.dev_mode():
-            self.__frozen_mode = val   
+            self._frozen_mode = val   
     def get_color(self):
         return self._get_attribute("color")
     def get_keybinding(self, action):

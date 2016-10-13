@@ -7,9 +7,14 @@
         "jump":["w", "space", "up"],
         "move_left":["a", "left"],
         "move_right":["d", "right"],
-        "screenshot":"F5",
+        "screenshot":"f5",
         "quit":"escape",
         "pause":"m",
+        
+        "duplicated_selected":"u",
+        "cycle_selected_type":"t",
+        "delete_selected":"delete",
+        "save_level":"f1",
         
         "edit_mode_camera_up":"w",
         "edit_mode_camera_left":"a",
@@ -44,6 +49,5 @@
         
         "shift":["left shift", "right shift"],
         "ctrl":["left ctrl", "right ctrl"]
-        
     }
 }

@@ -1,6 +1,6 @@
 import utilities
 
-## actions
+## in-game commands
 JUMP = "jump"
 MOVE_LEFT = "move_left"
 MOVE_RIGHT = "move_right"
@@ -9,6 +9,12 @@ PLAYER_MOVES = [JUMP, MOVE_LEFT, MOVE_RIGHT]
 TAKE_SCREENSHOT = "screenshot"
 QUIT = "quit"
 PAUSE = "pause"
+
+# level editor commands
+SAVE_LEVEL = "save_level"
+DUPLICATE_SELECTED = "duplicated_selected"
+CYCLE_SELECTED_TYPE = "cycle_selected_type"
+DELETE_SELECTED = "delete_selected"
 
 CAMERA_UP = "edit_mode_camera_up"
 CAMERA_LEFT = "edit_mode_camera_left"
@@ -29,6 +35,7 @@ TRANSLATE_DOWN = "edit_mode_move_down"
 TRANSLATE_DIRS = [TRANSLATE_UP, TRANSLATE_DOWN, TRANSLATE_RIGHT, TRANSLATE_LEFT]
 TOGGLE_EDIT_MODE = "toggle_edit_mode"
 
+# menu commands
 MENU_UP = "menu_up"
 MENU_DOWN = "menu_down"
 MENU_LEFT = "menu_left"
@@ -44,7 +51,7 @@ NEXT_LEVEL = "next_level"
 
 SHOW_GRID = "show_grid"
 INVINCIBLE_MODE = "invincible_mode"
-FREEZE_MODE = "freeze mode"
+FREEZE_MODE = "freeze_mode"
 
 SHIFT = "shift"
 CTRL = "ctrl"
@@ -76,6 +83,3 @@ class KeyBindings:
                     utilities.log("WARN: actions ("+str(action)+", "+str(self.action_map[key])+") bound to same key: "+str(key))
                 else:
                     self.action_map[key] = action
-        
-    
-    
