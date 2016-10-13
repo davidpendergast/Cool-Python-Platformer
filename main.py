@@ -14,7 +14,7 @@ from gamestate import GameStateManager, PlayingState, EditingState, MainMenuStat
 pygame.init()
 settings = options.Settings()
 
-pygame.display.set_caption("Extreme Block Jumper 2 - "+settings.level_path())
+pygame.display.set_caption(options.title())
 gamestate_manager = GameStateManager(settings)
 platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)
