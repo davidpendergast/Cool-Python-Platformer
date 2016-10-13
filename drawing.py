@@ -7,7 +7,7 @@ class Drawer:
         self.grid_spacing = 32
         self.grid_color = (50,50,50)
     
-    def draw_level(self, screen, level, entity_list=None, show_spawns=False, draw_background=True):    
+    def draw_level(self, screen, level, entity_list=None, draw_background=True):    
         if draw_background:
             background_color = level.background_color
             background_color = self.update_background_color(background_color)
@@ -25,7 +25,7 @@ class Drawer:
             entity_list = level.entity_list
         
         self.draw_entities(screen, entity_list)  
-        if show_spawns:
+        if self.settings.show_spawns():
             self.draw_entities(screen, level.spawn_list)
             
     def draw_entities(self, screen, entity_list):

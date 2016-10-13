@@ -45,6 +45,8 @@ class Settings:
         self._show_grid = False
         self._invincible_mode = False
         self._frozen_mode = False  
+        self._show_spawns = self.dev_mode()
+        
     def _get_attribute(self, outer_key, inner_key=None):
         if inner_key != None:
             if outer_key in self.local_settings and inner_key in self.local_settings[outer_key]:
@@ -67,6 +69,8 @@ class Settings:
         return self._get_attribute("level_path")
     def show_grid(self):
         return self._show_grid
+    def show_spawns(self):
+        return self._show_spawns
     def set_show_grid(self, val):
         self._show_grid = val
     def invincible_mode(self):

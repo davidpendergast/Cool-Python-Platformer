@@ -305,6 +305,7 @@ class SpawnPoint(blocks.Box):
         self.is_pushable = False
         self.is_visible = False
         self.has_physics = False
+        self.color = (0,255,255)
         
     def do_spawn(self):
         actor = self.get_actor()

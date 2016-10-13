@@ -15,30 +15,20 @@ DONE        start full run
             edit mode
             select level path
             settings
+            
+    Player Functionality:
+        something to make walkoff instant-wallsnaps easier
+            --hold shift to do it automatically?
+        
 
     Settings:
 DONE    unify drawer settings with other settings
 DONE    custom keybindings
             including shift & ctrl modifiers
     
-    Level Building:
-        10 intro levels each with unique challenge and charm (3/10 complete)
-DONE        Basic Movement
-DONE        Moving Platforms
-            Walljumping
-            Bad Blocks
-            Saving Jumps
-            Enemies
-            Boost Jumps
-DONE        Crushing
-            ???
-            ???
-    
     Entities:
-        blocks that fall when you stand on them too long
-            --is prone to create situations where a level becomes impossible
-                to complete, violating level design principles
         blocks that poof in and out of existence
+            --can be done with step function
 ???     unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
             --all do pretty much the same thing, right?
             --at very least, bad/finish blocks need to be able to move
@@ -50,7 +40,7 @@ DONE        Crushing
             --also pretty bad
             
     Organization:
-        separate gamestates into different classes
+        separate gamestates into different files
     
     Level Editor:
         ability to: 
@@ -67,6 +57,7 @@ DONE        Crushing
             --should do something reasonable if no header file exists
         make levels save to somewhere more reasonable
             --just overwrite original? safe enough with version control
+            --create copy of original: level_x(backup).json, and overwrite original?
 
 @~~~~~~~~~~~~@
 | Known Bugs |
@@ -76,8 +67,15 @@ DONE        Crushing
 !!!     walljumping on a platform moving away from you
             --player needs to snap to moving vertical surfaces
 !!!     weird smushes
+            --very wide blocks have issues crushing player
             --probably need to look at velocities of blocks before smushing. A platform moving 
                 diagonally upwards shouldn't crush you from below.
+        falling wallsnaps
+            --feel very weird, pixel perfect spacing required to replicate. probably required 
+                    for some optimal runs
+            --should be removed, or made easier to perform
+        when falling quickly, if player lands on a thin block it may treat it as a horizontal 
+                collision instead of vertical
 IGNORE? friction affected by fps
             --character slides farther when fps is lower
 IGNORE? pretty much everything affected by fps
