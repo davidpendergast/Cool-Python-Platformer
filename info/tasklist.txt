@@ -19,7 +19,7 @@ DONE        start full run
     Player Functionality:
         something to make walkoff instant-wallsnaps easier
             --hold shift to do it automatically?
-        
+            --hold shift to prevent walking off? then release to slide down?
 
     Settings:
 DONE    unify drawer settings with other settings

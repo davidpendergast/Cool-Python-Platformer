@@ -43,7 +43,6 @@ def stop_running():
 def take_screenshot():
     utilities.take_screenshot(screen)
 
-GLOBAL_BINDINGS = KeyBindings([TAKE_SCREENSHOT], settings)
 GLOBAL_COMMANDS = {
     TAKE_SCREENSHOT: lambda: take_screenshot()
 }
@@ -56,9 +55,13 @@ while still_running and gamestate_manager.still_running():
             stop_running()
         elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
             name = pygame.key.name(event.key)
-            if GLOBAL_BINDINGS.has_binding(name) and event.type == pygame.KEYDOWN:
-                GLOBAL_COMMANDS[GLOBAL_BINDINGS.get_action(name)]()
-            else:
+            actions = settings.get_actions_for_key(name)
+            used_key = False
+            for action in actions:
+                if action in GLOBAL_COMMANDS and event.type == pygame.KEYDOWN:
+                    GLOBAL_COMMANDS[action]()
+                    used_key == True
+            if not used_key:
                 gamestate_manager.handle_event(event)
         else:
             gamestate_manager.handle_event(event)

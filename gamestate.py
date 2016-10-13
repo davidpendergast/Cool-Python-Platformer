@@ -20,7 +20,6 @@ class GameState:
         
         self.keydown_action_map = {}
         self.keyup_action_map = {}
-        self.key_bindings = KeyBindings([], self.settings)
         self.keystate = {
             "shift":False,
             "ctrl":False
@@ -30,16 +29,20 @@ class GameState:
     def pre_event_update(self):
         pass
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:    
+            keyname = pygame.key.name(event.key)
+            actions = self.settings.get_actions_for_key(keyname)
             
-            name = pygame.key.name(event.key)
-            if self.key_bindings.has_binding(name):
-                action = self.key_bindings.get_action(name)
-                action_map = self.keydown_action_map if event.type == pygame.KEYDOWN else self.keyup_action_map
-                if action in action_map:
-                    # print "pressed: "+str(name)+", performing action: "+str(action)
-                    action_map[action]() 
-                    return True
+            if len(actions) > 0:
+                if event.type == pygame.KEYDOWN:
+                    action_map = self.keydown_action_map
+                else:
+                    action_map = self.keyup_action_map
+                    
+                for action in actions:
+                    if action in action_map:
+                        action_map[action]()
+                        return True
         return False
                     
     def update(self, dt):
@@ -51,7 +54,6 @@ class GameState:
     def switching_from(self, new_state_id):
         pass
     def configure_keybindings(self):
-        self.key_bindings.add_actions([SHIFT, CTRL])
         self.keydown_action_map.update({
             SHIFT: lambda: self.set_keystate("shift", True),
             CTRL: lambda: self.set_keystate("ctrl", True),
@@ -144,8 +146,6 @@ class MainMenuState(GameState):
             self.option_text_images.append(self.font.render(name, True, c))
         
     def configure_keybindings(self):
-        actions = [MENU_UP, MENU_DOWN, MENU_CONFIRM, QUIT]
-        self.key_bindings.add_actions(actions)
         self.keydown_action_map.update({
             MENU_UP: lambda: self.set_selected_index(self.selected_index-1),
             MENU_DOWN: lambda: self.set_selected_index(self.selected_index+1),
@@ -275,19 +275,19 @@ class InGameState(GameState):
     
     def configure_keybindings(self):
         GameState.configure_keybindings(self)
-        actions = [QUIT, PAUSE, PREVIOUS_LEVEL, SHOW_GRID]
-        if self.settings.dev_mode():
-            actions = actions + [NEXT_LEVEL, FREEZE_MODE]
-        self.key_bindings.add_actions(actions)
         
         self.keydown_action_map.update({
             QUIT:           lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
             PAUSE:          lambda: None,
             SHOW_GRID:      lambda: self.settings.set_show_grid(not self.settings.show_grid()),
-            FREEZE_MODE:    lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode()),
-            NEXT_LEVEL:     lambda: self.next_level(),
             PREVIOUS_LEVEL: lambda: self.prev_level()
         })
+        
+        if self.settings.dev_mode():
+            self.keydown_action_map.update({
+                FREEZE_MODE:    lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode()),
+                NEXT_LEVEL:     lambda: self.next_level()
+            })
     
     def get_entities(self):
         return self.platformer_instance.get_entities()
@@ -332,27 +332,26 @@ class PlayingState(InGameState):
         
     def configure_keybindings(self):
         InGameState.configure_keybindings(self)
-        actions = [] + PLAYER_MOVES + [RESET_RUN, RESET_LEVEL]
-        if self.settings.dev_mode():
-            actions = actions + [INVINCIBLE_MODE, RESET_LEVEL_SOFT, TOGGLE_EDIT_MODE]
             
-        self.key_bindings.add_actions(actions)
         self.keydown_action_map.update({
-            JUMP :              lambda: self.set_keystate("jump", True),
-            MOVE_LEFT :         lambda: self.set_keystate("left", True),
-            MOVE_RIGHT :        lambda: self.set_keystate("right", True),
+            JUMP:               lambda: self.set_keystate("jump", True),
+            MOVE_LEFT:          lambda: self.set_keystate("left", True),
+            MOVE_RIGHT:         lambda: self.set_keystate("right", True),
             QUIT:               lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
             PAUSE:              lambda: None,
             RESET_LEVEL:        lambda: self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
-            RESET_LEVEL_SOFT:   lambda: self.reset_level(False, reset_ghost=False),
             RESET_RUN:          lambda: self.full_reset(),
-            TOGGLE_EDIT_MODE:   lambda: self.state_manager.set_current_state(GameStateManager.EDITING_STATE),
-            INVINCIBLE_MODE:    lambda: self.settings.set_invincible_mode(not self.settings.invincible_mode()),
-            NEXT_LEVEL:         lambda: self.next_level(),
-            PREVIOUS_LEVEL:     lambda: self.prev_level(),
-            RESET_LEVEL:        lambda: self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
-            RESET_LEVEL_SOFT:   lambda: self.reset_level(False, reset_ghost=False),
+            PREVIOUS_LEVEL:     lambda: self.prev_level()
         })
+       
+        if self.settings.dev_mode():
+            self.keydown_action_map.update({
+                RESET_LEVEL_SOFT:   lambda: self.reset_level(False, reset_ghost=False),
+                TOGGLE_EDIT_MODE:   lambda: self.state_manager.set_current_state(GameStateManager.EDITING_STATE),
+                INVINCIBLE_MODE:    lambda: self.settings.set_invincible_mode(not self.settings.invincible_mode()),
+                NEXT_LEVEL:         lambda: self.next_level()
+            })
+        
         self.keyup_action_map.update({
             MOVE_LEFT:  lambda: self.set_keystate("left", False),
             MOVE_RIGHT: lambda: self.set_keystate("right", False)
@@ -515,10 +514,7 @@ class EditingState(InGameState):
         
     def configure_keybindings(self):
         InGameState.configure_keybindings(self)
-        actions = CAMERA_DIRS + RESIZE_DIRS + TRANSLATE_DIRS
-        actions += [DUPLICATE_SELECTED, CYCLE_SELECTED_TYPE, TOGGLE_EDIT_MODE, SAVE_LEVEL, DELETE_SELECTED]
-        self.key_bindings.add_actions(actions)
-        
+
         self.keydown_action_map.update({
             CAMERA_UP:              lambda: self.set_keystate("up", True), 
             CAMERA_LEFT:            lambda: self.set_keystate("left", True), 

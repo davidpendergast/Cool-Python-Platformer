@@ -3,6 +3,7 @@ import os
 from shutil import copyfile
 import utilities
 import random
+import keybindings
 
 ## immutable settings
 
@@ -46,6 +47,8 @@ class Settings:
         self._invincible_mode = False
         self._frozen_mode = False  
         self._show_spawns = self.dev_mode()
+        
+        self.bindings = keybindings.KeyBindings(self)
         
     def _get_attribute(self, outer_key, inner_key=None):
         if inner_key != None:
@@ -96,6 +99,9 @@ class Settings:
             
     def set_keybinding(self, action, value):
         self._set_attribute(value, "keybindings", action)
+    
+    def get_actions_for_key(self, key):
+        return self.bindings.get_actions_for_key(key)
         
     def create_local_settings_if_needed(self):
         if os.path.isfile(Settings.local_settings_path):
