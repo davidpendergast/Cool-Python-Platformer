@@ -17,8 +17,9 @@ DONE        start full run
             settings
 
     Settings:
-        unify drawer settings with other settings
-        custom keybindings
+DONE    unify drawer settings with other settings
+DONE    custom keybindings
+            including shift & ctrl modifiers
     
     Level Building:
         10 intro levels each with unique challenge and charm (3/10 complete)
@@ -47,6 +48,9 @@ DONE        Crushing
             --right now it's ~bad~
         drawing
             --also pretty bad
+            
+    Organization:
+        separate gamestates into different classes
     
     Level Editor:
         ability to: 
@@ -60,9 +64,9 @@ DONE        Crushing
     Level Storage:
         sort json attributes more reasonably (type, x, y, width, height)
         header file is stupid
-            --should levels know their own number?
-                --what if they disagree?
+            --should do something reasonable if no header file exists
         make levels save to somewhere more reasonable
+            --just overwrite original? safe enough with version control
 
 @~~~~~~~~~~~~@
 | Known Bugs |

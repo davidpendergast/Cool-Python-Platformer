@@ -7,8 +7,9 @@ class Drawer:
         self.grid_spacing = 32
         self.grid_color = (50,50,50)
     
-    def draw(self, screen, entity_list, background_color=(0,0,0)):
-        if background_color != None:
+    def draw_level(self, screen, level, entity_list=None, show_spawns=False, draw_background=True):    
+        if draw_background:
+            background_color = level.background_color
             background_color = self.update_background_color(background_color)
             screen.fill(background_color)
         
@@ -20,6 +21,14 @@ class Drawer:
                 draw_y = y*self.grid_spacing - self.camera_pos[1]%self.grid_spacing
                 pygame.draw.line(screen,self.grid_color,(0, draw_y), (screen.get_width(), draw_y))
         
+        if entity_list == None:
+            entity_list = level.entity_list
+        
+        self.draw_entities(screen, entity_list)  
+        if show_spawns:
+            self.draw_entities(screen, level.spawn_list)
+            
+    def draw_entities(self, screen, entity_list):
         for sprite in entity_list:
             if sprite.is_ghost():
                 sprite.image.set_alpha(128)
@@ -27,7 +36,7 @@ class Drawer:
                 self.draw_collision_indicators(sprite)
             
             screen.blit(sprite.image, (sprite.rect.x - self.camera_pos[0], sprite.rect.y - self.camera_pos[1]))
-    
+
     def update_camera(self, box, screen_width, screen_height):
         rect = box.rect
         self.camera_pos = (rect.x + rect.width/2 - screen_width/2, rect.y + rect.height/2 - screen_height/2)

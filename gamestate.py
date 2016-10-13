@@ -405,7 +405,7 @@ class PlayingState(InGameState):
     
     def draw(self, screen):
         self.get_drawer().update_camera(self.get_player(), screen.get_width(), screen.get_height())
-        self.get_drawer().draw(screen, self.get_entities(), self.get_current_level().background_color)
+        self.get_drawer().draw_level(screen, self.get_current_level())
         self.draw_gui(screen)
      
     def add_time(self, t):
@@ -607,9 +607,9 @@ class EditingState(InGameState):
                 self.get_drawer().move_camera(0, 4)
         
     def draw(self, screen):
-        self.get_drawer().draw(screen, self.get_entities(), self.get_current_level().background_color)
+        self.get_drawer().draw_level(screen, self.get_current_level())
         if self.selected != None:
-            self.get_drawer().draw(screen, [self.selected], background_color=None)
+            self.get_drawer().draw_entities(screen, [self.selected])
         
     def switching_from(self, new_state_id):
         self.set_selected(None)
