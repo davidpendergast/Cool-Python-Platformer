@@ -12,7 +12,7 @@ import utilities
 import level_loader
 
 class Level:
-    def __init__(self, name, entity_list, spawn_list, theme_dict):
+    def __init__(self, name, entity_list, spawn_list, theme_dict, filename):
         self.name = name
         self.num = -1
         self.entity_list = entity_list[:]
@@ -20,11 +20,11 @@ class Level:
         self.spawn_list = spawn_list[:]
         self.theme_lookup = dict(theme_dict)
         self.background_color = self.theme_lookup["default"].values["background_color"]
-
+        self.filename = filename
+        
         self.actor = self._find_player()
         if self.actor == None:
             utilities.log("levels.Level: Warning: No actor found in loaded level!")
-            
         self.sort_if_dirty()
     
     def _sort_entities(self):
@@ -316,6 +316,7 @@ class LevelManager:
             file.write(json_string)
         
     def create_void_level(self):
+        # Oh crap this doesn't work
         entity_list = []
        
         entity_list.append(blocks.Block(128, 128).set_xy(0, 128))

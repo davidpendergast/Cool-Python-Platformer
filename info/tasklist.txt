@@ -58,7 +58,8 @@ DONE    separate gamestates into different files
         make levels save to somewhere more reasonable
             --just overwrite original? safe enough with version control
             --create copy of original: level_x(backup).json, and overwrite original?
-
+        revive void level and make it appear on level load fail instead of crashing
+        
 @~~~~~~~~~~~~@
 | Known Bugs |
 @~~~~~~~~~~~~@

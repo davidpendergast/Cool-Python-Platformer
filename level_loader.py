@@ -14,6 +14,7 @@ def load(filename):
             data = json.load(json_file)
         
             version_num = data["info"]["version"]
+            data["filename"] = filename
             if version_num in LOADERS:
                 return LOADERS[version_num](data)
             else:
@@ -27,6 +28,7 @@ def _load_version_1_1(data):
     _validate_version_1_1(data)
     
     name = data["info"]["name"]
+    filename = data["filename"]
     theme_lookup = dict(levels.BUILT_IN_THEMES)
     spawns_list = []
     entity_list = []
@@ -53,9 +55,8 @@ def _load_version_1_1(data):
             theme.apply(entity)
         else:
             raise ValueError("Unrecognized theme: "+str(theme_id))
-        
-    return levels.Level(name, entity_list, spawns_list, theme_lookup)
-        
+    
+    return levels.Level(name, entity_list, spawns_list, theme_lookup, filename)
         
 def _validate_version_1_1(data):
     error_msg = ""
