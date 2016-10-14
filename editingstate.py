@@ -84,13 +84,10 @@ class EditingState(InGameState):
         
         self.platformer_instance.current_level().bring_out_yer_dead()
     
-    def do_save(self):
-        directory = EditingState.output_dir
-        utilities.create_dir_if_doesnt_exist(directory)
-        
+    def do_save(self):   
         num = self.get_level_num()
-        filename = directory + "/saved_level_" + str(num) + ".json"
-        utilities.log("Saving " + filename + "...")
+        filename = self.get_current_level().filename
+        utilities.log("Overwriting " + filename + "...")
         curr_json = self.get_current_level().to_json()
         
         with open(filename, 'w') as outfile:
