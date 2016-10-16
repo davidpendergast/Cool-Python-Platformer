@@ -62,6 +62,7 @@ DONE    make levels save to somewhere more reasonable
     General Storage:
         make localdata folder for highscores and settings to live
             --that way level packs can be distributed without having to edit/remove your highscore files
+        store highscores as ticks, and remove awful unformat_time method
         
 @~~~~~~~~~~~~@
 | Known Bugs |

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import random
 import re
 import options
@@ -18,6 +20,7 @@ def format_time(ticks):
     return secs + ":" + millis
 
 
+# This is getting nuked as soon as in-game high score viewing is implemented
 def unformat_time(time_str):
     "'1:15' -> 75"
     if time_str == None:
@@ -44,15 +47,12 @@ def perturb_color(orig_color, max_perturb, only_greyscale):
     res = tuple([lim(orig_color[i]+pert[i], 0, 255) for i in range(3)])
 
     return res
-    
 
 def ticks_to_millis(ticks):
     return (1000 * ticks) / float(options.fps())
-    
 
 def millis_to_ticks(millis):
     return (millis * options.fps()) / float(1000)
-    
 
 def pad_to_length(string, length, filler, to_front=False):
     if len(string) >= length:
@@ -70,12 +70,11 @@ paren_dict = {
     "{":"}"
 }
 
-
-def make_json_pretty(json_string, __nuke_it=True):
+def make_json_pretty(json_string, _nuke_it=True):
     "removes newlines between elements of innermost lists."
     m = re.search('[({[]', json_string)    
     if m == None:
-        if __nuke_it:
+        if _nuke_it:
             # json_string has no inner list
             return re.sub("\s*,\s*", ", ", json_string)
     else:
@@ -87,10 +86,25 @@ def make_json_pretty(json_string, __nuke_it=True):
                 
     return json_string
     
-def level_json_to_string(json_data, indent_spaces=4, sort_the_keys=True):
-    result = "{"
+KEY_ORDER = ["info", "spawns", "blocks", "themes"]                      # main sections
+KEY_ORDER = KEY_ORDER + ["name", "version"]                             # info fields
+KEY_ORDER = KEY_ORDER + ["type", "x", "y", "path", "width", "height"]   # block attributes
+KEY_ORDER = KEY_ORDER + ["x_points", "x_path", "y_points", "y_path", "speed", "offset"] # path stuff
+KEY_COMPARE_DICT = {key: KEY_ORDER.index(key) for key in KEY_ORDER}
+
+def key_cmp(key1, key2):
+    KEY_COMPARE_DICT.setdefault(key1, -1)
+    KEY_COMPARE_DICT.setdefault(key2, -1)
     
-    keys =  sorted(json_data.keys()) if sort_the_keys else json_data.keys()
+    return KEY_COMPARE_DICT[key1] - KEY_COMPARE_DICT[key2]
+    
+
+def level_json_to_string(json_data, indent_spaces=4, sort_the_keys=True):
+    if sort_the_keys:
+        json_data = _sort_keys_recursively(json_data)
+        
+    result = "{" 
+    keys =  json_data.keys()
     for top_level_key in keys:
         value = json_data[top_level_key]
         result += "\n"+(" "*indent_spaces)+"\""+top_level_key+"\": "
@@ -99,7 +113,7 @@ def level_json_to_string(json_data, indent_spaces=4, sort_the_keys=True):
             result += "["
             value_list = value
             for element in value_list:
-                elem_str = json.dumps(element, sort_keys=sort_the_keys)
+                elem_str = json.dumps(element)
                 result += "\n"+(" "*2*indent_spaces)+elem_str+","
             if result[-1] == ",":
                 result = result[0:len(result)-1]
@@ -108,22 +122,33 @@ def level_json_to_string(json_data, indent_spaces=4, sort_the_keys=True):
             result += "],"
         elif isinstance(value, dict):
             result += "{"
-            value_keys = sorted(value.keys()) if sort_the_keys else value.keys()
+            value_keys = value.keys()
             for key in value_keys:
-                result += "\n"+(" "*2*indent_spaces)+"\""+key+"\":"+json.dumps(value[key], sort_keys=sort_the_keys)+","
+                result += "\n"+(" "*2*indent_spaces)+"\""+key+"\":"+json.dumps(value[key])+","
             if result[-1] == ",":
                 result = result[0:len(result)-1] 
             if len(value) > 0:
                 result += "\n"+(" "*indent_spaces)
             result += "},"
         else:
-            result += json.dumps(value, sort_keys=sort_the_keys)+","
+            # just a single atom
+            result += json.dumps(value)+","
     if result[-1] == ",":
         result = result[0:len(result)-1]
     if result != "{":
         result += "\n"
     
     return result + "}"
+        
+def _sort_keys_recursively(json_item):
+    "replaces all nested dictionaries with sorted ordered dictionaries"
+    if isinstance(json_item, list):
+        return [_sort_keys_recursively(x) for x in json_item]
+    elif isinstance(json_item, dict):
+        return OrderedDict((key, _sort_keys_recursively(json_item[key])) for key in sorted(json_item.keys(), cmp=key_cmp))
+    else:
+        return json_item
+    
                 
 def is_collection(json_element):
     return isinstance(json_element, list) or isinstance(json_element, dict)
