@@ -52,7 +52,6 @@ class InGameState(GameState):
             'down':False,
         })
 
-        self.mouse_down_pos = None
         self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
     
     def configure_keybindings(self):

@@ -23,6 +23,8 @@ class EditingState(InGameState):
         self._last_clicked_objs = []
         self._last_idx_used = -1
         
+        self._mouse_down_pos = None
+        
     def pre_event_update(self):
         pass
         
@@ -60,29 +62,44 @@ class EditingState(InGameState):
     
     def handle_event(self, event):
         InGameState.handle_event(self, event)
- 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP:
             x, y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=False)
             grid_x, grid_y = self.get_drawer().screen_to_game_position((event.pos[0], event.pos[1]), snap_to_grid=True)
-            utilities.log("Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]")
-            if self.keystate['ctrl']:
-                pass
-            elif self.keystate['shift']:
-                pass
-            else:
-                clicked_objs = self.get_level_manager().current_level.get_objects_at((x,y))
-                if len(clicked_objs) > 0:
-                    if set(self._last_clicked_objs) == set(clicked_objs):
-                        next_index = (self._last_idx_used + 1) % len(self._last_clicked_objs)
-                        self.set_selected(self._last_clicked_objs[next_index])
-                        self._last_idx_used = next_index
-                    else:
-                        self.set_selected(clicked_objs[0])
-                        self._last_clicked_objs = clicked_objs
-                        self._last_idx_used = 0
-                else:
-                    self.set_selected(None)
             
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self._mouse_down_pos = (grid_x, grid_y)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                # using grid position values to prevent tiny drag annoyances
+                if self._mouse_down_pos == None or (grid_x, grid_y) == self._mouse_down_pos:
+                    utilities.log("Click at: ("+str(x)+", "+str(y)+") ["+str(grid_x)+", "+str(grid_y)+"]")
+                    self._click_and_release_at(x,y)
+                else:
+                    x1 = self._mouse_down_pos[0]
+                    y1 = self._mouse_down_pos[1]
+                    x2 = grid_x
+                    y2 = grid_y
+                    xavg = (x1 + x2) / 2
+                    yavg = (y1 + y2) / 2
+                    utilities.log("Drag from: ["+str(x1)+", "+str(y1)+"] to ["+str(x2)+", "+str(y2)+"]")
+                    x_path_str = str(xavg)+" + "+str((x2 - x1) / 2)+"*cos(t*0.03)"
+                    y_path_str = str(yavg)+" + "+str((y2 - y1) / 2)+"*sin(t*0.03)"
+                    path_json_str = "\"path\": {\"type\": \"path\", \"x_path\": \""+x_path_str+"\", \"y_path\": \""+y_path_str+"\"}"
+                    utilities.log(path_json_str)
+            
+    def _click_and_release_at(self, x, y):
+        clicked_objs = self.get_level_manager().current_level.get_objects_at((x,y))
+        if len(clicked_objs) > 0:
+            if set(self._last_clicked_objs) == set(clicked_objs):
+                next_index = (self._last_idx_used + 1) % len(self._last_clicked_objs)
+                self.set_selected(self._last_clicked_objs[next_index])
+                self._last_idx_used = next_index
+            else:
+                self.set_selected(clicked_objs[0])
+                self._last_clicked_objs = clicked_objs
+                self._last_idx_used = 0
+        else:
+            self.set_selected(None)
+                
     def update(self, dt):
         self.do_camera_move(dt)
         
