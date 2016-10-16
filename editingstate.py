@@ -19,6 +19,10 @@ class EditingState(InGameState):
         self.selected = None
         self.selected_old_color = None
         
+        # used to alternate which block gets selected if user clicks on an overlapping position
+        self._last_clicked_objs = []
+        self._last_idx_used = -1
+        
     def pre_event_update(self):
         pass
         
@@ -68,7 +72,14 @@ class EditingState(InGameState):
             else:
                 clicked_objs = self.get_level_manager().current_level.get_objects_at((x,y))
                 if len(clicked_objs) > 0:
-                    self.set_selected(clicked_objs[0])
+                    if set(self._last_clicked_objs) == set(clicked_objs):
+                        next_index = (self._last_idx_used + 1) % len(self._last_clicked_objs)
+                        self.set_selected(self._last_clicked_objs[next_index])
+                        self._last_idx_used = next_index
+                    else:
+                        self.set_selected(clicked_objs[0])
+                        self._last_clicked_objs = clicked_objs
+                        self._last_idx_used = 0
                 else:
                     self.set_selected(None)
             

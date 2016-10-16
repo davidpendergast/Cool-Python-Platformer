@@ -55,10 +55,13 @@ DONE    separate gamestates into different files
         sort json attributes more reasonably (type, x, y, width, height)
         header file is stupid
             --should do something reasonable if no header file exists
-        make levels save to somewhere more reasonable
+DONE    make levels save to somewhere more reasonable
             --just overwrite original? safe enough with version control
-            --create copy of original: level_x(backup).json, and overwrite original?
         revive void level and make it appear on level load fail instead of crashing
+    
+    General Storage:
+        make localdata folder for highscores and settings to live
+            --that way level packs can be distributed without having to edit/remove your highscore files
         
 @~~~~~~~~~~~~@
 | Known Bugs |
