@@ -3,18 +3,36 @@
 @~~~~~~~~~~~~~~~~~@
 
     UI:
-        countdown before each level
-NO?     game completed menu
+???     countdown before each level
+        game completed menu
+            --show total time, total deaths, level individual times + deaths
+            --buttons to: try again, go to main menu, view replay(?)
         high score menu
-            view replays
+            --show grid of level #, name, best time, best run time, button to show replay
+            --view replays
+                --this would be cool
+        level selection grid
+            --complicated, should have image of level start + name + number
+            --will have to load every level's json
+                --might be expensive for large level pack
     
     Main Menu:
         options
 DONE        start full run
-            single level mode
+            single level grind mode
+                --need
             edit mode
+                --a little complicated, should flip on dev mode and start game?
             select level path
+                --just click on level path text on main menu to cycle lol?
+                --wouldn't be good if you have a bunch for some reason
             settings
+                player color
+                    -- rgb text boxes, plus drawing of player with that color
+                dev mode
+                    -- true, false toggler on click
+                keybindings
+                    --editable text box for each action for now
             
     Player Functionality:
         something to make walkoff instant-wallsnaps easier
@@ -22,25 +40,20 @@ DONE        start full run
             --hold shift to prevent walking off? then release to slide down?
 
     Settings:
-DONE    unify drawer settings with other settings
-DONE    custom keybindings
-            including shift & ctrl modifiers
+            allow shift & ctrl modifiers for keybindings
     
-    Entities:
-        blocks that poof in and out of existence
-            --can be done with step function
-???     unify Block, MovingBlock, BadBlock, and FinishBlock into one class(?)
-            --all do pretty much the same thing, right?
-            --at very least, bad/finish blocks need to be able to move
+    Moving Blocks:
+        unify with bad, finish, normal blocks
+        use x,y as starting position, and make paths give a position relative to that
+            --will make editing and unification much easier
         
     Optimizations:
         collision detection
-            --right now it's n^2
+            --right now every actor is checked against every solid block
         drawing
             --everything is drawn every frame
             
     Code Quality:
-DONE    separate gamestates into different files
     
     Level Editor:
         ability to: 
@@ -49,14 +62,10 @@ DONE    separate gamestates into different files
                 paaaaaaths
                 themes
                 spawn stuff
-        clicking on overlapping blocks should toggle which one gets selected
             
     Level Storage:
-        sort json attributes more reasonably (type, x, y, width, height)
         header file is stupid
             --should do something reasonable if no header file exists
-DONE    make levels save to somewhere more reasonable
-            --just overwrite original? safe enough with version control
         revive void level and make it appear on level load fail instead of crashing
     
     General Storage:

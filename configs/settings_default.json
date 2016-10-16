@@ -39,6 +39,7 @@
         "menu_confirm":["r", "return"],
         
         "reset_level":["r", "return"],
+        "reset_level_soft":["h"],
         "previous_level":"p",
         "next_level":"n",
         "reset_run":"backspace",
