@@ -57,6 +57,7 @@ class Drawer:
         return tuple([x - y for (x,y) in zip(tuple1, tuple2)])
     def _add(self, tuple1, tuple2):
         return tuple([x + y for (x,y) in zip(tuple1, tuple2)])
+        
     def update_camera(self, box, screen_width, screen_height):
         rect = box.rect
         self.camera_pos = (rect.x + rect.width/2 - screen_width/2, rect.y + rect.height/2 - screen_height/2)

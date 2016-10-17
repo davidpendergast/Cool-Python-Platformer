@@ -1,77 +1,78 @@
 @~~~~~~~~~~~~~~~~~@
 | Future Features |
 @~~~~~~~~~~~~~~~~~@
-
+    
     UI:
 ???     countdown before each level
         game completed menu
-            --show total time, total deaths, level individual times + deaths
-            --buttons to: try again, go to main menu, view replay(?)
+            -- show total time, total deaths, level individual times + deaths
+            -- buttons to: try again, go to main menu, view replay(?)
         high score menu
-            --show grid of level #, name, best time, best run time, button to show replay
-            --view replays
-                --this would be cool
+            -- show grid of level #, name, best time, best run time, button to show replay
+            -- view replays
+                -- this would be cool
         level selection grid
-            --complicated, should have image of level start + name + number
-            --will have to load every level's json
-                --might be expensive for large level pack
+            -- complicated, should have image of level start + name + number
+            -- will have to load every level's json
+                -- might be expensive for large level pack
     
     Main Menu:
         options
 DONE        start full run
             single level grind mode
-                --need
+                -- need
             edit mode
-                --a little complicated, should flip on dev mode and start game?
+                -- a little complicated, should flip on dev mode and start game?
+                -- weird that editing window is a different size
+                    -- will need to either standardize or expand/contract when starting/finishing edit mode
             select level path
-                --just click on level path text on main menu to cycle lol?
-                --wouldn't be good if you have a bunch for some reason
+                -- just click on level path text on main menu to cycle lol?
+                -- wouldn't be good if you have a bunch for some reason
             settings
                 player color
                     -- rgb text boxes, plus drawing of player with that color
 ???             dev mode
                     -- is this even needed if level edit mode exists?
-                        --not as dev mode currently stands, but might need some more dev-only stuff later?
+                        -- not as dev mode currently stands, but might need some more dev-only stuff later?
                     -- true, false toggler on click
                 keybindings
-                    --editable text box for each action for now
+                    -- editable text box for each action for now
             
     Player Functionality:
         something to make walkoff instant-wallsnaps easier
-            --hold shift to do it automatically?
-            --hold shift to prevent walking off? then release to slide down?
+            -- hold shift to do it automatically?
+            -- hold shift to prevent walking off? then release to slide down?
 
     Settings:
             allow shift & ctrl modifiers for keybindings
     
     Entities:
-DONE    bad blocks need color perturbation theme options
-            -- finish blocks proooobably don't but w/e
         new blocks:
             normal block with no collision if player moving vertically upward
             scenery block, no collisions at all
-                --how to avoid being confusing?
-                --could be useful for distinguishing caves from open areas
+                -- how to avoid being confusing?
+                -- could be useful for distinguishing caves from open areas
         
     Optimizations:
-        --game seems to run fine on my system
+        -- game seems to run fine on my system
         collision detection
-            --right now every actor is checked against every solid block
+            -- right now every actor is checked against every solid block
             solutions:
-                --enforce max block size and use chunking to store blocks?
-                --512 by 512 is probably plenty big enough
-                --is this even the bottleneck?
+                -- enforce max block size and use chunking to store blocks?
+                -- 512 by 512 is probably plenty big enough
+                -- is this even the bottleneck?
         drawing
-            --everything is drawn every frame
+            -- everything is drawn every frame
             solutions:
-                --^^^chunking
+                -- ^^^chunking
+            should cache path drawing in edit mode, no reason to recompute every frame
             
     Code Quality:
         standardize privatization of vars and methods
     
     Testing:
         level loading
-            --this requires either a collection of test levels (that require updating),
+            -- this requires either a collection of test levels (that require updating),
                     or some autogeneration scheme
             level loading test
             level loading -> saving -> reloading test
@@ -89,18 +90,19 @@ DONE    bad blocks need color perturbation theme options
                 themes
                 spawn stuff
             need to be able to see type of selected block
+DONE        see paths
             
     Level Storage:
         header file is stupid
-            --just force levels to start with 01_name1.json, 02_name2.json, etc. ?
-                --what if levels lie?
-            --should do something reasonable if no header file exists
-            --should at least be json probably
+            -- just force levels to start with 01_name1.json, 02_name2.json, etc. ?
+                -- what if levels lie?
+            -- should do something reasonable if no header file exists
+            -- should at least be json probably
 DONE    revive void level and make it appear on level load fail instead of crashing
     
     General Storage:
         make localdata folder for highscores and settings to live
-            --that way level packs can be distributed without having to edit/remove your highscore files
+            -- that way level packs can be distributed without having to edit/remove your highscore files
         store highscores as ticks, and remove awful unformat_time method
         
 @~~~~~~~~~~~~@
@@ -109,19 +111,19 @@ DONE    revive void level and make it appear on level load fail instead of crash
 
     Physics Glitches:
 !!!     walljumping on a platform moving away from you
-            --player needs to snap to moving vertical surfaces
+            -- player needs to snap to moving vertical surfaces
 !!!     weird smushes
-            --very wide blocks have issues crushing player
+            -- very wide blocks have issues crushing player
         falling wallsnaps
-            --feel very weird, pixel perfect spacing required to replicate. probably required 
+            -- feel very weird, pixel perfect spacing required to replicate. probably required 
                     for some optimal runs
-            --should be removed, or made easier to perform
+            -- should be removed, or made easier to perform
 !!!     when falling quickly, if player lands on a thin block it may treat it as a horizontal 
                 collision instead of vertical
 IGNORE? friction affected by fps
-            --character slides farther when fps is lower
+            -- character slides farther when fps is lower
 IGNORE? pretty much everything affected by fps
-            --movement speed, jump height, etc. not a huge deal because fps will pretty much always
+            -- movement speed, jump height, etc. not a huge deal because fps will pretty much always
                 be fixed at 60, but something isn't correct somewhere that's causing this behaviour.
 
 @~~~~~~~~~~~~~~~~~~@
@@ -130,19 +132,20 @@ IGNORE? pretty much everything affected by fps
             
     Art:
         animations?
-            --would at least benefit from death animations
-            --player/enemy animations of some kind would help too, even if the box just leans or
+            -- would at least benefit from death animations
+            -- player/enemy animations of some kind would help too, even if the box just leans or
                 stretches when moving, jumping, hanging on walls, etc.
         sprites?
-            --would like to keep it minimalistic if using sprites at all.
+            -- would like to keep it minimalistic if using sprites at all.
     
     Lighting:
         would HAVE to be static & precomputed
             -- but would be awesome if it was dynamic.....
             -- moving blocks creating darkness by blocking a ray of light...
+            -- would have to make sure it doesn't look like shit
             
     3D:
         draw blocks with perspective lol
         
     Music/Sound:
-        --adds a lot to the atmosphere, also to the annoyance
+        -- adds a lot to the atmosphere, also to the annoyance
