@@ -22,6 +22,18 @@ class Level:
         self.background_color = self.theme_lookup["default"].values["background_color"]
         self.filename = filename
         
+        for spawner in spawn_list:
+            self.entity_list.append(spawner.get_actor())
+            spawner.do_spawn()
+            
+        for entity in self.entity_list:
+            theme_id = entity.get_theme_id()
+            if theme_id in self.theme_lookup:
+                self.theme_lookup[theme_id].apply(entity)
+            else:
+                utilities.log("WARN: Unrecognized theme id: "+str(theme_id))
+                self.theme_lookup["default"].apply(entity)
+        
         self.actor = self._find_player()
         if self.actor == None:
             utilities.log("levels.Level: Warning: No actor found in loaded level!")
@@ -230,7 +242,7 @@ class LevelManager:
         loaded_successfully = True
         level = level_loader.load(self.get_filepath(num))
         if level == None:
-            utilities.log("Level "+str(num)+" failed to load, using Void Level instead.")
+            utilities.log("Level "+str(num+1)+" failed to load, using Void Level instead.")
             level = self.create_void_level()
             loaded_successfully = False
         
@@ -316,17 +328,17 @@ class LevelManager:
             file.write(json_string)
         
     def create_void_level(self):
-        # Oh crap this doesn't work
-        entity_list = []
-       
-        entity_list.append(blocks.Block(128, 128).set_xy(0, 128))
-        entity_list.append(blocks.FinishBlock(16, 16).set_xy(56, -64))
+        entity_list = [
+                blocks.Block(0, 128, 128, 128),
+                blocks.FinishBlock(56, -64, 16, 16)
+        ]
         
-        actor = actors.Actor().set_xy(32, 96)
-        actor.is_player = True
-        entity_list.append(actor)
+        spawn_list = [actors.SpawnPoint(32, 96, "player")]
+        theme_dict = BUILT_IN_THEMES
+        filename = None
         
-        return Level(entity_list, "The Void")
+        #name, entity_list, spawn_list, theme_dict, filename
+        return Level("The Void", entity_list, spawn_list, theme_dict, None)
         
     def read_filenames_from_header(self):
         res = []

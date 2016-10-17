@@ -1,5 +1,6 @@
 import sys
 import json
+import traceback
 
 import blocks, actors
 import paths
@@ -9,7 +10,7 @@ import levels
 LOADERS = {}
 
 def load(filename):
-    # try:
+    try:
         with open(filename) as json_file:
             data = json.load(json_file)
         
@@ -19,10 +20,10 @@ def load(filename):
                 return LOADERS[version_num](data)
             else:
                 raise ValueError("Unsupported version number: "+str(version_num))
-    # except:
-    #    print "Error while loading "+filename+":"
-    #    for err in sys.exc_info():
-    #       print "\t"+str(err)
+    except:
+        print "Error while loading "+filename+":"
+        traceback.print_exc()
+        return None
 
 def _load_version_1_1(data):
     _validate_version_1_1(data)
@@ -43,18 +44,6 @@ def _load_version_1_1(data):
     for elem in data["spawns"]:
         new_spawn = actors.SpawnPoint.from_json(elem)
         spawns_list.append(new_spawn)
-        entity_list.append(new_spawn.get_actor())
-        
-    for spawner in spawns_list:
-        spawner.do_spawn()
-    
-    for entity in entity_list:
-        theme_id = entity.get_theme_id()
-        theme = theme_lookup[theme_id]
-        if theme != None:
-            theme.apply(entity)
-        else:
-            raise ValueError("Unrecognized theme: "+str(theme_id))
     
     return levels.Level(name, entity_list, spawns_list, theme_lookup, filename)
         

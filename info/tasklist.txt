@@ -48,12 +48,28 @@ DONE    use x,y as starting position, and make paths give a position relative to
             --will make editing and unification much easier
         
     Optimizations:
+        --game seems to run fine on my system
         collision detection
             --right now every actor is checked against every solid block
+            solutions:
+                --enforce max block size and use chunking to store blocks?
+                --512 by 512 is probably plenty big enough
+                --is this even the bottleneck?
         drawing
             --everything is drawn every frame
+            solutions:
+                --^^^chunking
             
     Code Quality:
+    
+    Testing:
+        --this requires either a collection of test levels (that require updating),
+                or some autogeneration scheme
+        level loading test
+        level loading -> saving -> reloading test
+        stress testing
+            autogenerate level with x random blocks
+        
     
     Level Editor:
         ability to: 
@@ -62,6 +78,7 @@ DONE    use x,y as starting position, and make paths give a position relative to
                 paaaaaaths
                 themes
                 spawn stuff
+            need to be able to see type of selected block
             
     Level Storage:
         header file is stupid
