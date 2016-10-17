@@ -14,18 +14,15 @@ def dev_size():
 def fps():
     return 60
     
-edgy_titles = [
+_edgy_titles = [
         "Block Traversing Simulator 500",
         "Between a Block and a Hard Place",
-        "Block and Roll",
-        "Block Paper Scissors",
-        "Plymouth Block",
-        "Jailhouse Block"
+        "Block Paper Scissors"
 ]
-title_idx = random.randint(0, len(edgy_titles)-1)
+title_idx = random.randint(0, len(_edgy_titles)-1)
     
 def title():
-    return edgy_titles[title_idx]
+    return _edgy_titles[title_idx]
     
 
 class Settings:
