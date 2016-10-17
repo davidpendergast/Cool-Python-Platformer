@@ -26,7 +26,7 @@ class Box(pygame.sprite.Sprite):
         
         self.rf_parent = None           # physics reference frame information. For example, when an actor stands on a moving platform
         self.rf_children = sets.Set()   # or is stuck to another object, it will enter that object's reference frame.
-        self.theme_id = None
+        self.theme_id = "default"
         
     def update(self, dt):
         if self.has_physics:
@@ -105,7 +105,7 @@ class Box(pygame.sprite.Sprite):
         elif vy < -self.max_vy:
             vy = -self.max_vy
         self.v = (self.v[0], vy)
-        
+    
     def vx(self):
         return self.v[0]
         
@@ -159,9 +159,6 @@ class Box(pygame.sprite.Sprite):
     def __eq__(self, other):
         return self is other
     
-    def get_update_priority(self):
-        return -1
-    
     def __repr__(self):
         return "Box"+self.rect_str()
         
@@ -180,12 +177,22 @@ class Box(pygame.sprite.Sprite):
     def is_ghost(self): return False
     def is_spawn_point(self): return False
     
+    def get_update_priority(self):
+        if self.is_actor():
+            return 1
+        elif self.is_bad_block():
+            return 3
+        elif self.is_moving_block():
+            return 4
+        else:
+            return 5
+    
     
 class Block(Box):
     BAD_COLOR = (255, 0, 0)
     NORMAL_COLOR = (128, 128, 128)
     
-    def __init__(self, width, height, color=None): 
+    def __init__(self, x, y, width, height, color=None): 
         color = Block.NORMAL_COLOR if color == None else color
         Box.__init__(self, width, height, color)
         self.is_solid = True
@@ -193,68 +200,97 @@ class Block(Box):
         self.is_visible = True
         self.has_physics = False
         self.a = (0, 0)
+        
+        self._path = None
+        self._initial_xy = (x, y)
+        self.set_xy(x, y)
+    
+    def set_path(self, path):
+        self._path = path
+        
+    def set_x_initial(self, x):
+        self._initial_xy = (x, self._initial_xy[1])
+        
+    def set_y_initial(self, y):
+        self._initial_xy = (self._initial_xy[0], y)
+    
+    def x_initial(self):
+        return self._initial_xy[0]
+        
+    def y_initial(self):
+        return self._initial_xy[1]
     
     def update(self, dt):
-        pass
-        
-    def get_update_priority(self):
-        return 5
+        if self._path != None:
+            self.v = (0,0)
+            old_x = self.x()
+            old_y = self.y()
+           
+            self._path.step(dt)
+            xy = self._path.get_xy()
+            self.set_x(self.x_initial() + xy[0])
+            self.set_y(self.y_initial() + xy[1])
+            
+            self.v = (self.x() - old_x, self.y() - old_y) # used for crushing 
         
     def is_block(self): return True
+    def is_moving_block(self): return self._path != None
     
     def to_json(self):
         result = {
             "type":"normal",
             "width":self.width(),
             "height":self.height(),
-            "x":self.x(),
-            "y":self.y()
+            "x":self.x_initial(),
+            "y":self.y_initial()
         }
         
         if self.get_theme_id() != "default":
             result["theme"] = self.get_theme_id()
+        if self._path != None:
+            result["path"] = self._path.to_json()
             
         return result
     
     @staticmethod
     def from_json(json_data):
-        result = Block(json_data["width"], json_data["height"])
-        result.set_xy(json_data["x"], json_data["y"])
-        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
-        return result
+        return Block(json_data["x"], json_data["y"], json_data["width"], json_data["height"])
         
     def __repr__(self):
         return "Block"+self.rect_str()
         
+# DEAD CLASS
 class MovingBlock(Block):
     def __init__(self, width, height, path, color=None):
-        Block.__init__(self, width, height, color)
-        self.path = path
+        raise ValueError("this class dead yo")
+        Block.__init__(0,0,self, width, height, color)
+        self._path = path
     
     def update(self, dt):
         self.v = (0,0)
-        if self.path != None:
+        if self._path != None:
             old_x = self.x()
             old_y = self.y()
            
-            self.path.step(dt)
-            xy = self.path.get_xy()
+            self._path.step(dt)
+            xy = self._path.get_xy()
             self.set_x(xy[0])
             self.set_y(xy[1])
             
             self.v = (self.x() - old_x, self.y() - old_y) # used for crushing 
-    
-    def get_update_priority(self):
-        return 4
         
     def is_moving_block(self): return True
     
     def to_json(self):
+        my_json = Block.to_json(self)
+        
         my_json = {
-            "type":"moving",
+            "type":"normal",
+            "x":0,
+            "y":0,
             "width":self.width(),
             "height":self.height(),
-            "path":self.path.to_json()
+            "path":self._path.to_json()
         }
         if self.get_theme_id() != "default":
             my_json["theme"] = self.get_theme_id()
@@ -273,42 +309,33 @@ class MovingBlock(Block):
         
 
 class BadBlock(Block):
-    def __init__(self, width, height, color=None):
+    def __init__(self, x, y, width, height, color=None):
         color = Block.BAD_COLOR if color == None else color
-        Block.__init__(self, width, height, color)
+        Block.__init__(self, x, y, width, height, color)
     
     def collided_with(self, obj, dir="NONE"):
         if obj.is_actor():
             obj.kill("touching a bad block.")
             
-    def get_update_priority(self):
-        return 3
-        
     def is_bad_block(self): return True
     
     def to_json(self):
         my_json = Block.to_json(self)
         my_json['type'] = "bad"
-        
-        if self.get_theme_id() != "default":
-            my_json["theme"] = self.get_theme_id()
             
         return my_json
     
     @staticmethod
     def from_json(json_data):
-        result = BadBlock(json_data["width"], json_data["height"])
-        result.set_xy(json_data["x"], json_data["y"])
-        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
-        return result
+        return BadBlock(json_data["x"], json_data["y"], json_data["width"], json_data["height"])
         
     def __repr__(self):
         return "Bad_Block"+self.rect_str()
         
         
 class FinishBlock(Block):
-    def __init__(self, width=16, height=16, color=(0, 255, 0)):
-        Block.__init__(self, width, height, color)
+    def __init__(self, x, y, width=16, height=16, color=(0, 255, 0)):
+        Block.__init__(self, x, y, width, height, color)
         
     def collided_with(self, obj, dir="NONE"):
         if obj.is_actor():
@@ -316,24 +343,13 @@ class FinishBlock(Block):
     
     @staticmethod
     def from_json(json_data):
-        result = FinishBlock(json_data["width"], json_data["height"])
-        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
-        result.set_xy(json_data["x"], json_data["y"])
-        return result
+        return FinishBlock(json_data["x"], json_data["y"], json_data["width"], json_data["height"])
         
     def to_json(self):
-        result = {
-            "type":"finish",
-            "x":self.x(),
-            "y":self.y(),
-            "width":self.width(),
-            "height":self.height()
-        }
-        
-        if self.get_theme_id() != "default":
-            result["theme"] = self.get_theme_id()
+        my_json = Block.to_json(self)
+        my_json['type'] = "finish"
             
-        return result
+        return my_json
             
     def is_finish_block(self): return True
     
@@ -345,13 +361,25 @@ class BlockFactory:
     CONSTRUCTORS = {
         "normal":Block.from_json,
         "finish":FinishBlock.from_json,
-        "bad":BadBlock.from_json,
-        "moving":MovingBlock.from_json
+        "bad":BadBlock.from_json
     }
     @staticmethod
     def from_json(json_data):
         block_type = json_data["type"]
+        
+        # temporary
+        if block_type == "moving":
+            json_data["type"] = "normal"
+            json_data["x"] = 0
+            json_data["y"] = 0
+            block_type = "normal"
+        
         if block_type in BlockFactory.CONSTRUCTORS:
-            return BlockFactory.CONSTRUCTORS[block_type](json_data)
+            block = BlockFactory.CONSTRUCTORS[block_type](json_data)
+            if "theme" in json_data:
+                block.set_theme_id(json_data["theme"])
+            if "path" in json_data:
+                block.set_path(paths.from_json(json_data["path"]))
+            return block
         else:
             raise ValueError("Unrecognized block type: "+str(block_type))

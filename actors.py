@@ -205,31 +205,6 @@ class Enemy(Actor):
     def __repr__(self):
         return "Enemy"+self.rect_str()
             
-    @staticmethod
-    def get_stupid_walker_enemy(x, y, direction = -1):
-        res = Enemy(Actor.STANDARD_SIZE[0], Actor.STANDARD_SIZE[1])
-        res.set_xy(x, y)
-        res.direction = direction
-        res.walks_off_platforms = True
-        return res
-        
-    @staticmethod
-    def get_smart_walker_enemy(x, y, direction=-1):
-        res = Enemy.get_stupid_walker_enemy(x, y, direction)
-        res.walks_off_platforms = False
-        res.color = Enemy.SMART_COLOR
-        return res
-        
-    @staticmethod
-    def get_bad_enemy(x, y, smart=True, direction=-1):
-        if smart:
-            res = Enemy.get_smart_walker_enemy(x, y, direction)
-        else:
-            res = Enemy.get_stupid_walker_enemy(x, y, direction)
-        res.color = Enemy.BAD_COLOR
-        res.is_stompable = False
-        return res
-            
             
 class GhostRecorder:
     def __init__(self, actor_to_track):
