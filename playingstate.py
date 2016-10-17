@@ -61,13 +61,11 @@ class InGameState(GameState):
             QUIT:           lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
             PAUSE:          lambda: None,
             SHOW_GRID:      lambda: self.settings.set_show_grid(not self.settings.show_grid()),
-            PREVIOUS_LEVEL: lambda: self.prev_level()
         })
         
         if self.settings.dev_mode():
             self.keydown_action_map.update({
-                FREEZE_MODE:    lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode()),
-                NEXT_LEVEL:     lambda: self.next_level()
+                FREEZE_MODE:    lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode())
             })
     
     def get_entities(self):

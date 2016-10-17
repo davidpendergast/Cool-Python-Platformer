@@ -61,6 +61,8 @@ DONE    use x,y as starting position, and make paths give a position relative to
                 --^^^chunking
             
     Code Quality:
+        standardize privatization of vars and methods
+            --a lot of work...
     
     Testing:
         --this requires either a collection of test levels (that require updating),
