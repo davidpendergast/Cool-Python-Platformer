@@ -7,7 +7,7 @@
         {"actor": "player", "type": "spawn", "x": 64, "y": 0}
     ],
     "blocks": [
-        {"type": "moving", "path": {"type": "pointpath", "x_points": [2176, 2176, 2176], "y_points": [160, 320, 480], "speed": 3, "offset": 0}, "width": 64, "height": 64},
+        {"type": "normal", "x": 0, "y": 0, "path": {"type": "pointpath", "x_points": [2176, 2176, 2176], "y_points": [160, 320, 480], "speed": 3, "offset": 0}, "width": 64, "height": 64},
         {"type": "normal", "x": 2240, "y": 352, "width": 480, "height": 32},
         {"type": "normal", "x": 800, "y": 128, "width": 128, "height": 352},
         {"type": "normal", "x": 928, "y": 160, "width": 128, "height": 320},

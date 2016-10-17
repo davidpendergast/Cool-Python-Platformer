@@ -174,6 +174,10 @@ class EditingState(InGameState):
         if self.selected != None:
             utilities.log("moving "+str(self.selected)+" by "+str(x_move)+", "+str(y_move))
             self.selected.set_xy(self.selected.x() + x_move, self.selected.y() + y_move)
+            if self.selected.is_block():
+                block = self.selected
+                block.set_x_initial(block.x_initial() + x_move)
+                block.set_y_initial(block.y_initial() + y_move)
             
     def duplicate_selected(self):
         if self.selected != None:
@@ -191,7 +195,7 @@ class EditingState(InGameState):
                 
     def cylcle_type_of_selected(self):
         if self.selected != None:
-            if self.selected.is_block() and not self.selected.is_moving_block(): ## can't deal with moving blocks yet
+            if self.selected.is_block():
                 utilities.log("Changing type of "+str(self.selected))
                 types = ["normal", "bad", "finish"]
                 selected_json = self.selected.to_json()

@@ -43,8 +43,8 @@ DONE        start full run
             allow shift & ctrl modifiers for keybindings
     
     Moving Blocks:
-        unify with bad, finish, normal blocks
-        use x,y as starting position, and make paths give a position relative to that
+DONE    unify with bad, finish, normal blocks
+DONE    use x,y as starting position, and make paths give a position relative to that
             --will make editing and unification much easier
         
     Optimizations:

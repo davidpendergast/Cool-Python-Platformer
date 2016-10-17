@@ -7,10 +7,10 @@
         {"actor": "player", "type": "spawn", "x": 0, "y": 0}
     ],
     "blocks": [
-        {"type": "moving", "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 0}, "width": 64, "height": 32},
-        {"type": "moving", "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 1}, "width": 64, "height": 32},
-        {"type": "moving", "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 2}, "width": 64, "height": 32},
-        {"type": "moving", "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 3}, "width": 64, "height": 32},
+        {"type": "normal", "x": 0, "y": 0, "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 1}, "width": 64, "height": 32},
+        {"type": "normal", "x": 0, "y": 0, "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 2}, "width": 64, "height": 32},
+        {"type": "normal", "x": 0, "y": 0, "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 3}, "width": 64, "height": 32},
+        {"type": "normal", "x": 0, "y": 0, "path": {"type": "pointpath", "x_points": [1024, 1024, 1376, 1376], "y_points": [192, 384, 384, 192], "speed": 3, "offset": 0}, "width": 64, "height": 32},
         {"type": "finish", "x": 1800, "y": 104, "width": 16, "height": 16},
         {"type": "normal", "x": 128, "y": 192, "width": 160, "height": 32},
         {"type": "normal", "x": -64, "y": 128, "width": 192, "height": 96},

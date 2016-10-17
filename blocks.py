@@ -259,54 +259,6 @@ class Block(Box):
     def __repr__(self):
         return "Block"+self.rect_str()
         
-# DEAD CLASS
-class MovingBlock(Block):
-    def __init__(self, width, height, path, color=None):
-        raise ValueError("this class dead yo")
-        Block.__init__(0,0,self, width, height, color)
-        self._path = path
-    
-    def update(self, dt):
-        self.v = (0,0)
-        if self._path != None:
-            old_x = self.x()
-            old_y = self.y()
-           
-            self._path.step(dt)
-            xy = self._path.get_xy()
-            self.set_x(xy[0])
-            self.set_y(xy[1])
-            
-            self.v = (self.x() - old_x, self.y() - old_y) # used for crushing 
-        
-    def is_moving_block(self): return True
-    
-    def to_json(self):
-        my_json = Block.to_json(self)
-        
-        my_json = {
-            "type":"normal",
-            "x":0,
-            "y":0,
-            "width":self.width(),
-            "height":self.height(),
-            "path":self._path.to_json()
-        }
-        if self.get_theme_id() != "default":
-            my_json["theme"] = self.get_theme_id()
-            
-        return my_json
-        
-    @staticmethod
-    def from_json(json_data):
-        path = paths.from_json(json_data["path"])
-        result = MovingBlock(int(json_data["width"]), int(json_data["height"]), path)
-        result.set_theme_id(json_data["theme"] if "theme" in json_data else "default")
-        return result
-        
-    def __repr__(self):
-        return "Moving_Block"+self.rect_str()
-        
 
 class BadBlock(Block):
     def __init__(self, x, y, width, height, color=None):
@@ -366,13 +318,6 @@ class BlockFactory:
     @staticmethod
     def from_json(json_data):
         block_type = json_data["type"]
-        
-        # temporary
-        if block_type == "moving":
-            json_data["type"] = "normal"
-            json_data["x"] = 0
-            json_data["y"] = 0
-            block_type = "normal"
         
         if block_type in BlockFactory.CONSTRUCTORS:
             block = BlockFactory.CONSTRUCTORS[block_type](json_data)

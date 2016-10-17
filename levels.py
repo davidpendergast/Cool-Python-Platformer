@@ -119,15 +119,15 @@ class Theme:
                 self.values[key] = kwargs[key]
     
     def apply(self, object):
-        if object.is_moving_block():
+        if object.is_bad_block():
+            object.set_color(self.values["bad_color"], 0)
+        elif object.is_finish_block():
+            object.set_color(self.values["finish_color"], 0)
+        elif object.is_moving_block():
             object.set_color(
                     self.values["moving_color"], 
                     self.values["moving_perturb"], 
                     self.values["perturb_grayscale_only"])
-        elif object.is_bad_block():
-            object.set_color(self.values["bad_color"], 0)
-        elif object.is_finish_block():
-            object.set_color(self.values["finish_color"], 0)
         elif object.is_block():
             object.set_color(
                     self.values["normal_color"], 
