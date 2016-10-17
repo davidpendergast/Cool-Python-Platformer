@@ -112,12 +112,14 @@ class Theme:
     DEFAULT_VALUES = {
         "normal_color":[128, 128, 128],
         "normal_perturb":20,
-        "perturb_grayscale_only":True,
         "moving_color":[128, 128, 128],
         "moving_perturb":0,
         "bad_color":[255, 0, 0],
+        "bad_perturb":0,
+        "finish_color":[0, 255, 0],
+        "finish_perturb":0,
         "background_color":[0, 0, 0],
-        "finish_color":[0, 255, 0]
+        "perturb_grayscale_only":True
     }
     
     def __init__(self, **kwargs):
@@ -132,9 +134,15 @@ class Theme:
     
     def apply(self, object):
         if object.is_bad_block():
-            object.set_color(self.values["bad_color"], 0)
+            object.set_color(
+                    self.values["bad_color"],
+                    self.values["bad_perturb"],
+                    self.values["perturb_grayscale_only"])
         elif object.is_finish_block():
-            object.set_color(self.values["finish_color"], 0)
+            object.set_color(
+                    self.values["finish_color"],
+                    self.values["finish_perturb"],
+                    self.values["perturb_grayscale_only"])
         elif object.is_moving_block():
             object.set_color(
                     self.values["moving_color"], 
@@ -180,6 +188,7 @@ BUILT_IN_THEMES.update({
         background_color=[15, 30, 35]).build_in("ice"),
     "fire":Theme(
         normal_color=[170, 90, 90], 
+        bad_perturb=10,
         perturb_grayscale_only=False, 
         background_color=[20, 5, 5]).build_in("fire"),
     "forest":Theme(

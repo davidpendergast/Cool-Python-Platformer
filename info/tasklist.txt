@@ -45,7 +45,7 @@ DONE        start full run
             allow shift & ctrl modifiers for keybindings
     
     Entities:
-        bad blocks need color perturbation theme options
+DONE    bad blocks need color perturbation theme options
             -- finish blocks proooobably don't but w/e
         
     Optimizations:
