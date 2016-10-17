@@ -29,7 +29,9 @@ DONE        start full run
             settings
                 player color
                     -- rgb text boxes, plus drawing of player with that color
-                dev mode
+???             dev mode
+                    -- is this even needed if level edit mode exists?
+                        --not as dev mode currently stands, but might need some more dev-only stuff later?
                     -- true, false toggler on click
                 keybindings
                     --editable text box for each action for now
@@ -42,10 +44,9 @@ DONE        start full run
     Settings:
             allow shift & ctrl modifiers for keybindings
     
-    Moving Blocks:
-DONE    unify with bad, finish, normal blocks
-DONE    use x,y as starting position, and make paths give a position relative to that
-            --will make editing and unification much easier
+    Entities:
+        bad blocks need color perturbation theme options
+            -- finish blocks proooobably don't but w/e
         
     Optimizations:
         --game seems to run fine on my system
@@ -62,15 +63,17 @@ DONE    use x,y as starting position, and make paths give a position relative to
             
     Code Quality:
         standardize privatization of vars and methods
-            --a lot of work...
     
     Testing:
-        --this requires either a collection of test levels (that require updating),
-                or some autogeneration scheme
-        level loading test
-        level loading -> saving -> reloading test
-        stress testing
-            autogenerate level with x random blocks
+        level loading
+            --this requires either a collection of test levels (that require updating),
+                    or some autogeneration scheme
+            level loading test
+            level loading -> saving -> reloading test
+            stress testing
+                autogenerate level with x random blocks
+        physics
+            -- ugg
         
     
     Level Editor:
@@ -84,8 +87,11 @@ DONE    use x,y as starting position, and make paths give a position relative to
             
     Level Storage:
         header file is stupid
+            --just force levels to start with 01_name1.json, 02_name2.json, etc. ?
+                --what if levels lie?
             --should do something reasonable if no header file exists
-        revive void level and make it appear on level load fail instead of crashing
+            --should at least be json probably
+DONE    revive void level and make it appear on level load fail instead of crashing
     
     General Storage:
         make localdata folder for highscores and settings to live
