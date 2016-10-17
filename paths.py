@@ -9,9 +9,11 @@ class Path:
         self.x_fun = math_parser.pythonify(x_path_string)
         self.y_fun = math_parser.pythonify(y_path_string)
         
-    def get_xy(self):
-        x = self.x_fun(t=self.t)
-        y = self.y_fun(t=self.t)
+    def get_xy(self, time=None):
+        if time == None:
+            time = self.t
+        x = self.x_fun(t=time)
+        y = self.y_fun(t=time)
         
         # rounding
         x = int(x + 0.5) 
@@ -27,6 +29,9 @@ class Path:
             "x_path":self.path_strings[0],
             "y_path":self.path_strings[1]
         }
+    
+    def is_funct_path(self): return True
+    def is_point_path(self): return False
         
         
 class PointPath(Path):  
@@ -47,7 +52,9 @@ class PointPath(Path):
         self.dest_index = next
         self.at_end_of_spline = False
         
-    def get_xy(self):
+    def get_xy(self, time=None):
+        if time != None:
+            raise NotImplementedError("can't supply time arg for PointPath")
         if self.at_end_of_spline:
             return (self.x_points[self.dest_index], self.y_points[self.dest_index])
         else:
@@ -92,6 +99,9 @@ class PointPath(Path):
             "speed":self.speed,
             "offset":self.offset
         }
+    
+    def is_funct_path(self): return False
+    def is_point_path(self): return True
         
 
 def from_json(json_data):

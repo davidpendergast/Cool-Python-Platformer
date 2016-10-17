@@ -27,6 +27,10 @@ class Drawer:
         self.draw_entities(screen, entity_list)  
         if self.settings.show_spawns():
             self.draw_entities(screen, level.spawn_list)
+        if self.settings.show_paths():
+            for entity in entity_list:
+                if entity.is_moving_block():
+                    self.draw_path(screen, entity.get_path(), entity.xy_initial(), (255,255,0))      
             
     def draw_entities(self, screen, entity_list):
         for sprite in entity_list:
@@ -36,7 +40,23 @@ class Drawer:
                 self.draw_collision_indicators(sprite)
             
             screen.blit(sprite.image, (sprite.rect.x - self.camera_pos[0], sprite.rect.y - self.camera_pos[1]))
-
+    
+    def draw_path(self, screen, path, offset, color, start_t=0, end_t=360, step=30):
+        offset = self._sub(self.camera_pos, offset)
+        if path.is_funct_path():
+            times = range(start_t, end_t, step)
+            points = [self._sub(path.get_xy(t), offset) for t in times]
+            closed = False
+        elif path.is_point_path():
+            points = [self._sub(xy, offset) for xy in zip(path.x_points, path.y_points)]
+            closed = True
+            
+        pygame.draw.lines(screen, color, closed, points, 2)
+    
+    def _sub(self, tuple1, tuple2):
+        return tuple([x - y for (x,y) in zip(tuple1, tuple2)])
+    def _add(self, tuple1, tuple2):
+        return tuple([x + y for (x,y) in zip(tuple1, tuple2)])
     def update_camera(self, box, screen_width, screen_height):
         rect = box.rect
         self.camera_pos = (rect.x + rect.width/2 - screen_width/2, rect.y + rect.height/2 - screen_height/2)

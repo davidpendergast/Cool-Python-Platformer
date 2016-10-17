@@ -208,6 +208,9 @@ class Block(Box):
     def set_path(self, path):
         self._path = path
         
+    def get_path(self):
+        return self._path
+        
     def set_x_initial(self, x):
         self._initial_xy = (x, self._initial_xy[1])
         
@@ -219,6 +222,9 @@ class Block(Box):
         
     def y_initial(self):
         return self._initial_xy[1]
+        
+    def xy_initial(self):
+        return self._initial_xy
     
     def update(self, dt):
         if self._path != None:

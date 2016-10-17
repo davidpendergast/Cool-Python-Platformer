@@ -44,6 +44,7 @@ class Settings:
         self._invincible_mode = False
         self._frozen_mode = False  
         self._show_spawns = self.dev_mode()
+        self._show_paths = self.dev_mode()
         
         self.bindings = keybindings.KeyBindings(self)
         
@@ -71,6 +72,8 @@ class Settings:
         return self._show_grid
     def show_spawns(self):
         return self._show_spawns
+    def show_paths(self):
+        return self._show_paths
     def set_show_grid(self, val):
         self._show_grid = val
     def invincible_mode(self):
