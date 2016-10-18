@@ -407,16 +407,28 @@ class LevelManager:
         damaged |= "best_individual_scores" not in highscore_data or len(highscore_data["best_individual_scores"]) != num_levels
         damaged |= "best_overall_run_total" not in highscore_data
         
-        if not damaged:
-            for (actual, given) in zip(actual_checksums, highscore_data["checksums"]):
-                if actual != given:
-                    damaged = True
-                    break
-        
         if damaged:
             utilities.log("highscores.json is invalid, wiping scores.")
             return LevelManager.generate_empty_highscores_dict(num_levels, actual_checksums)
+        else:
+            failed_checksums = []
+            i = 0
+            for (actual, given) in zip(actual_checksums, highscore_data["checksums"]):
+                if actual != given:
+                    failed_checksums.append(i)  
+                i += 1
             
+            if len(failed_checksums) > 0:
+                utilities.log("checksums for levels didn't match: "+str(failed_checksums))
+                utilities.log("wiping full run high score and individual records for affected levels.")
+            
+                highscore_data["best_overall_run_total"] = None
+                highscore_data["best_overall_run_scores"] = [None]*num_levels
+                for index in failed_checksums:
+                    highscore_data["best_individual_scores"][index] = None
+                    highscore_data["ghosts"][index] = None
+                    highscore_data["checksums"][index] = actual_checksums[index]
+
         return highscore_data    
         
     def get_highscores_filename(self):
