@@ -50,7 +50,8 @@ class Actor(blocks.Box):
         
     def kill(self, message="unknown causes."):
         self.is_alive = False
-        utilities.log(str(self)+" was killed by "+message)
+        if self.is_player:
+            utilities.log(str(self)+" was killed by "+message)
         
     def jump_action(self):
         if self.is_grounded == False:   # if not grounded, check for walljumps

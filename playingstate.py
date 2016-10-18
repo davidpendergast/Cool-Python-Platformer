@@ -213,7 +213,7 @@ class PlayingState(InGameState):
         self.level_time = 0
         self.death_count = 0
         self.platformer_instance.load_level()
-        utilities.log("\nGame Start!")
+        utilities.log("Game Start!")
     
     def next_level(self, update_highscore=False):
         level_num = self.get_level_num() 

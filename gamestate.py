@@ -108,9 +108,6 @@ class GameStateManager(GameState):
         
         if self.get_current_state() != None:
             self.get_current_state().switching_to(old_state_id)
-            
-        utilities.log("GameState changed: "+str(old_state_id)+" -> "+str(state_id))
-        utilities.log("Current state: "+str(self.get_current_state()))
 
     def pre_event_update(self):
         if self.get_current_state() != None:
