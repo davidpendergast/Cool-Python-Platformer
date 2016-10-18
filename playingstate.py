@@ -109,6 +109,10 @@ class PlayingState(InGameState):
         
         self.full_reset() # starts game from scratch
         
+    def switching_to(self, prev_state_id):
+        if prev_state_id != GameStateManager.EDITING_STATE:
+            self.full_reset()
+        
     def configure_keybindings(self):
         InGameState.configure_keybindings(self)
             

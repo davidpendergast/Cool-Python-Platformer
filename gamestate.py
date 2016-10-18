@@ -50,8 +50,10 @@ class GameState:
     def draw(self, screen):
         pass
     def switching_to(self, prev_state_id):
+        "called when state is activated"
         pass
     def switching_from(self, new_state_id):
+        "called when state is deactivated"
         pass
     def configure_keybindings(self):
         self.keydown_action_map.update({
