@@ -80,6 +80,11 @@ class Drawer:
                 pygame.draw.line(screen, side_color, f, b, 2)
             pygame.draw.lines(screen, color, True, front_corners, 2)
             
+            
+    def _sort_and_split_rects(self, entity_list):
+        pass
+    
+    
         
     def _fill_transparent_poly(self, screen, color, pointslist, alpha):
         pygame.draw.polygon(screen, color, pointslist, 0)
@@ -237,3 +242,81 @@ class Drawer:
             actor.image.fill((255,255,125), (0,actor.rect.height-8,8,8))
         if actor.is_right_toe_grounded:
             actor.image.fill((255,255,125), (actor.rect.width-8,actor.rect.height-8,8,8))
+            
+class _Rect:
+    def __init__(self, x, y, w, h, color=(0,0,0), depth=0.05):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.color = color
+        self.depth = depth
+        
+        self.x2 = x + w
+        self.y2 = y + h
+        self.top_left = (x, y)
+        self.top_right = (x + w, y)
+        self.bottom_left = (x, y + h)
+        self.bottom_right = (x + w, y + h)
+    
+    @staticmethod
+    def from_points(p1, p2, color=(0,0,0), depth=0.05):
+        return _Rect(  min(p1[0], p2[0]), 
+                min(p1[1], p2[1]), 
+                abs(p2[0] - p1[0]), 
+                abs(p2[1] - p1[1]), 
+                color, 
+                depth)
+                
+    def corners(self):
+        return [self.top_left, self.top_right, self.bottom_right, self.bottom_left]
+        
+    def subtract(self, r2):
+        results = [self]
+        for point in r2.corners():
+            new_rects = []
+            for rect in results:
+                quads = rect.quad_divide(point)
+                # print str(rect) +" div by "+str(point) + " -> " + str(quads)
+                new_rects.extend(quads)
+            results = new_rects
+        # print "result = "+str(results)
+        return [x for x in results if not x.intersects(r2)]
+                        
+    def intersects(self, r2):
+        return not (self.x2 <= r2.x or
+                self.y2 <= r2.y or 
+                self.x >= r2.x2 or
+                self.y >= r2.y2)
+        
+    def quad_divide(self, point):
+        if not self.contains(point) or (point[0] == self.x and point[1] == self.y):
+            return [self]
+        else: 
+            quads = [
+                _Rect.from_points(self.top_left, point, self.color, self.depth),
+                _Rect.from_points(self.top_right, point, self.color, self.depth),
+                _Rect.from_points(self.bottom_left, point, self.color, self.depth),
+                _Rect.from_points(self.bottom_right, point, self.color, self.depth)
+            ]
+            return [x for x in quads if not x.is_empty()]
+            
+    def contains(self, point):
+        return (self.x <= point[0] and 
+                self.y <= point[1] and 
+                self.x + self.w > point[0] and 
+                self.y + self.h > point[1])
+                 
+    def is_empty(self):
+        return self.w == 0 or self.h == 0
+    
+    def __str__(self):
+        return "["+str(self.x)+", "+str(self.y)+", "+str(self.w)+", "+str(self.h)+"]"
+    def __repr__(self):
+        return str(self)
+  
+r1 = _Rect(0,0,10,10)
+r2 = _Rect(0,0,5,5)
+r3 = _Rect.from_points((5,0), (10,10))
+print str(r3)
+print str(r1) +" - "+ str(r2) +" = "+ str(r1.subtract(r2))  
