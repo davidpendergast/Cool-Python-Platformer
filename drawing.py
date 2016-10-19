@@ -1,4 +1,7 @@
-import pygame, blocks, utilities
+import pygame 
+import sets
+import blocks
+import utilities
 
 class Drawer:
     def __init__(self, settings):
@@ -35,14 +38,19 @@ class Drawer:
                     self.draw_path(screen, entity.get_path(), entity.xy_initial(), (255,255,0))      
             
     def draw_entities(self, screen, entity_list):
-        entity_list = self._filter_onscreen_entities(screen, entity_list, 100)
+        entity_list = self._filter_onscreen_entities(screen, entity_list, 30)
         paths = []
-        for entity in entity_list:
-            self._decorate_sprite(entity)
-            if entity.is_actor() or not self.settings.draw_3d():
+        if self.settings.draw_3d():
+            non_players = [x for x in entity_list if not (x.is_actor() and x.is_player)]
+            self._draw_entities_3D(screen, non_players)
+            for entity in entity_list:
+                if entity.is_actor() and entity.is_player:
+                    self._decorate_sprite(entity)
+                    self._draw_entity_2D(screen, entity)
+        else:
+            for entity in entity_list:
+                self._decorate_sprite(entity)
                 self._draw_entity_2D(screen, entity)
-            else:
-                self._draw_entity_THREE_DEE(screen, entity)
     
     def _decorate_sprite(self, entity):
         if entity.is_ghost():
@@ -52,38 +60,107 @@ class Drawer:
     
     def _draw_entity_2D(self, screen, entity):
         screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
+    
+    def _draw_entities_3D(self, screen, entity_list):
+        all_corners = [self._get_front_and_back_corners(screen, entity) for entity in entity_list]
+        all_colors = [entity.color for entity in entity_list]
+        convex_hulls = [self._convex_hull(corners) for corners in all_corners]
         
-    def _draw_entity_THREE_DEE(self, screen, entity):
+        for (color, hull) in zip(all_colors, convex_hulls):
+            color = utilities.darker(color, 60)
+            self._fill_transparent_poly(screen, color, hull, 128)
+            
+        for (color, corners) in zip(all_colors, all_corners):
+            front_corners = corners[0:4]
+            back_corners = corners[4:]
+            back_color = utilities.darker(color, 40)
+            side_color = utilities.darker(color, 20)
+            pygame.draw.lines(screen, back_color, True, back_corners, 2)
+            for (f, b) in zip(front_corners, back_corners):
+                pygame.draw.line(screen, side_color, f, b, 2)
+            pygame.draw.lines(screen, color, True, front_corners, 2)
+            
+        
+    def _fill_transparent_poly(self, screen, color, pointslist, alpha):
+        pygame.draw.polygon(screen, color, pointslist, 0)
+        # todo - make this work
+        # s = pygame.Surface((screen.get_width(), screen.get_height()))
+        # s.set_alpha(alpha)
+        # pygame.draw.polygon(s, color, pointslist, 0)
+        # screen.blit(s, (0,0))
+        
+    def _get_front_and_back_corners(self, screen, entity):
         depth = 0.05
         if entity.is_finish_block() or entity.is_spawn_point():
             depth = 0.02
             
         center = (screen.get_width() / 2, screen.get_height() / 2)
+        cam = self.camera_pos
+        corners = [
+            (entity.x() - cam[0], entity.y() - cam[1]),
+            (entity.x() + entity.width() - cam[0] - 1, entity.y() - cam[1]),
+            (entity.x() + entity.width() - cam[0] - 1, entity.y() + entity.height() - cam[1] - 1),
+            (entity.x() - cam[0], entity.y() + entity.height() - cam[1] - 1)
+        ]
+        
+        back_corners = []
+        for corner in corners:
+            to_center = (center[0] - corner[0], center[1] - corner[1])
+            back_corner = (int(corner[0] + depth*to_center[0]), int(corner[1] + depth*to_center[1]))
+            back_corners.append(back_corner)
+        
+        return corners + back_corners
+        
+    def _draw_entity_THREE_DEE(self, screen, entity):
+        
         
         face_color = entity.color
         side_color = utilities.darker(face_color, 20)
         bottom_color = utilities.darker(side_color, 20)
         top_color = utilities.lighter(face_color, 20)
         
-        cam = self.camera_pos
-        corners = [
-            (entity.x() - cam[0], entity.y() - cam[1]),
-            (entity.x() + entity.width() - cam[0], entity.y() - cam[1]),
-            (entity.x() + entity.width() - cam[0], entity.y() + entity.height() - cam[1]),
-            (entity.x() - cam[0], entity.y() + entity.height() - cam[1])
-        ]
         
-        back_corners = []
-        for corner in corners:
-            to_center = (center[0] - corner[0], center[1] - corner[1])
-            back_corner = (corner[0] + depth*to_center[0], corner[1] + depth*to_center[1])
-            back_corners.append(back_corner)
+            
+        convex_hull = self._convex_hull(back_corners + corners)
+
+        fill_color = utilities.darker(bottom_color, 30)
+        pygame.draw.polygon(screen, fill_color, convex_hull, 0)
         
         pygame.draw.lines(screen, bottom_color, True, back_corners, 2)
         for (c , back_c) in zip(corners, back_corners):
             pygame.draw.line(screen, side_color, c, back_c, 2)
         pygame.draw.lines(screen, face_color, True, corners, 2)
                 
+    def _convex_hull(self, points):
+        min_x = [points[0]]
+        max_x = [points[0]]
+        min_y = [points[0]]
+        max_y = [points[0]]
+        for point in points:
+            if point[0] == min_x[0][0]: min_x.append(point)
+            elif point[0] < min_x[0][0]: min_x = [point]
+            if point[0] == max_x[0][0]: max_x.append(point)
+            elif point[0] > max_x[0][0]: max_x = [point]
+            if point[1] == min_y[0][1]: min_y.append(point)
+            elif point[1] < min_y[0][1]: min_y = [point]
+            if point[1] == max_y[0][1]: max_y.append(point)
+            elif point[1] > max_y[0][1]: max_y = [point]
+        min_x.sort(key=lambda p: -p[1])
+        min_y.sort(key=lambda p: p[0])
+        max_x.sort(key=lambda p: p[1])
+        max_y.sort(key=lambda p: -p[0])
+        dupes = sets.Set([])
+        res = []
+        for point in min_x + min_y + max_x + max_y:
+            if point in dupes:
+                continue
+            else:
+                res.append(point)
+                dupes.add(point)
+                
+        return res
+        
+        
     
     def _filter_onscreen_entities(self, screen, entity_list, icing=0):
         return [x for x in entity_list if self._is_onscreen(screen, x, icing)]
