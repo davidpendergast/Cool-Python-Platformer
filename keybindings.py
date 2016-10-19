@@ -57,6 +57,7 @@ NEXT_LEVEL      = register("next_level")
 SHOW_GRID       = register("show_grid")
 INVINCIBLE_MODE = register("invincible_mode")
 FREEZE_MODE     = register("freeze_mode")
+TOGGLE_3D       = register("toggle_3d")
 
 SHIFT           = register("shift")
 CTRL            = register("ctrl")

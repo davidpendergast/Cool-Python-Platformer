@@ -46,6 +46,7 @@
         "reset_run":"backspace",
         
         "show_grid":"g",
+        "toggle_3d":"3",
         "invincible_mode":"k",
         "freeze_mode":"f",
         

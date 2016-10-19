@@ -45,6 +45,7 @@ class Settings:
         self._frozen_mode = False  
         self._show_spawns = self.dev_mode()
         self._show_paths = self.dev_mode()
+        self._draw_3d = self._get_attribute("add_whole_new_dimension_of_gameplay")
         
         self.bindings = keybindings.KeyBindings(self)
         
@@ -71,7 +72,9 @@ class Settings:
     def show_grid(self):
         return self._show_grid
     def draw_3d(self):
-        return self._get_attribute("add_whole_new_dimension_of_gameplay")
+        return self._draw_3d
+    def set_draw_3d(self, val):
+        self._draw_3d = val
     def show_spawns(self):
         return self._show_spawns
     def show_paths(self):

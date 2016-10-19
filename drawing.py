@@ -51,35 +51,38 @@ class Drawer:
             self.draw_collision_indicators(entity)
     
     def _draw_entity_2D(self, screen, entity):
-            screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
+        screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
         
     def _draw_entity_THREE_DEE(self, screen, entity):
-            center = (screen.get_width() / 2, screen.get_height() / 2)
+        depth = 0.05
+        if entity.is_finish_block() or entity.is_spawn_point():
+            depth = 0.02
             
-            face_color = entity.color
-            side_color = utilities.darker(face_color, 20)
-            bottom_color = utilities.darker(side_color, 20)
-            top_color = utilities.lighter(face_color, 20)
-            
-            cam = self.camera_pos
-            corners = [
-                (entity.x() - cam[0], entity.y() - cam[1]),
-                (entity.x() + entity.width() - cam[0], entity.y() - cam[1]),
-                (entity.x() + entity.width() - cam[0], entity.y() + entity.height() - cam[1]),
-                (entity.x() - cam[0], entity.y() + entity.height() - cam[1])
-            ]
-            
-            back_corners = []
-            for corner in corners:
-                length = 0.1
-                to_center = (center[0] - corner[0], center[1] - corner[1])
-                back_corner = (corner[0] + length*to_center[0], corner[1] + length*to_center[1])
-                back_corners.append(back_corner)
-            
-            pygame.draw.lines(screen, bottom_color, True, back_corners, 2)
-            for (c , back_c) in zip(corners, back_corners):
-                pygame.draw.line(screen, side_color, c, back_c, 2)
-            pygame.draw.lines(screen, face_color, True, corners, 2)
+        center = (screen.get_width() / 2, screen.get_height() / 2)
+        
+        face_color = entity.color
+        side_color = utilities.darker(face_color, 20)
+        bottom_color = utilities.darker(side_color, 20)
+        top_color = utilities.lighter(face_color, 20)
+        
+        cam = self.camera_pos
+        corners = [
+            (entity.x() - cam[0], entity.y() - cam[1]),
+            (entity.x() + entity.width() - cam[0], entity.y() - cam[1]),
+            (entity.x() + entity.width() - cam[0], entity.y() + entity.height() - cam[1]),
+            (entity.x() - cam[0], entity.y() + entity.height() - cam[1])
+        ]
+        
+        back_corners = []
+        for corner in corners:
+            to_center = (center[0] - corner[0], center[1] - corner[1])
+            back_corner = (corner[0] + depth*to_center[0], corner[1] + depth*to_center[1])
+            back_corners.append(back_corner)
+        
+        pygame.draw.lines(screen, bottom_color, True, back_corners, 2)
+        for (c , back_c) in zip(corners, back_corners):
+            pygame.draw.line(screen, side_color, c, back_c, 2)
+        pygame.draw.lines(screen, face_color, True, corners, 2)
                 
     
     def _filter_onscreen_entities(self, screen, entity_list, icing=0):
