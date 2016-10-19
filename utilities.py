@@ -36,6 +36,15 @@ def unformat_time(time_str):
 def lim(x, minimum, maximum):
     return min(max(x, minimum), maximum)
     
+def darker(color, amount):
+    r = lim(color[0] - amount, 0, 255)
+    g = lim(color[1] - amount, 0, 255)
+    b = lim(color[2] - amount, 0, 255)
+    return (r,g,b)
+
+def lighter(color, amount):
+    return darker(color, -amount)
+    
 def perturb_color(orig_color, max_perturb, only_greyscale):
     sign = (-1,1)
     if only_greyscale:

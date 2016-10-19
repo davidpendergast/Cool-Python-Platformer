@@ -62,7 +62,7 @@ DONE        start full run
                 -- 512 by 512 is probably plenty big enough
                 -- is this even the bottleneck?
         drawing
-            -- everything is drawn every frame
+            -- N
             solutions:
                 -- ^^^chunking
             should cache path drawing in edit mode, no reason to recompute every frame

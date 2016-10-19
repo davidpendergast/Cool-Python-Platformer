@@ -1,4 +1,4 @@
-import pygame, blocks
+import pygame, blocks, utilities
 
 class Drawer:
     def __init__(self, settings):
@@ -25,21 +25,76 @@ class Drawer:
             entity_list = level.entity_list
         
         self.draw_entities(screen, entity_list)  
+        
         if self.settings.show_spawns():
             self.draw_entities(screen, level.spawn_list)
+        
         if self.settings.show_paths():
             for entity in entity_list:
                 if entity.is_moving_block():
                     self.draw_path(screen, entity.get_path(), entity.xy_initial(), (255,255,0))      
             
     def draw_entities(self, screen, entity_list):
-        for sprite in entity_list:
-            if sprite.is_ghost():
-                sprite.image.set_alpha(128)
-            elif sprite.is_actor():
-                self.draw_collision_indicators(sprite)
+        entity_list = self._filter_onscreen_entities(screen, entity_list, 100)
+        paths = []
+        for entity in entity_list:
+            self._decorate_sprite(entity)
+            if entity.is_actor() or not self.settings.draw_3d():
+                self._draw_entity_2D(screen, entity)
+            else:
+                self._draw_entity_THREE_DEE(screen, entity)
+    
+    def _decorate_sprite(self, entity):
+        if entity.is_ghost():
+                entity.image.set_alpha(128)
+        elif entity.is_actor():
+            self.draw_collision_indicators(entity)
+    
+    def _draw_entity_2D(self, screen, entity):
+            screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
+        
+    def _draw_entity_THREE_DEE(self, screen, entity):
+            center = (screen.get_width() / 2, screen.get_height() / 2)
             
-            screen.blit(sprite.image, (sprite.rect.x - self.camera_pos[0], sprite.rect.y - self.camera_pos[1]))
+            face_color = entity.color
+            side_color = utilities.darker(face_color, 20)
+            bottom_color = utilities.darker(side_color, 20)
+            top_color = utilities.lighter(face_color, 20)
+            
+            cam = self.camera_pos
+            corners = [
+                (entity.x() - cam[0], entity.y() - cam[1]),
+                (entity.x() + entity.width() - cam[0], entity.y() - cam[1]),
+                (entity.x() + entity.width() - cam[0], entity.y() + entity.height() - cam[1]),
+                (entity.x() - cam[0], entity.y() + entity.height() - cam[1])
+            ]
+            
+            back_corners = []
+            for corner in corners:
+                length = 0.1
+                to_center = (center[0] - corner[0], center[1] - corner[1])
+                back_corner = (corner[0] + length*to_center[0], corner[1] + length*to_center[1])
+                back_corners.append(back_corner)
+            
+            pygame.draw.lines(screen, bottom_color, True, back_corners, 2)
+            for (c , back_c) in zip(corners, back_corners):
+                pygame.draw.line(screen, side_color, c, back_c, 2)
+            pygame.draw.lines(screen, face_color, True, corners, 2)
+                
+    
+    def _filter_onscreen_entities(self, screen, entity_list, icing=0):
+        return [x for x in entity_list if self._is_onscreen(screen, x, icing)]
+    
+    def _is_onscreen(self, screen, entity, icing):
+        screen_x = self.camera_pos[0] - icing
+        screen_y = self.camera_pos[1] - icing
+        screen_w = screen.get_width() + 2*icing 
+        screen_h = screen.get_height() + 2*icing
+        
+        return not (screen_x + screen_w <= entity.x() or 
+                screen_y + screen_h <= entity.y() or
+                screen_x >= entity.x() + entity.width() or
+                screen_y >= entity.y() + entity.height())
     
     def draw_path(self, screen, path, offset, color, start_t=0, end_t=360, step=30):
         offset = self._sub(self.camera_pos, offset)

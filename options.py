@@ -70,6 +70,8 @@ class Settings:
         return self._get_attribute("level_path")
     def show_grid(self):
         return self._show_grid
+    def draw_3d(self):
+        return self._get_attribute("add_whole_new_dimension_of_gameplay")
     def show_spawns(self):
         return self._show_spawns
     def show_paths(self):

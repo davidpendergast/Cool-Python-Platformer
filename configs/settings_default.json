@@ -2,6 +2,7 @@
     "dev_mode":false,
     "level_path":"levels/sample_level_pack",
     "color":[128, 128, 255],
+    "add_whole_new_dimension_of_gameplay":true,
     
     "keybindings":{
         "jump":["w", "space", "up"],
