@@ -2,6 +2,7 @@ import pygame
 import sets
 import blocks
 import utilities
+import random
 
 class Drawer:
     def __init__(self, settings):
@@ -38,10 +39,11 @@ class Drawer:
                     self.draw_path(screen, entity.get_path(), entity.xy_initial(), (255,255,0))      
             
     def draw_entities(self, screen, entity_list):
-        entity_list = self._filter_onscreen_entities(screen, entity_list, 30)
+        entity_list = self._filter_onscreen_entities(screen, entity_list, 50)
         paths = []
         if self.settings.draw_3d():
             non_players = [x for x in entity_list if not (x.is_actor() and x.is_player)]
+            random.shuffle(non_players)
             self._draw_entities_3D_2(screen, non_players)
             for entity in entity_list:
                 if entity.is_actor() and entity.is_player:
@@ -60,30 +62,9 @@ class Drawer:
     
     def _draw_entity_2D(self, screen, entity):
         screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
-    
-    def _draw_entities_3D(self, screen, entity_list):
-        all_corners = [self._get_front_and_back_corners(screen, entity) for entity in entity_list]
-        all_colors = [entity.color for entity in entity_list]
-        convex_hulls = [self._convex_hull(corners) for corners in all_corners]
-        
-        for (color, hull) in zip(all_colors, convex_hulls):
-            color = utilities.darker(color, 60)
-            try:
-                self._fill_transparent_poly(screen, color, hull, 128)
-            except ValueError as err:
-                print "ERROR: bad polygon: " +str(hull)
-            
-        for (color, corners) in zip(all_colors, all_corners):
-            front_corners = corners[0:4]
-            back_corners = corners[4:]
-            back_color = utilities.darker(color, 40)
-            side_color = utilities.darker(color, 20)
-            pygame.draw.lines(screen, back_color, True, back_corners, 2)
-            for (f, b) in zip(front_corners, back_corners):
-                pygame.draw.line(screen, side_color, f, b, 2)
-            pygame.draw.lines(screen, color, True, front_corners, 2)
             
     def _draw_entities_3D_2(self, screen, entity_list):
+        entity_list.sort(key=lambda x: x.width()*x.height())
         entity_list.sort(key=lambda x: x.get_update_priority())
         all_rects = [_Rect.from_entity(x) for x in entity_list]
         #print "input = "+str(all_rects)
@@ -95,24 +76,44 @@ class Drawer:
         
         c = (screen.get_width() / 2 + self.camera_pos[0], screen.get_height() / 2 + self.camera_pos[1])
         #self._color_by_category(disjoint_rects, c)
-        sorter = lambda r1, r2: r1.compare(c, r2)
+        sorter = lambda r1, r2: r1.overlapped_by_in_3D(r2, c)
         
-        # bubble sort - need that N^2
-        # todo - not good enough, need topological sort of some kind
-        #print "c = "+str(c)
-        #print "pre: "+str(disjoint_rects)
-        for i in range(0, len(disjoint_rects)):
-            for j in range(0, len(disjoint_rects) - i - 1):
-                r1 = disjoint_rects[j]
-                r2 = disjoint_rects[j+1]
-                #print "checking"
-                if sorter(r1, r2) >= 0:
-                    #print "swapping"
-                    disjoint_rects[j] = r2
-                    disjoint_rects[j+1] = r1
-        #print "post: "+str(disjoint_rects)
         
-        self._draw_rects_3D(screen, disjoint_rects)
+        blocked_by = {x:sets.Set() for x in disjoint_rects} # blocked_by[n] = list of rects n prevents from being drawn
+        blocking = {x:sets.Set() for x in disjoint_rects}   # blocking[n] = list of rects preventing n from being drawn
+        unblocked = sets.Set(disjoint_rects)
+        for r1 in disjoint_rects:
+            for r2 in disjoint_rects: 
+                if r1 is not r2 and r2.overlapped_by_in_3D(r1, c):
+                    if r2 in blocking[r1]:
+                        print "Cycle detected!!! "+ str(r1) + "-><-" + str(r2)
+                    blocking[r2].add(r1)
+                    blocked_by[r1].add(r2)
+                    if r2 in unblocked:
+                        unblocked.remove(r2)
+        
+        # Kahn's Algorithm for sorting a graph topologically
+        L = []                  # result sorted list
+        Adj = blocked_by        # adjacency lookup
+        rev_Adj = blocking      # reverse adjacency lookup
+        S = unblocked           # nodes with no incoming edges
+        
+        while len(S) > 0:
+            n = S.pop()
+            del rev_Adj[n]
+            L.append(n)
+            for node in Adj[n]:
+                rev_Adj[node].remove(n)
+                if len(rev_Adj[node]) == 0:
+                    S.add(node)
+                    
+        if len(rev_Adj) > 0:
+            print "Cycles in adjacency list!!!"
+            print "c = "+str(c)
+            print str(rev_Adj)
+
+        L.reverse()
+        self._draw_rects_3D(screen, L)
         
     
     def _draw_rects_3D(self, screen, rect_list):
@@ -456,17 +457,43 @@ class _Rect:
     def __eq__(self, r2):
         return (self.x == r2.x and self.x2 == r2.x2
                 and self.y == r2.y and self.y2 == r2.y2)
-    def compare(self, c, r2):
+                
+    def overlapped_by_in_3D(self, r2, c):
+        quads1 = self.quadrants(c)
+        quads2 = r2.quadrants(c)
+        
+        if len(quads1 & quads2) == 0:
+            return False
+     
         h_overlap = self.horz_overlaps(r2)
         v_overlap = self.vert_overlaps(r2)
         
+        horz1 = self._horz_dist_to(c)
+        horz2 = r2._horz_dist_to(c)
+        vert1 = self._vert_dist_to(c)
+        vert2 = r2._vert_dist_to(c)
+        
         if v_overlap:
-            return r2._horz_dist_to(c) - self._horz_dist_to(c)
+            return horz1 > horz2
         elif h_overlap:
-            return r2._vert_dist_to(c) - self._vert_dist_to(c)
+            return vert1 > vert2
         else:
-            return 0
-
+            return False # min(horz1, vert1) > min(horz2, vert2)
+        
+    def quadrants(self, c):
+        quads = sets.Set()
+        if self.x < c[0] and self.y < c[1]:
+            quads.add(1)
+        if self.x2 > c[0] and self.y < c[1]:
+            quads.add(2)
+        if self.x2 > c[0] and self.y2 > c[1]:
+            quads.add(3)
+        if self.x < c[0] and self.y2 > c[1]:
+            quads.add(4)
+        return quads
+        
+        
+        
     def _manhatten_dist_to(self, point):
         if self.contains(point):
             return 0
@@ -505,6 +532,9 @@ class _Rect:
         else: row = 2 
         
         return arr[row*3 + col]
+        
+    def __hash__(self):
+        return str(self).__hash__()
             
   
 if __name__ == "__main__":
@@ -520,8 +550,21 @@ if __name__ == "__main__":
     #print str(r1) +" - "+ str(rects[0]) +" = "+ str(r1.subtract(rects[0]))
     #print str(r1) +" - "+ str(rects[1]) +" = "+ str(r1.subtract(rects[1]))
 
-    c = (1386, 241)
-    r1 = _Rect(1440, 85, 64, 288)
-    r2 = _Rect(1344, 288, 288, 224)
+    c = (852, -1095)
+    r1 = _Rect(1152, -1312, 64, 32)
+    r2 = _Rect(1208, -1280, 8, 64)
+    r3 = _Rect(928, -1632, 224, 192)
+    
+    # crap this is a legit cycle...
+    c = (1074, -604)
+    r1 = _Rect(672, -832, 128, 288)
+    r2 = _Rect(1024, -864, 448, 64)
+    r3 = _Rect(1260, -608, 8, 640)
+    r4 = _Rect(672, -544, 480, 256)
+    print "r1 -> r2: "+str(r1.overlapped_by_in_3D(r2, c))
+    print "r2 -> r3: "+str(r2.overlapped_by_in_3D(r3, c))
+    print "r3 -> r4: "+str(r3.overlapped_by_in_3D(r4, c))
+    print "r4 -> r1: "+str(r4.overlapped_by_in_3D(r1, c))
+    
 
     print str(r1.subtract(r2))
