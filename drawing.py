@@ -68,7 +68,10 @@ class Drawer:
         
         for (color, hull) in zip(all_colors, convex_hulls):
             color = utilities.darker(color, 60)
-            self._fill_transparent_poly(screen, color, hull, 128)
+            try:
+                self._fill_transparent_poly(screen, color, hull, 128)
+            except ValueError as err:
+                print "ERROR: bad polygon: " +str(hull)
             
         for (color, corners) in zip(all_colors, all_corners):
             front_corners = corners[0:4]
@@ -358,7 +361,7 @@ class _Rect:
     
     @staticmethod
     def from_entity(entity):
-        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() else 0.05
+        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() or entity.is_ghost() else .1 # 0.05
         return _Rect(entity.x(), entity.y(), entity.width(), entity.height(), entity.color, depth)
                 
     def corners(self):
