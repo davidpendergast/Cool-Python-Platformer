@@ -81,7 +81,7 @@ class Drawer:
             pygame.draw.lines(screen, color, True, front_corners, 2)
             
     def _draw_entities_3D_2(self, screen, entity_list):
-        entity_list.sort(key=lambda x: -x.get_update_priority())
+        entity_list.sort(key=lambda x: x.get_update_priority())
         all_rects = [_Rect.from_entity(x) for x in entity_list]
         #print "input = "+str(all_rects)
         disjoint_rects = []
