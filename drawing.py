@@ -42,7 +42,7 @@ class Drawer:
         paths = []
         if self.settings.draw_3d():
             non_players = [x for x in entity_list if not (x.is_actor() and x.is_player)]
-            self._draw_entities_3D(screen, non_players)
+            self._draw_entities_3D_2(screen, non_players)
             for entity in entity_list:
                 if entity.is_actor() and entity.is_player:
                     self._decorate_sprite(entity)
@@ -80,12 +80,86 @@ class Drawer:
                 pygame.draw.line(screen, side_color, f, b, 2)
             pygame.draw.lines(screen, color, True, front_corners, 2)
             
-            
-    def _sort_and_split_rects(self, entity_list):
-        pass
-    
-    
+    def _draw_entities_3D_2(self, screen, entity_list):
+        entity_list.sort(key=lambda x: -x.get_update_priority())
+        all_rects = [_Rect.from_entity(x) for x in entity_list]
+        #print "input = "+str(all_rects)
+        disjoint_rects = []
+        for i in range(0, len(all_rects)):
+            r = all_rects[i]
+            sub = r.subtract_all(all_rects[i+1:])
+            disjoint_rects.extend(sub)
         
+        c = (screen.get_width() / 2 + self.camera_pos[0], screen.get_height() / 2 + self.camera_pos[1])
+        #self._color_by_category(disjoint_rects, c)
+        sorter = lambda r1, r2: r1.compare(c, r2)
+        
+        # bubble sort - need that N^2
+        #print "c = "+str(c)
+        #print "pre: "+str(disjoint_rects)
+        for i in range(0, len(disjoint_rects)):
+            for j in range(0, len(disjoint_rects) - i - 1):
+                r1 = disjoint_rects[j]
+                r2 = disjoint_rects[j+1]
+                #print "checking"
+                if sorter(r1, r2) >= 0:
+                    #print "swapping"
+                    disjoint_rects[j] = r2
+                    disjoint_rects[j+1] = r1
+        #print "post: "+str(disjoint_rects)
+        
+        self._draw_rects_3D(screen, disjoint_rects)
+        
+    
+    def _draw_rects_3D(self, screen, rect_list):
+        fronts_and_backs = [self._get_front_and_back_corners_2(screen, r) for r in rect_list]
+        convex_hulls = [self._convex_hull(corners) for corners in fronts_and_backs]
+        all_colors = [x.color for x in rect_list]
+        
+        for (color, corners, hull) in zip(all_colors, fronts_and_backs, convex_hulls):
+            fill_color = utilities.darker(color, 60)
+            self._fill_transparent_poly(screen, fill_color, hull, 128)
+            
+            front_corners = corners[0:4]
+            back_corners = corners[4:]
+            back_color = utilities.darker(color, 40)
+            side_color = utilities.darker(color, 20)
+            pygame.draw.lines(screen, back_color, True, back_corners, 2)
+            for (f, b) in zip(front_corners, back_corners):
+                pygame.draw.line(screen, side_color, f, b, 2)
+            pygame.draw.lines(screen, color, True, front_corners, 2)
+            
+        # for (color, corners) in zip(all_colors, fronts_and_backs):
+            # front_corners = corners[0:4]
+            # back_corners = corners[4:]
+            # back_color = utilities.darker(color, 40)
+            # side_color = utilities.darker(color, 20)
+            # pygame.draw.lines(screen, back_color, True, back_corners, 2)
+            # for (f, b) in zip(front_corners, back_corners):
+                # pygame.draw.line(screen, side_color, f, b, 2)
+            # pygame.draw.lines(screen, color, True, front_corners, 2)
+    
+            
+    def _color_by_category(self, rect_list, c):
+        #   3  7  2
+        #
+        #   5  8  4
+        #
+        #   1  6  0
+        colors = [
+            (200,0,0),  #0
+            (200,0,0),  #1 
+            (0,0,200),  #2 
+            (0,0,200),  #3 
+            (0,200,0),  #4 
+            (0,200,0),  #5 
+            (160,0,0),  #6 
+            (0,0,160),  #7 
+            (255,255,255)   #8
+        ]
+        for rect in rect_list:
+            rect.color = colors[rect._category(c)]
+
     def _fill_transparent_poly(self, screen, color, pointslist, alpha):
         pygame.draw.polygon(screen, color, pointslist, 0)
         # todo - make this work
@@ -116,16 +190,30 @@ class Drawer:
         
         return corners + back_corners
         
+    def _get_front_and_back_corners_2(self, screen, rect):
+        center = (screen.get_width() / 2, screen.get_height() / 2)
+        cam = self.camera_pos
+        corners = [
+            (rect.x - cam[0], rect.y - cam[1]),
+            (rect.x2 - cam[0] - 1, rect.y - cam[1]),
+            (rect.x2 - cam[0] - 1, rect.y2 - cam[1] - 1),
+            (rect.x - cam[0], rect.y2 - cam[1] - 1)
+        ]
+        
+        back_corners = []
+        for corner in corners:
+            to_center = (center[0] - corner[0], center[1] - corner[1])
+            back_corner = (int(corner[0] + rect.depth*to_center[0]), int(corner[1] + rect.depth*to_center[1]))
+            back_corners.append(back_corner)
+        
+        return corners + back_corners
+        
     def _draw_entity_THREE_DEE(self, screen, entity):
-        
-        
         face_color = entity.color
         side_color = utilities.darker(face_color, 20)
         bottom_color = utilities.darker(side_color, 20)
         top_color = utilities.lighter(face_color, 20)
-        
-        
-            
+ 
         convex_hull = self._convex_hull(back_corners + corners)
 
         fill_color = utilities.darker(bottom_color, 30)
@@ -165,8 +253,6 @@ class Drawer:
                 
         return res
         
-        
-    
     def _filter_onscreen_entities(self, screen, entity_list, icing=0):
         return [x for x in entity_list if self._is_onscreen(screen, x, icing)]
     
@@ -245,10 +331,10 @@ class Drawer:
             
 class _Rect:
     def __init__(self, x, y, w, h, color=(0,0,0), depth=0.05):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
+        self.x = int(x)
+        self.y = int(y)
+        self.w = int(w)
+        self.h = int(h)
         self.color = color
         self.depth = depth
         
@@ -258,6 +344,7 @@ class _Rect:
         self.top_right = (x + w, y)
         self.bottom_left = (x, y + h)
         self.bottom_right = (x + w, y + h)
+        self.center = (x + w/2, y + h/2)
     
     @staticmethod
     def from_points(p1, p2, color=(0,0,0), depth=0.05):
@@ -267,6 +354,11 @@ class _Rect:
                 abs(p2[1] - p1[1]), 
                 color, 
                 depth)
+    
+    @staticmethod
+    def from_entity(entity):
+        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() else 0.05
+        return _Rect(entity.x(), entity.y(), entity.width(), entity.height(), entity.color, depth)
                 
     def corners(self):
         return [self.top_left, self.top_right, self.bottom_right, self.bottom_left]
@@ -277,20 +369,38 @@ class _Rect:
             new_rects = []
             for rect in results:
                 quads = rect.quad_divide(point)
-                # print str(rect) +" div by "+str(point) + " -> " + str(quads)
+                #print str(rect) +" div by "+str(point) + " -> " + str(quads)
                 new_rects.extend(quads)
             results = new_rects
         # print "result = "+str(results)
         return [x for x in results if not x.intersects(r2)]
-                        
+        
+    def subtract_all(self, rect_list):
+        result = [self]
+        for i in range(0, len(rect_list)):
+            r = rect_list[i]
+            sub = self.subtract(r)
+            if len(sub) == 0:
+                return []
+            elif self not in sub:
+                result = []
+                for sub_rect in sub:
+                    result.extend(sub_rect.subtract_all(rect_list[i:0]))
+                return result
+        return result    
+        
     def intersects(self, r2):
-        return not (self.x2 <= r2.x or
-                self.y2 <= r2.y or 
-                self.x >= r2.x2 or
-                self.y >= r2.y2)
+        return self.horz_overlaps(r2) and self.vert_overlaps(r2)
+                
+    def horz_overlaps(self, r2):
+        return not (r2.x >= self.x2 or self.x >= r2.x2)
+    def vert_overlaps(self, r2):
+        return not (r2.y >= self.y2 or self.y >= r2.y2)
+    def _btw(self, x, min, max):
+        return min < x and x < max
         
     def quad_divide(self, point):
-        if not self.contains(point) or (point[0] == self.x and point[1] == self.y):
+        if not self.contains(point) or (point[0] == self.x or point[1] == self.y):
             return [self]
         else: 
             quads = [
@@ -314,9 +424,74 @@ class _Rect:
         return "["+str(self.x)+", "+str(self.y)+", "+str(self.w)+", "+str(self.h)+"]"
     def __repr__(self):
         return str(self)
+    def __eq__(self, r2):
+        return (self.x == r2.x and self.x2 == r2.x2
+                and self.y == r2.y and self.y2 == r2.y2)
+    def compare(self, c, r2):
+        h_overlap = self.horz_overlaps(r2)
+        v_overlap = self.vert_overlaps(r2)
+        
+        if v_overlap:
+            return r2._horz_dist_to(c) - self._horz_dist_to(c)
+        elif h_overlap:
+            return r2._vert_dist_to(c) - self._vert_dist_to(c)
+        else:
+            return 0
+
+    def _manhatten_dist_to(self, point):
+        if self.contains(point):
+            return 0
+        return min(
+            abs(self.x - point[0]),
+            abs(self.y - point[1]),
+            abs(self.x2 - point[0]),
+            abs(self.y2 - point[1]),
+        )
+        
+    def _horz_dist_to(self, point):
+        if self._btw(point[0], self.x, self.x2):
+            return 0
+        return min(abs(self.x - point[0]), abs(self.x2 - point[0]))
+        
+    def _vert_dist_to(self, point):
+        if self._btw(point[1], self.y, self.y2):
+            return 0
+        return min(abs(self.y - point[1]), abs(self.y2 - point[1]))
+          
+    
+    def _category(self, c):   
+        #   3  7  2
+        #
+        #   5  8  4
+        #
+        #   1  6  0
+        arr = [3, 7, 2, 5, 8, 4, 1, 6, 0]
+        
+        if self._btw(c[0], self.x, self.x2): col = 1
+        elif self.x2 < c[0]: col = 0
+        else: col = 2 
+        
+        if self._btw(c[1], self.y, self.y2): row = 1
+        elif self.y2 < c[1]: row = 0
+        else: row = 2 
+        
+        return arr[row*3 + col]
+            
   
 r1 = _Rect(0,0,10,10)
 r2 = _Rect(0,0,5,5)
 r3 = _Rect.from_points((5,0), (10,10))
-print str(r3)
-print str(r1) +" - "+ str(r2) +" = "+ str(r1.subtract(r2))  
+#print str(r3)
+#print str(r1) +" - "+ str(r2) +" = "+ str(r1.subtract(r2))  
+
+r1 = _Rect(-32, 192, 384, 544)
+rects =  [_Rect(-512, -224, 480, 960), _Rect(352, 192, 32, 64)]
+#print str(r1) +" - "+ str(rects) +" = "+ str(r1.subtract_all(rects))
+#print str(r1) +" - "+ str(rects[0]) +" = "+ str(r1.subtract(rects[0]))
+#print str(r1) +" - "+ str(rects[1]) +" = "+ str(r1.subtract(rects[1]))
+
+c = (56, 139)
+r1 = _Rect(-32, 192, 384, 544)
+r2 = _Rect(-512, -224, 480, 960)
+
+print r1.compare(c, r2)
