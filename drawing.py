@@ -95,6 +95,7 @@ class Drawer:
         sorter = lambda r1, r2: r1.compare(c, r2)
         
         # bubble sort - need that N^2
+        # todo - not good enough, need topological sort of some kind
         #print "c = "+str(c)
         #print "pre: "+str(disjoint_rects)
         for i in range(0, len(disjoint_rects)):
@@ -364,15 +365,31 @@ class _Rect:
         return [self.top_left, self.top_right, self.bottom_right, self.bottom_left]
         
     def subtract(self, r2):
+        if not self.intersects(r2):
+            return [self]
+        
         results = [self]
-        for point in r2.corners():
-            new_rects = []
-            for rect in results:
-                quads = rect.quad_divide(point)
-                #print str(rect) +" div by "+str(point) + " -> " + str(quads)
-                new_rects.extend(quads)
-            results = new_rects
-        # print "result = "+str(results)
+        corners = r2.corners()
+        if self.contains_any(corners, inclusive=True):
+            for point in r2.corners():
+                new_rects = []
+                for rect in results:
+                    quads = rect.quad_divide(point)
+                    # print str(quads)
+                    new_rects.extend(quads)
+                results = new_rects
+        else:
+            # four possible rectangles in this case
+            # at most two are non-empty
+            results = [
+                _Rect.from_points((self.x, self.y), (r2.x, self.y2), self.color, self.depth),
+                _Rect.from_points((r2.x2, self.y), (self.x2, self.y2), self.color, self.depth),
+                _Rect.from_points((self.x, self.y), (self.x2, r2.y), self.color, self.depth),
+                _Rect.from_points((self.x, r2.y2), (self.x2, self.y2), self.color, self.depth)
+            ]
+            
+            
+        
         return [x for x in results if not x.intersects(r2)]
         
     def subtract_all(self, rect_list):
@@ -385,7 +402,7 @@ class _Rect:
             elif self not in sub:
                 result = []
                 for sub_rect in sub:
-                    result.extend(sub_rect.subtract_all(rect_list[i:0]))
+                    result.extend(sub_rect.subtract_all(rect_list[i:]))
                 return result
         return result    
         
@@ -394,13 +411,15 @@ class _Rect:
                 
     def horz_overlaps(self, r2):
         return not (r2.x >= self.x2 or self.x >= r2.x2)
+        
     def vert_overlaps(self, r2):
         return not (r2.y >= self.y2 or self.y >= r2.y2)
+        
     def _btw(self, x, min, max):
         return min < x and x < max
         
     def quad_divide(self, point):
-        if not self.contains(point) or (point[0] == self.x or point[1] == self.y):
+        if not self.contains(point, inclusive=True) or (point[0] == self.x and point[1] == self.y):
             return [self]
         else: 
             quads = [
@@ -411,12 +430,19 @@ class _Rect:
             ]
             return [x for x in quads if not x.is_empty()]
             
-    def contains(self, point):
+    def contains(self, point, inclusive=False):
+        border = 1 if inclusive else 0
         return (self.x <= point[0] and 
                 self.y <= point[1] and 
-                self.x + self.w > point[0] and 
-                self.y + self.h > point[1])
-                 
+                self.x + self.w + border > point[0] and 
+                self.y + self.h + border > point[1])
+                
+    def contains_any(self, points_list, inclusive=False):
+        for point in points_list:
+            if self.contains(point, inclusive):
+                return True
+        return False
+        
     def is_empty(self):
         return self.w == 0 or self.h == 0
     
@@ -478,20 +504,21 @@ class _Rect:
         return arr[row*3 + col]
             
   
-r1 = _Rect(0,0,10,10)
-r2 = _Rect(0,0,5,5)
-r3 = _Rect.from_points((5,0), (10,10))
-#print str(r3)
-#print str(r1) +" - "+ str(r2) +" = "+ str(r1.subtract(r2))  
+if __name__ == "__main__":
+    r1 = _Rect(0,0,10,10)
+    r2 = _Rect(0,0,5,5)
+    r3 = _Rect.from_points((5,0), (10,10))
+    #print str(r3)
+    #print str(r1) +" - "+ str(r2) +" = "+ str(r1.subtract(r2))  
 
-r1 = _Rect(-32, 192, 384, 544)
-rects =  [_Rect(-512, -224, 480, 960), _Rect(352, 192, 32, 64)]
-#print str(r1) +" - "+ str(rects) +" = "+ str(r1.subtract_all(rects))
-#print str(r1) +" - "+ str(rects[0]) +" = "+ str(r1.subtract(rects[0]))
-#print str(r1) +" - "+ str(rects[1]) +" = "+ str(r1.subtract(rects[1]))
+    r1 = _Rect(-32, 192, 384, 544)
+    rects =  [_Rect(-512, -224, 480, 960), _Rect(352, 192, 32, 64)]
+    #print str(r1) +" - "+ str(rects) +" = "+ str(r1.subtract_all(rects))
+    #print str(r1) +" - "+ str(rects[0]) +" = "+ str(r1.subtract(rects[0]))
+    #print str(r1) +" - "+ str(rects[1]) +" = "+ str(r1.subtract(rects[1]))
 
-c = (56, 139)
-r1 = _Rect(-32, 192, 384, 544)
-r2 = _Rect(-512, -224, 480, 960)
+    c = (1386, 241)
+    r1 = _Rect(1440, 85, 64, 288)
+    r2 = _Rect(1344, 288, 288, 224)
 
-print r1.compare(c, r2)
+    print str(r1.subtract(r2))
