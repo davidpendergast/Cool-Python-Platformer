@@ -7,6 +7,7 @@ import drawing
 import gamestate
 import utilities
 import options
+import timer
 
 from keybindings import KeyBindings, TAKE_SCREENSHOT
 from gamestate import GameStateManager, MainMenuState
@@ -49,6 +50,10 @@ GLOBAL_COMMANDS = {
     TAKE_SCREENSHOT: lambda: take_screenshot()
 }
 
+ticks = 0
+display_freq = 1
+ideal_total = display_freq*1000/options.fps()
+
 while still_running and gamestate_manager.still_running():
     gamestate_manager.pre_event_update()
     
@@ -73,5 +78,13 @@ while still_running and gamestate_manager.still_running():
 
     pygame.display.flip()
     clock.tick(FPS)
+    
+    ticks += 1
+    if ticks % display_freq == 0 and timer.has_events():
+        if timer.total_time() >= ideal_total:
+            print "\nTimings for "+str(display_freq) + " ticks: ideal_total=" + str(ideal_total)
+            print timer.get_text_summary()
+        timer.clear()
+        
 
 pygame.quit()

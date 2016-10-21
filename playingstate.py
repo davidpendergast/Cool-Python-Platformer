@@ -13,6 +13,7 @@ import levels
 import collisions
 import options
 import utilities
+import timer
 
 class PlatformerInstance:
     "state that's shared between PlayingState and EditingState"
@@ -158,7 +159,7 @@ class PlayingState(InGameState):
     
     def update(self, dt):
         self.add_time(dt)
-        
+        timer.start("updating player", "update")
         if self.keystate['jump']:
             self.get_player().jump_action()
             self.keystate['jump'] = False
@@ -176,13 +177,18 @@ class PlayingState(InGameState):
         
         if self.settings.frozen_mode():
             dt = 0
+        timer.end("updating player")
         
+        timer.start("updating everything", "update")
         for item in self.get_entities():
             if item is not self.get_player():
                 item.update(dt)
+        timer.end("updating everything")
         
+        timer.start("collisions", "update")
         self.pusher.solve_collisions(self.get_entities())
         self.rf_fixer.solve_rfs(self.get_entities())
+        timer.end("collisions")
         
         self.platformer_instance.current_level().bring_out_yer_dead()
     

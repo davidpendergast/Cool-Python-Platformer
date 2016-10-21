@@ -158,9 +158,9 @@ def _sort_keys_recursively(json_item):
     else:
         return json_item
     
-                
 def is_collection(json_element):
     return isinstance(json_element, list) or isinstance(json_element, dict)
+    
 def _paren_for(json_collection, open):
     if isinstance(json_collection, list):
         return "[" if open else "]"
@@ -230,6 +230,12 @@ if __name__ == "__main__":
     }
     
     print level_json_to_string(json_datas)
+    
+def extend_to(text, length):
+    if len(text) < length:
+        return text + " "*(length - len(text))
+    else:
+        return text
 
 
    

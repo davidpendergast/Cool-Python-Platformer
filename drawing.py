@@ -3,6 +3,8 @@ import sets
 import blocks
 import utilities
 import random
+import timer
+import objectpool
 
 class Drawer:
     def __init__(self, settings):
@@ -64,31 +66,52 @@ class Drawer:
         screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
             
     def _draw_entities_3D(self, screen, entity_list):
+        timer.start("sorting entity list", "drawing")
         entity_list.sort(key=lambda x: x.width()*x.height())
         entity_list.sort(key=lambda x: x.get_update_priority())
+        timer.end("sorting entity list")
+        
+        timer.start("creating rectangles", "drawing")
         all_rects = [_Rect.from_entity(x) for x in entity_list]
+        timer.end("creating rectangles")
        
+        timer.start("getting disjoint rects", "drawing")
         disjoint_rects = []
         for i in range(0, len(all_rects)):
             r = all_rects[i]
             sub = r.subtract_all(all_rects[i+1:])
             disjoint_rects.extend(sub)
+        timer.end("getting disjoint rects")
         
         c = (screen.get_width() / 2 + self.camera_pos[0], screen.get_height() / 2 + self.camera_pos[1])
        
-        blocked_by = {x:sets.Set() for x in disjoint_rects} # blocked_by[n] = list of rects n prevents from being drawn
-        blocking = {x:sets.Set() for x in disjoint_rects}   # blocking[n] = list of rects preventing n from being drawn
-        unblocked = sets.Set(disjoint_rects)
-        for r1 in disjoint_rects:
-            for r2 in disjoint_rects: 
-                if r1 is not r2 and r2.overlapped_by_in_3D(r1, c):
-                    if r2 in blocking[r1]:
-                        print "Cycle detected!!! "+ str(r1) + "-><-" + str(r2)
+        timer.start("creating adjacency dicts", "drawing")
+        blocked_by = {x:objectpool.SET_POOL.get() for x in disjoint_rects} # blocked_by[n] = list of rects n prevents from being drawn
+        blocking = {x:objectpool.SET_POOL.get() for x in disjoint_rects}   # blocking[n] = list of rects preventing n from being drawn
+        unblocked = objectpool.SET_POOL.get()
+        unblocked.update(disjoint_rects)
+        timer.end("creating adjacency dicts")
+        
+        timer.start("filling adjacency dicts", "drawing")
+        for i in range(0, len(disjoint_rects)):
+            for j in range(i+1, len(disjoint_rects)):
+                r1 = disjoint_rects[i]
+                r2 = disjoint_rects[j]
+                overlap = r2.overlapped_by_in_3D(r1, c)
+                if overlap > 0:
                     blocking[r2].add(r1)
                     blocked_by[r1].add(r2)
                     if r2 in unblocked:
                         unblocked.remove(r2)
+                elif overlap < 0:
+                    blocking[r1].add(r2)
+                    blocked_by[r2].add(r1)
+                    if r1 in unblocked:
+                        unblocked.remove(r1)
+        timer.end("filling adjacency dicts")
         
+        
+        timer.start("kahn's algorithm", "drawing")
         # Kahn's Algorithm for sorting a graph topologically
         L = []                  # result sorted list
         Adj = blocked_by        # adjacency lookup
@@ -113,7 +136,11 @@ class Drawer:
             # print str(rev_Adj)
 
         L.reverse()
+        timer.end("kahn's algorithm")
+        
+        timer.start("drawing rects", "drawing")
         self._draw_rects_3D(screen, L)
+        timer.end("drawing rects")
         
     
     def _draw_rects_3D(self, screen, rect_list):
@@ -135,7 +162,8 @@ class Drawer:
             pygame.draw.lines(screen, color, True, front_corners, 2)
 
     def _fill_transparent_poly(self, screen, color, pointslist, alpha):
-        pygame.draw.polygon(screen, color, pointslist, 0)
+        if len(pointslist) > 2:
+            pygame.draw.polygon(screen, color, pointslist, 0)
         
     def _get_front_and_back_corners(self, screen, entity):
         depth = 0.05
@@ -423,11 +451,13 @@ class _Rect:
                 and self.y == r2.y and self.y2 == r2.y2)
                 
     def overlapped_by_in_3D(self, r2, c):
-        quads1 = self.quadrants(c)
-        quads2 = r2.quadrants(c)
-        
-        if len(quads1 & quads2) == 0:
-            return False
+        "0: no overlap, >0: r2 overlaps self, <0: self overlaps r2 "
+        timer.start("computing_quads", "drawing")
+        if not self.same_quadrant(r2, c):
+            return 0
+        timer.end("computing_quads")
+            
+        timer.start("overlapped_by_in_3D_other", "drawing")
      
         h_overlap = self.horz_overlaps(r2)
         v_overlap = self.vert_overlaps(r2)
@@ -437,15 +467,16 @@ class _Rect:
         vert1 = self._vert_dist_to(c)
         vert2 = r2._vert_dist_to(c)
         
+        timer.end("overlapped_by_in_3D_other")
         if v_overlap:
-            return horz1 > horz2
+            return horz1 - horz2
         elif h_overlap:
-            return vert1 > vert2
+            return vert1 - vert2
         else:
-            return False # min(horz1, vert1) > min(horz2, vert2)
+            return 0 # min(horz1, vert1) > min(horz2, vert2)
         
     def quadrants(self, c):
-        quads = sets.Set()
+        quads = objectpool.SET_POOL.get()
         if self.x < c[0] and self.y < c[1]:
             quads.add(1)
         if self.x2 > c[0] and self.y < c[1]:
@@ -455,6 +486,17 @@ class _Rect:
         if self.x < c[0] and self.y2 > c[1]:
             quads.add(4)
         return quads
+        
+    def same_quadrant(self, r2, c):
+        if self.x < c[0] and self.y < c[1] and r2.x < c[0] and r2.y < c[1]:
+            return True
+        if self.x2 > c[0] and self.y < c[1] and r2.x2 > c[0] and r2.y < c[1]:
+            return True
+        if self.x2 > c[0] and self.y2 > c[1] and r2.x2 > c[0] and r2.y2 > c[1]:
+            return True
+        if self.x < c[0] and self.y2 > c[1] and r2.x < c[0] and r2.y2 > c[1]:
+            return True
+        return False
         
         
         
