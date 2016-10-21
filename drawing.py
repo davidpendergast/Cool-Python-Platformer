@@ -44,7 +44,7 @@ class Drawer:
         if self.settings.draw_3d():
             non_players = [x for x in entity_list if not (x.is_actor() and x.is_player)]
             random.shuffle(non_players)
-            self._draw_entities_3D_2(screen, non_players)
+            self._draw_entities_3D(screen, non_players)
             for entity in entity_list:
                 if entity.is_actor() and entity.is_player:
                     self._decorate_sprite(entity)
@@ -63,11 +63,11 @@ class Drawer:
     def _draw_entity_2D(self, screen, entity):
         screen.blit(entity.image, (entity.rect.x - self.camera_pos[0], entity.rect.y - self.camera_pos[1]))
             
-    def _draw_entities_3D_2(self, screen, entity_list):
+    def _draw_entities_3D(self, screen, entity_list):
         entity_list.sort(key=lambda x: x.width()*x.height())
         entity_list.sort(key=lambda x: x.get_update_priority())
         all_rects = [_Rect.from_entity(x) for x in entity_list]
-        #print "input = "+str(all_rects)
+       
         disjoint_rects = []
         for i in range(0, len(all_rects)):
             r = all_rects[i]
@@ -75,10 +75,7 @@ class Drawer:
             disjoint_rects.extend(sub)
         
         c = (screen.get_width() / 2 + self.camera_pos[0], screen.get_height() / 2 + self.camera_pos[1])
-        #self._color_by_category(disjoint_rects, c)
-        sorter = lambda r1, r2: r1.overlapped_by_in_3D(r2, c)
-        
-        
+       
         blocked_by = {x:sets.Set() for x in disjoint_rects} # blocked_by[n] = list of rects n prevents from being drawn
         blocking = {x:sets.Set() for x in disjoint_rects}   # blocking[n] = list of rects preventing n from being drawn
         unblocked = sets.Set(disjoint_rects)
@@ -108,9 +105,12 @@ class Drawer:
                     S.add(node)
                     
         if len(rev_Adj) > 0:
-            print "Cycles in adjacency list!!!"
-            print "c = "+str(c)
-            print str(rev_Adj)
+            # oh no we have cycles!!!
+            # todo - solve donut problem
+            L.extend(rev_Adj.keys()) # just shove em in for now
+            # print "Cycles in adjacency list!!!"
+            # print "c = "+str(c)
+            # print str(rev_Adj)
 
         L.reverse()
         self._draw_rects_3D(screen, L)
@@ -133,45 +133,9 @@ class Drawer:
             for (f, b) in zip(front_corners, back_corners):
                 pygame.draw.line(screen, side_color, f, b, 2)
             pygame.draw.lines(screen, color, True, front_corners, 2)
-            
-        # for (color, corners) in zip(all_colors, fronts_and_backs):
-            # front_corners = corners[0:4]
-            # back_corners = corners[4:]
-            # back_color = utilities.darker(color, 40)
-            # side_color = utilities.darker(color, 20)
-            # pygame.draw.lines(screen, back_color, True, back_corners, 2)
-            # for (f, b) in zip(front_corners, back_corners):
-                # pygame.draw.line(screen, side_color, f, b, 2)
-            # pygame.draw.lines(screen, color, True, front_corners, 2)
-    
-            
-    def _color_by_category(self, rect_list, c):
-        #   3  7  2
-        #
-        #   5  8  4
-        #
-        #   1  6  0
-        colors = [
-            (200,0,0),  #0
-            (200,0,0),  #1 
-            (0,0,200),  #2 
-            (0,0,200),  #3 
-            (0,200,0),  #4 
-            (0,200,0),  #5 
-            (160,0,0),  #6 
-            (0,0,160),  #7 
-            (255,255,255)   #8
-        ]
-        for rect in rect_list:
-            rect.color = colors[rect._category(c)]
 
     def _fill_transparent_poly(self, screen, color, pointslist, alpha):
         pygame.draw.polygon(screen, color, pointslist, 0)
-        # todo - make this work
-        # s = pygame.Surface((screen.get_width(), screen.get_height()))
-        # s.set_alpha(alpha)
-        # pygame.draw.polygon(s, color, pointslist, 0)
-        # screen.blit(s, (0,0))
         
     def _get_front_and_back_corners(self, screen, entity):
         depth = 0.05
