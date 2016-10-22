@@ -63,13 +63,15 @@ def get_text_summary():
     for group in _GROUPS.keys():
         group_total_time = group_time(group)
         lines.append(group + ": " + _percent_str(group_total_time, total) +"\t" + str(group_total_time))
-        for child in _GROUPS[group]:
+        for child in sorted(_GROUPS[group], key=lambda x: -event_time(x)):
             child_time = event_time(child)
             lines.append("\t" + utilities.extend_to(child + ": ", 30)  + _percent_str(child_time, group_total_time) + "\t" + str(child_time))
             
     return "\n".join(lines)
         
 def _percent_str(numer, denom):
+    if denom == 0:
+        return "0.0%"
     return str(round(1000*numer/denom)/10) + "%"
 
     

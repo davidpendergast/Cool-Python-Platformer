@@ -41,20 +41,34 @@ class Drawer:
                     self.draw_path(screen, entity.get_path(), entity.xy_initial(), (255,255,0))      
             
     def draw_entities(self, screen, entity_list):
+        timer.start("filtering offscreen entities", "drawing")
         entity_list = self._filter_onscreen_entities(screen, entity_list, 50)
+        timer.end("filtering offscreen entities")
         paths = []
         if self.settings.draw_3d():
-            non_players = [x for x in entity_list if not (x.is_actor() and x.is_player)]
+            timer.start("filtering out player", "drawing")
+            players, non_players = self._rem_players(entity_list)
             random.shuffle(non_players)
+            timer.end("filtering out player")
+            
             self._draw_entities_3D(screen, non_players)
-            for entity in entity_list:
-                if entity.is_actor() and entity.is_player:
-                    self._decorate_sprite(entity)
-                    self._draw_entity_2D(screen, entity)
+            for entity in players:
+                self._decorate_sprite(entity)
+                self._draw_entity_2D(screen, entity)
         else:
             for entity in entity_list:
                 self._decorate_sprite(entity)
                 self._draw_entity_2D(screen, entity)
+    
+    def _rem_players(self, entity_list):
+        "returns ([player_list], [nonplayer_list])"
+        res = ([], [])
+        for entity in entity_list:
+            if entity.is_actor() and entity.is_player:
+                res[0].append(entity)
+            else:
+                res[1].append(entity)
+        return res
     
     def _decorate_sprite(self, entity):
         if entity.is_ghost():
@@ -67,7 +81,7 @@ class Drawer:
             
     def _draw_entities_3D(self, screen, entity_list):
         timer.start("sorting entity list", "drawing")
-        entity_list.sort(key=lambda x: x.width()*x.height())
+        entity_list.sort(key=lambda x: -x.width()*x.height())
         entity_list.sort(key=lambda x: x.get_update_priority())
         timer.end("sorting entity list")
         
@@ -83,8 +97,16 @@ class Drawer:
             disjoint_rects.extend(sub)
         timer.end("getting disjoint rects")
         
+        
+        timer.start("dividing by quadrant", "drawing")
         c = (screen.get_width() / 2 + self.camera_pos[0], screen.get_height() / 2 + self.camera_pos[1])
-       
+        quads = [[], [], [], []]
+        for rect in disjoint_rects:
+            my_quads = rect.quadrants(c)
+            for q in my_quads:
+                quads[q-1].append(rect)
+        timer.end("dividing by quadrant")
+        
         timer.start("creating adjacency dicts", "drawing")
         blocked_by = {x:objectpool.SET_POOL.get() for x in disjoint_rects} # blocked_by[n] = list of rects n prevents from being drawn
         blocking = {x:objectpool.SET_POOL.get() for x in disjoint_rects}   # blocking[n] = list of rects preventing n from being drawn
@@ -93,23 +115,23 @@ class Drawer:
         timer.end("creating adjacency dicts")
         
         timer.start("filling adjacency dicts", "drawing")
-        for i in range(0, len(disjoint_rects)):
-            for j in range(i+1, len(disjoint_rects)):
-                r1 = disjoint_rects[i]
-                r2 = disjoint_rects[j]
-                overlap = r2.overlapped_by_in_3D(r1, c)
-                if overlap > 0:
-                    blocking[r2].add(r1)
-                    blocked_by[r1].add(r2)
-                    if r2 in unblocked:
-                        unblocked.remove(r2)
-                elif overlap < 0:
-                    blocking[r1].add(r2)
-                    blocked_by[r2].add(r1)
-                    if r1 in unblocked:
-                        unblocked.remove(r1)
+        for quad_list in quads:
+            for i in range(0, len(quad_list)):
+                for j in range(i+1, len(quad_list)):
+                    r1 = quad_list[i]
+                    r2 = quad_list[j]
+                    overlap = r2.overlapped_by_in_3D(r1, c)
+                    if overlap > 0:
+                        blocking[r2].add(r1)
+                        blocked_by[r1].add(r2)
+                        if r2 in unblocked:
+                            unblocked.remove(r2)
+                    elif overlap < 0:
+                        blocking[r1].add(r2)
+                        blocked_by[r2].add(r1)
+                        if r1 in unblocked:
+                            unblocked.remove(r1)
         timer.end("filling adjacency dicts")
-        
         
         timer.start("kahn's algorithm", "drawing")
         # Kahn's Algorithm for sorting a graph topologically
@@ -383,8 +405,6 @@ class _Rect:
                 _Rect.from_points((self.x, self.y), (self.x2, r2.y), self.color, self.depth),
                 _Rect.from_points((self.x, r2.y2), (self.x2, self.y2), self.color, self.depth)
             ]
-            
-            
         
         return [x for x in results if not x.intersects(r2)]
         
@@ -452,12 +472,8 @@ class _Rect:
                 
     def overlapped_by_in_3D(self, r2, c):
         "0: no overlap, >0: r2 overlaps self, <0: self overlaps r2 "
-        timer.start("computing_quads", "drawing")
         if not self.same_quadrant(r2, c):
             return 0
-        timer.end("computing_quads")
-            
-        timer.start("overlapped_by_in_3D_other", "drawing")
      
         h_overlap = self.horz_overlaps(r2)
         v_overlap = self.vert_overlaps(r2)
@@ -467,13 +483,12 @@ class _Rect:
         vert1 = self._vert_dist_to(c)
         vert2 = r2._vert_dist_to(c)
         
-        timer.end("overlapped_by_in_3D_other")
         if v_overlap:
             return horz1 - horz2
         elif h_overlap:
             return vert1 - vert2
         else:
-            return 0 # min(horz1, vert1) > min(horz2, vert2)
+            return 0
         
     def quadrants(self, c):
         quads = objectpool.SET_POOL.get()
@@ -488,17 +503,10 @@ class _Rect:
         return quads
         
     def same_quadrant(self, r2, c):
-        if self.x < c[0] and self.y < c[1] and r2.x < c[0] and r2.y < c[1]:
-            return True
-        if self.x2 > c[0] and self.y < c[1] and r2.x2 > c[0] and r2.y < c[1]:
-            return True
-        if self.x2 > c[0] and self.y2 > c[1] and r2.x2 > c[0] and r2.y2 > c[1]:
-            return True
-        if self.x < c[0] and self.y2 > c[1] and r2.x < c[0] and r2.y2 > c[1]:
-            return True
-        return False
-        
-        
+        return ((self.x < c[0] and self.y < c[1] and r2.x < c[0] and r2.y < c[1]) or
+                (self.x2 > c[0] and self.y < c[1] and r2.x2 > c[0] and r2.y < c[1]) or
+                (self.x2 > c[0] and self.y2 > c[1] and r2.x2 > c[0] and r2.y2 > c[1]) or
+                (self.x < c[0] and self.y2 > c[1] and r2.x < c[0] and r2.y2 > c[1]))
         
     def _manhatten_dist_to(self, point):
         if self.contains(point):
@@ -519,25 +527,6 @@ class _Rect:
         if self._btw(point[1], self.y, self.y2):
             return 0
         return min(abs(self.y - point[1]), abs(self.y2 - point[1]))
-          
-    
-    def _category(self, c):   
-        #   3  7  2
-        #
-        #   5  8  4
-        #
-        #   1  6  0
-        arr = [3, 7, 2, 5, 8, 4, 1, 6, 0]
-        
-        if self._btw(c[0], self.x, self.x2): col = 1
-        elif self.x2 < c[0]: col = 0
-        else: col = 2 
-        
-        if self._btw(c[1], self.y, self.y2): row = 1
-        elif self.y2 < c[1]: row = 0
-        else: row = 2 
-        
-        return arr[row*3 + col]
         
     def __hash__(self):
         return str(self).__hash__()
