@@ -25,7 +25,9 @@ class Actor(blocks.Box):
         self.jump_buffer = 0
         
         self.wall_release_time = 5      # actor will stick to wall for X frames before letting go.
-        self.wall_hang_friction = 0.1   # vertical friction actor applies when hanging on a wall.
+        self.ground_friction = 0.7
+        self.air_friction = 0.05
+        
         self.is_alive = True
         self.is_crushed = False
         self.is_player = False
@@ -38,6 +40,7 @@ class Actor(blocks.Box):
 
     def reset(self):
         self.jumps = 0
+        self.jump_buffer = 0
         self.wall_stick_time = 0
         self.is_alive = True
         self.is_grounded = False
@@ -101,9 +104,6 @@ class Actor(blocks.Box):
                 self.set_vx(self.vx() + dir*self.air_move_speed)
         
     def update(self, dt):
-        #if self.jump_buffer > 0:
-        #    self.jump_action()
-        
         if not self.is_right_walled and not self.is_left_walled:
             self.wall_stick_time = 0
         if not self.is_grounded:    # if player has left ground, there shouldn't be any horizontal acceleration
@@ -127,9 +127,11 @@ class Actor(blocks.Box):
                 self.jumps = 1
     
     def apply_friction(self, dt):
-        fric = 0.1
         if self.is_grounded:
-            fric = 1
+            fric = self.ground_friction
+        else:
+            fric = self.air_friction
+            
         vx = self.vx()
         if vx < fric and vx > -fric:
             vx = 0
