@@ -42,7 +42,7 @@ DONE        start full run
         something to make walkoff instant-wallsnaps easier
             -- hold shift to do it automatically?
             -- hold shift to prevent walking off? then release to slide down?
-        buffer jump inputs
+DONE    buffer jump inputs
             -- adding even a 5 frame buffer would make instant jumps/walljumps much easier
 
     Settings:

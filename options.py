@@ -13,6 +13,8 @@ def dev_size():
     return (840,680)
 def fps():
     return 60
+def jump_buffer():
+    return 5
     
 _edgy_titles = [
         "Block Traversing Simulator 500",

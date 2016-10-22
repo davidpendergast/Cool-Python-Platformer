@@ -5,6 +5,7 @@ import math
 import paths
 import utilities
 import blocks
+import options
 
 class Actor(blocks.Box):
     STANDARD_SIZE = (24, 32)
@@ -21,6 +22,7 @@ class Actor(blocks.Box):
         
         self.wall_stick_time = 0
         self.jumps = 0
+        self.jump_buffer = 0
         
         self.wall_release_time = 5      # actor will stick to wall for X frames before letting go.
         self.wall_hang_friction = 0.1   # vertical friction actor applies when hanging on a wall.
@@ -54,23 +56,35 @@ class Actor(blocks.Box):
             utilities.log(str(self)+" was killed by "+message)
         
     def jump_action(self):
+        did_jump = False
+        
         if self.is_grounded == False:   # if not grounded, check for walljumps
             if self.is_left_walled:
                 self.set_vy(self.jump_speed)
                 self.set_vx(-10*self.jump_speed)
-                return 
+                did_jump = True
             elif self.is_right_walled:
                 self.set_vy(self.jump_speed)
                 self.set_vx(10*self.jump_speed)
-                return
+                did_jump = True
         
-        if self.jumps > 0:  # otherwise use a normal jump (even if not grounded.)
+        if not did_jump and self.jumps > 0:  # otherwise use a normal jump (even if not grounded.)
             self.set_vy(self.jump_speed)
             self.jumps = self.jumps - 1
+            did_jump = True
+            
+        if did_jump:
+            self.jump_buffer = 0
+        else:
+            if self.jump_buffer > 0:
+                self.jump_buffer -= 1 
+            else:
+                self.jump_buffer = options.jump_buffer()
+                
+        return did_jump
         
     def move_action(self, dir):
         "if dir > 0, moves actor right. If dir < 0 moves left. Otherwise actor will not move."
-        
         if self.is_grounded:
             if self.v[0] < self.move_speed and self.v[0] > -self.move_speed: 
                 # making a grounded actor immediately dash
@@ -87,6 +101,9 @@ class Actor(blocks.Box):
                 self.set_vx(self.vx() + dir*self.air_move_speed)
         
     def update(self, dt):
+        if self.jump_buffer > 0:
+            self.jump_action()
+        
         if not self.is_right_walled and not self.is_left_walled:
             self.wall_stick_time = 0
         if not self.is_grounded:    # if player has left ground, there shouldn't be any horizontal acceleration
