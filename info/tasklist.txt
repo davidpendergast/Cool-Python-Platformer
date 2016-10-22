@@ -42,6 +42,8 @@ DONE        start full run
         something to make walkoff instant-wallsnaps easier
             -- hold shift to do it automatically?
             -- hold shift to prevent walking off? then release to slide down?
+        buffer jump inputs
+            -- adding even a 5 frame buffer would make instant jumps/walljumps much easier
 
     Settings:
             allow shift & ctrl modifiers for keybindings
@@ -54,18 +56,20 @@ DONE        start full run
                 -- could be useful for distinguishing caves from open areas
         
     Optimizations:
-        -- game seems to run fine on my system
         collision detection
             -- right now every actor is checked against every solid block
             solutions:
                 -- enforce max block size and use chunking to store blocks?
                 -- 512 by 512 is probably plenty big enough
-                -- is this even the bottleneck?
+                -- is this even the bottleneck? 
+                    -- no 3D is by far
         drawing
-            -- N
-            solutions:
-                -- ^^^chunking
+            3D  
+                -- gets choppy with a lot of objects onscreen
+                -- should be able to do some caching with static blocks
+            solve donut problem
             should cache path drawing in edit mode, no reason to recompute every frame
+            
             
     Code Quality:
         standardize privatization of vars and methods
