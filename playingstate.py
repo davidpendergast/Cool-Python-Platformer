@@ -160,7 +160,7 @@ class PlayingState(InGameState):
     def update(self, dt):
         self.add_time(dt)
         timer.start("updating player", "update")
-        if self.keystate['jump']:
+        if self.keystate['jump'] or self.get_player().jump_buffer > 0:
             self.get_player().jump_action()
             self.keystate['jump'] = False
         

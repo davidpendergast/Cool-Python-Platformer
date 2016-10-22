@@ -30,7 +30,7 @@
         {"type": "normal", "x": 856, "y": -768, "width": 8, "height": 544},
         {"type": "normal", "x": 1152, "y": -1312, "width": 64, "height": 32},
         {"type": "normal", "x": 864, "y": -1472, "width": 64, "height": 32},
-        {"type": "normal", "x": 1280, "y": -1696, "width": 64, "height": 32},
+        {"type": "normal", "x": 1280, "y": -1680, "width": 64, "height": 16},
         {"type": "normal", "x": 1600, "y": -1696, "width": 128, "height": 160},
         {"type": "normal", "x": 1856, "y": -1824, "width": 128, "height": 160},
         {"type": "normal", "x": 1536, "y": -1600, "width": 64, "height": 32}

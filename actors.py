@@ -101,8 +101,8 @@ class Actor(blocks.Box):
                 self.set_vx(self.vx() + dir*self.air_move_speed)
         
     def update(self, dt):
-        if self.jump_buffer > 0:
-            self.jump_action()
+        #if self.jump_buffer > 0:
+        #    self.jump_action()
         
         if not self.is_right_walled and not self.is_left_walled:
             self.wall_stick_time = 0
