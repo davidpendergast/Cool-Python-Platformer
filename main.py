@@ -10,7 +10,8 @@ import options
 import timer
 
 from keybindings import KeyBindings, TAKE_SCREENSHOT
-from gamestate import GameStateManager, MainMenuState
+from gamestate import GameStateManager
+from menustate import MainMenuState, SelectSingleLevelState
 from playingstate import PlayingState, PlatformerInstance
 from editingstate import EditingState
 
@@ -23,9 +24,13 @@ platformer_inst = PlatformerInstance(settings)
 playing = PlayingState(settings, platformer_inst)
 editing = EditingState(settings, platformer_inst)
 main_menu = MainMenuState(settings)
+single_level = SelectSingleLevelState(settings)
+
 gamestate_manager.set_state(GameStateManager.PLAYING_STATE, playing)
 gamestate_manager.set_state(GameStateManager.EDITING_STATE, editing)
 gamestate_manager.set_state(GameStateManager.MAIN_MENU_STATE, main_menu)
+gamestate_manager.set_state(GameStateManager.SELECT_SINGLE_LEVEL_STATE, single_level)
+
 
 gamestate_manager.set_current_state(GameStateManager.MAIN_MENU_STATE)
 
