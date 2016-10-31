@@ -86,7 +86,7 @@ class Drawer:
         timer.end("sorting entity list")
         
         timer.start("creating rectangles", "drawing")
-        all_rects = [_Rect.from_entity(x) for x in entity_list]
+        all_rects = [RECT_POOL.get().set_from_entity(x) for x in entity_list]
         timer.end("creating rectangles")
        
         timer.start("getting disjoint rects", "drawing")
@@ -162,6 +162,7 @@ class Drawer:
         
         timer.start("drawing rects", "drawing")
         self._draw_rects_3D(screen, L)
+        RECT_POOL.put_back_all()
         timer.end("drawing rects")
         
     
@@ -350,6 +351,23 @@ class Drawer:
             
 class _Rect:
     def __init__(self, x, y, w, h, color=(0,0,0), depth=0.05):
+        self.set(x, y, w, h, color, depth)
+        
+    @staticmethod
+    def get_empty_rect():
+        return _Rect(0,0,0,0)
+                
+    def set_from_points(self, p1, p2, color=(0,0,0), depth=0.05):
+        return self.set( 
+            min(p1[0], p2[0]), 
+            min(p1[1], p2[1]), 
+            abs(p2[0] - p1[0]), 
+            abs(p2[1] - p1[1]), 
+            color, 
+            depth)
+        
+                
+    def set(self, x, y, w, h, color=(0,0,0), depth=0.05):
         self.x = int(x)
         self.y = int(y)
         self.w = int(w)
@@ -364,20 +382,11 @@ class _Rect:
         self.bottom_left = (x, y + h)
         self.bottom_right = (x + w, y + h)
         self.center = (x + w/2, y + h/2)
+        return self
     
-    @staticmethod
-    def from_points(p1, p2, color=(0,0,0), depth=0.05):
-        return _Rect(  min(p1[0], p2[0]), 
-                min(p1[1], p2[1]), 
-                abs(p2[0] - p1[0]), 
-                abs(p2[1] - p1[1]), 
-                color, 
-                depth)
-    
-    @staticmethod
-    def from_entity(entity):
-        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() or entity.is_ghost() else .1 # 0.05
-        return _Rect(entity.x(), entity.y(), entity.width(), entity.height(), entity.color, depth)
+    def set_from_entity(self, entity):
+        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() or entity.is_ghost() else .1
+        return self.set(entity.x(), entity.y(), entity.width(), entity.height(), entity.color, depth)
                 
     def corners(self):
         return [self.top_left, self.top_right, self.bottom_right, self.bottom_left]
@@ -400,10 +409,10 @@ class _Rect:
             # four possible rectangles in this case
             # at most two are non-empty
             results = [
-                _Rect.from_points((self.x, self.y), (r2.x, self.y2), self.color, self.depth),
-                _Rect.from_points((r2.x2, self.y), (self.x2, self.y2), self.color, self.depth),
-                _Rect.from_points((self.x, self.y), (self.x2, r2.y), self.color, self.depth),
-                _Rect.from_points((self.x, r2.y2), (self.x2, self.y2), self.color, self.depth)
+                RECT_POOL.get().set_from_points((self.x, self.y), (r2.x, self.y2), self.color, self.depth),
+                RECT_POOL.get().set_from_points((r2.x2, self.y), (self.x2, self.y2), self.color, self.depth),
+                RECT_POOL.get().set_from_points((self.x, self.y), (self.x2, r2.y), self.color, self.depth),
+                RECT_POOL.get().set_from_points((self.x, r2.y2), (self.x2, self.y2), self.color, self.depth)
             ]
         
         return [x for x in results if not x.intersects(r2)]
@@ -439,10 +448,10 @@ class _Rect:
             return [self]
         else: 
             quads = [
-                _Rect.from_points(self.top_left, point, self.color, self.depth),
-                _Rect.from_points(self.top_right, point, self.color, self.depth),
-                _Rect.from_points(self.bottom_left, point, self.color, self.depth),
-                _Rect.from_points(self.bottom_right, point, self.color, self.depth)
+                RECT_POOL.get().set_from_points(self.top_left, point, self.color, self.depth),
+                RECT_POOL.get().set_from_points(self.top_right, point, self.color, self.depth),
+                RECT_POOL.get().set_from_points(self.bottom_left, point, self.color, self.depth),
+                RECT_POOL.get().set_from_points(self.bottom_right, point, self.color, self.depth)
             ]
             return [x for x in quads if not x.is_empty()]
             
@@ -531,7 +540,9 @@ class _Rect:
     def __hash__(self):
         return str(self).__hash__()
             
-  
+RECT_POOL = objectpool.ObjectPool(lambda: _Rect.get_empty_rect(), lambda x: x, 1)
+            
+            
 if __name__ == "__main__":
     r1 = _Rect(0,0,10,10)
     r2 = _Rect(0,0,5,5)

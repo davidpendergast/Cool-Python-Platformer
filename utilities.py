@@ -236,6 +236,17 @@ def extend_to(text, length):
         return text + " "*(length - len(text))
     else:
         return text
+        
+def filter_and_save_discarded(iterable, test):
+    res = []
+    discard = []
+    for value in iterable:
+        if test(value):
+            res.append(value)
+        else:
+            discard.append(value)
+    return res, discard
+
 
 
    
