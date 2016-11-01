@@ -247,7 +247,7 @@ class LevelManager:
     def get_best_run_time(self):
         return self.best_overall_run_total
         
-    def load_level(self, num, actor, reset_ghost=True):
+    def load_level(self, num, actor=None, reset_ghost=True):
         loaded_successfully = True
         level = level_loader.load(self.get_filepath(num))
         if level == None:
@@ -256,13 +256,15 @@ class LevelManager:
             loaded_successfully = False
         
         self.level_num = num
-        level.set_actor(actor)
+        level.num = num
+        if actor is not None:
+            level.set_actor(actor)
         
         if self.ghosts[num] != None:
             if reset_ghost:
                 self.ghosts[num].reset()
             level.add_object(self.ghosts[num])
-            
+        
         self.current_level = level
         return loaded_successfully
         
@@ -346,7 +348,6 @@ class LevelManager:
         theme_dict = BUILT_IN_THEMES
         filename = None
         
-        #name, entity_list, spawn_list, theme_dict, filename
         return Level("The Void", entity_list, spawn_list, theme_dict, None)
         
     def read_filenames_from_header(self):

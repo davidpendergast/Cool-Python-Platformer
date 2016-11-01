@@ -219,7 +219,13 @@ class PlayingState(InGameState):
     def full_reset(self):
         self.get_player().reset()
         self.ghost_recorder.clear()
-        self.platformer_instance.set_level_num(0)
+        
+        if self.settings.single_level_mode():
+            start_level = self.settings.single_level_num()
+        else:
+            start_level = 0
+            
+        self.platformer_instance.set_level_num(start_level)
         self.total_time = 0
         self.level_time = 0
         self.death_count = 0
@@ -230,8 +236,10 @@ class PlayingState(InGameState):
         level_num = self.get_level_num() 
         if update_highscore:  
             self.platformer_instance.level_manager.update_level_highscore(level_num, self.level_time, self.ghost_recorder)
-            
-        if level_num == self.get_level_manager().get_num_levels() - 1:
+        
+        is_last_level = level_num == self.get_level_manager().get_num_levels() - 1
+        
+        if self.settings.single_level_mode() or is_last_level:
             self.full_reset()
         else:   
             self.platformer_instance.set_level_num(level_num + 1)
@@ -241,6 +249,9 @@ class PlayingState(InGameState):
             self.platformer_instance.load_level()
       
     def prev_level(self):
+        if self.settings.single_level_mode():
+            return
+            
         level_num = self.get_level_num()
         if not self.settings.dev_mode() and level_num == 0:
             return
@@ -273,9 +284,12 @@ class PlayingState(InGameState):
         
         screen.blit(level_text, (xoffset, yoffset))
         screen.blit(level_title, (xoffset, yoffset + text_height))
-        screen.blit(total_time_text, (xoffset + standard_width/2 - total_time_text.get_width()/2, yoffset))
-        screen.blit(level_time_text, (xoffset + standard_width/2 - level_time_text.get_width()/2, yoffset + text_height))
-        screen.blit(death_text, (xoffset + standard_width - death_text.get_width(), yoffset))
+        if self.settings.single_level_mode():
+            screen.blit(level_time_text, (xoffset + standard_width/2 - level_time_text.get_width()/2, yoffset))
+        else:
+            screen.blit(total_time_text, (xoffset + standard_width/2 - total_time_text.get_width()/2, yoffset))
+            screen.blit(level_time_text, (xoffset + standard_width/2 - level_time_text.get_width()/2, yoffset + text_height))
+            screen.blit(death_text, (xoffset + standard_width - death_text.get_width(), yoffset))
             
     def get_time_display_color(self, current_time, best_time, start_color=(0, 255, 0), end_color=(255, 255, 100), fail_color=(255, 0, 0)):
         if best_time == None:

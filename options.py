@@ -49,6 +49,9 @@ class Settings:
         self._show_paths = self.dev_mode()
         self._draw_3d = self._get_attribute("add_whole_new_dimension_of_gameplay")
         
+        self._single_level_mode = False
+        self._single_level_num = -1
+        
         self.bindings = keybindings.KeyBindings(self)
         
     def _get_attribute(self, outer_key, inner_key=None):
@@ -95,6 +98,14 @@ class Settings:
             self._frozen_mode = val   
     def get_color(self):
         return self._get_attribute("color")
+    def single_level_mode(self):
+        return self._single_level_mode
+    def set_single_level_mode(self, val):
+        self._single_level_mode = val
+    def single_level_num(self):
+        return self._single_level_num
+    def set_single_level_num(self, val):
+        self._single_level_num = val
     def get_keybinding(self, action):
         "returns the list of keys bound to an action"
         binding = self._get_attribute("keybindings", action)

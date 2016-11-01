@@ -232,6 +232,7 @@ if __name__ == "__main__":
     print level_json_to_string(json_datas)
     
 def extend_to(text, length):
+    text = str(text)
     if len(text) < length:
         return text + " "*(length - len(text))
     else:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 
 import pygame
+pygame.init()
 
 import blocks, actors
 import drawing
@@ -15,7 +16,6 @@ from menustate import MainMenuState, SelectSingleLevelState
 from playingstate import PlayingState, PlatformerInstance
 from editingstate import EditingState
 
-pygame.init()
 settings = options.Settings()
 
 pygame.display.set_caption(options.title())
