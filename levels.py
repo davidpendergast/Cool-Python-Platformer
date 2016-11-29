@@ -379,7 +379,7 @@ class LevelManager:
         else:
             utilities.log("Creating " + self.file_dir+"/highscores.json...")
             num_levels = self.get_num_levels()
-            hs_dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels())
+            hs_dict = LevelManager.generate_empty_highscores_dict(self.get_num_levels(), [])
             
             with open(self.file_dir+"/highscores.json", 'w') as file:
                 json_str = json.dumps(hs_dict, indent=4, sort_keys=True)
