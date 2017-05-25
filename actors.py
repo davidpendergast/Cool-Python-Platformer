@@ -35,7 +35,7 @@ class Actor(blocks.Box):
         
         self.jump_speed = -7
         self.max_vx = 4             # 'run' speed
-        self.move_speed = 2         # 'dash' speed
+        self.move_speed = 1         # 'dash' speed
         self.air_move_speed = 0.5   # degree of aerial control the player has over the character
 
     def reset(self):
