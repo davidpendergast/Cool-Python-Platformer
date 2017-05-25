@@ -19,7 +19,14 @@ def jump_buffer():
 _edgy_titles = [
         "Block Traversing Simulator 500",
         "Between a Block and a Hard Place",
-        "Block Paper Scissors"
+        "Block Paper Scissors",
+        "Guitar Hero III: Legends of Block",
+        "Block Lobster",
+        "Block and Key",
+        "To boldly go Square no man has gone before",
+        "O Brother, Square Art Thou?",
+        "Square the Wild Things Are",
+        "Scooby-Doo, Square Are You!"
 ]
 title_idx = random.randint(0, len(_edgy_titles)-1)
     
