@@ -13,9 +13,8 @@ UNSELECTED_COLOR = (255,255,255)
 BACKGROUND_COLOR = (0,0,0)
 
 MENU_ICING = 30
-MENU_FONT_NAME = "consolas"
-TITLE_FONT = pygame.font.Font(pygame.font.match_font(MENU_FONT_NAME, bold=True), 60)
-NORMAL_TEXT_FONT = pygame.font.Font(pygame.font.match_font(MENU_FONT_NAME, bold=True), 24)
+TITLE_FONT = options.get_font(60)
+NORMAL_TEXT_FONT = options.get_font(30)
 
 class MainMenuState(GameState):
     def __init__(self, settings):

@@ -15,7 +15,7 @@ import utilities
 class GameState:
     def __init__(self, settings):
         self.state_manager = None # gets set when gamestate is added to a manager
-        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
+        self.font = options.get_font(30)
         self.settings = settings
         
         self.keydown_action_map = {}

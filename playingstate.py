@@ -53,7 +53,7 @@ class InGameState(GameState):
             'down':False,
         })
 
-        self.font = pygame.font.Font(pygame.font.match_font("consolas", bold=True), 24)
+        self.font = options.get_font(30)
     
     def configure_keybindings(self):
         GameState.configure_keybindings(self)

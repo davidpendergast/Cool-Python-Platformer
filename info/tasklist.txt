@@ -39,9 +39,9 @@ DONE        start full run
                     -- editable text box for each action for now
             
     Player Functionality:
-        something to make walkoff instant-wallsnaps easier
-            -- hold shift to do it automatically?
-            -- hold shift to prevent walking off? then release to slide down?
+DONE    something to make walkoff instant-wallsnaps easier
+            -- Made dash speed slower, so players can fine tune their position easier
+            
 DONE    buffer jump inputs
             -- adding even a 5 frame buffer would make instant jumps/walljumps much easier
 
@@ -87,6 +87,7 @@ DONE    buffer jump inputs
         
     
     Level Editor:
+        Make editor mode accessable from main menu
         ability to: 
             place blocks
             edit block attributes (just edit their json?)
@@ -108,7 +109,11 @@ DONE    revive void level and make it appear on level load fail instead of crash
         make localdata folder for highscores and settings to live
             -- that way level packs can be distributed without having to edit/remove your highscore files
         store highscores as ticks, and remove awful unformat_time method
-        
+   
+    Enemies:
+        make enemies more engaging 
+            -- super boring right now
+            -- art needed? 
 @~~~~~~~~~~~~@
 | Known Bugs |
 @~~~~~~~~~~~~@

@@ -1,3 +1,5 @@
+import pygame
+
 import json
 import os
 from shutil import copyfile
@@ -15,6 +17,8 @@ def fps():
     return 60
 def jump_buffer():
     return 5
+def get_font(size):
+    return pygame.font.Font(None, size)
     
 _edgy_titles = [
         "Block Traversing Simulator 500",
