@@ -27,7 +27,7 @@ class MainMenuState(GameState):
         self.option_actions = [
             lambda: self._launch_full_run_mode(),
             lambda: self.state_manager.set_current_state(GameStateManager.SELECT_SINGLE_LEVEL_STATE),
-            lambda: None,
+            lambda: self._launch_edit_mode(),
             lambda: None,
             lambda: None
         ]
@@ -41,7 +41,15 @@ class MainMenuState(GameState):
     def _launch_full_run_mode(self):
         self.settings.set_single_level_mode(False)
         self.state_manager.set_current_state(GameStateManager.PLAYING_STATE)
-    
+        
+    def _launch_edit_mode(self):
+        self.settings.set_edit_mode(True)
+        self.state_manager.set_current_state(GameStateManager.SELECT_SINGLE_LEVEL_STATE)
+        
+    def switching_to(self, prev_state_id):
+        self.settings.set_edit_mode(False)
+        options.set_resizable(False, size=options.standard_size())
+        
     def configure_keybindings(self):
         self.keydown_action_map.update({
             MENU_UP: lambda: self.set_selected_index(self.selected_index - 1),

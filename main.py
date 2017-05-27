@@ -48,6 +48,7 @@ actor = playing.get_player()  # The player's character
 def stop_running(): 
     global still_running
     still_running = False
+
 def take_screenshot():
     utilities.take_screenshot(screen)
 
@@ -66,6 +67,8 @@ while still_running and gamestate_manager.still_running():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             stop_running()
+        elif event.type == pygame.VIDEORESIZE:
+            screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
         elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
             name = pygame.key.name(event.key)
             actions = settings.get_actions_for_key(name)

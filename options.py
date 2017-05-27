@@ -20,6 +20,12 @@ def jump_buffer():
 def get_font(size):
     return pygame.font.Font(None, size)
     
+def set_resizable(val, size=None):
+        print "Setting resizable to: "+str(val)
+        if size == None:
+            size = (0, 0) # leave size unchanged
+        pygame.display.set_mode(size, pygame.RESIZABLE)
+    
 _edgy_titles = [
         "Block Traversing Simulator 500",
         "Between a Block and a Hard Place",
@@ -63,6 +69,8 @@ class Settings:
         self._single_level_mode = False
         self._single_level_num = -1
         
+        self._edit_mode = False
+        
         self.bindings = keybindings.KeyBindings(self)
         
     def _get_attribute(self, outer_key, inner_key=None):
@@ -89,12 +97,16 @@ class Settings:
         return self._show_grid
     def draw_3d(self):
         return self._draw_3d
-    def set_draw_3d(self, val):
-        self._draw_3d = val
+    def edit_mode(self):
+        return self._edit_mode
     def show_spawns(self):
         return self._show_spawns
     def show_paths(self):
         return self._show_paths
+    def set_draw_3d(self, val):
+        self._draw_3d = val
+    def set_edit_mode(self, val):
+        self._edit_mode = val
     def set_show_grid(self, val):
         self._show_grid = val
     def invincible_mode(self):
@@ -138,4 +150,5 @@ class Settings:
         else:
             utilities.log("Creating " + Settings.local_settings_path + "...")
             copyfile(Settings.default_settings_path, Settings.local_settings_path)
+            
                  

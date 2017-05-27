@@ -62,13 +62,9 @@ class InGameState(GameState):
             QUIT:           lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
             PAUSE:          lambda: None,
             SHOW_GRID:      lambda: self.settings.set_show_grid(not self.settings.show_grid()),
-            TOGGLE_3D:      lambda: self.settings.set_draw_3d(not self.settings.draw_3d())
+            TOGGLE_3D:      lambda: self.settings.set_draw_3d(not self.settings.draw_3d()),
+            FREEZE_MODE:    lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode()) if self.settings.edit_mode() else None
         })
-        
-        if self.settings.dev_mode():
-            self.keydown_action_map.update({
-                FREEZE_MODE:    lambda: self.settings.set_frozen_mode(not self.settings.frozen_mode())
-            })
     
     def get_entities(self):
         return self.platformer_instance.get_entities()
@@ -92,8 +88,15 @@ class InGameState(GameState):
         return GameState.handle_event(self, event)
     
     def switching_to(self, prev_state_id):
+        print "prev_state_id = "+prev_state_id
         for key in self.keystate:
             self.keystate[key] = False
+        if prev_state_id != GameStateManager.EDITING_STATE and prev_state_id != GameStateManager.PLAYING_STATE:
+            if self.settings.edit_mode():
+                print "setting resizable to true in 'switching_to'"
+                options.set_resizable(True, size=options.dev_size())
+            else:
+                options.set_resizable(False, size=options.standard_size())
 
 
 class PlayingState(InGameState):
@@ -112,6 +115,7 @@ class PlayingState(InGameState):
         self.full_reset() # starts game from scratch
         
     def switching_to(self, prev_state_id):
+        InGameState.switching_to(self, prev_state_id)
         if prev_state_id != GameStateManager.EDITING_STATE:
             self.full_reset()
         
@@ -126,16 +130,12 @@ class PlayingState(InGameState):
             PAUSE:              lambda: None,
             RESET_LEVEL:        lambda: self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
             RESET_RUN:          lambda: self.full_reset(),
-            PREVIOUS_LEVEL:     lambda: self.prev_level()
+            PREVIOUS_LEVEL:     lambda: self.prev_level(),
+            RESET_LEVEL_SOFT:   lambda: self.reset_level(False, reset_ghost=False) if self.settings.edit_mode() else None,
+            TOGGLE_EDIT_MODE:   lambda: self.state_manager.set_current_state(GameStateManager.EDITING_STATE) if self.settings.edit_mode() else None,
+            INVINCIBLE_MODE:    lambda: self.settings.set_invincible_mode(not self.settings.invincible_mode()) if self.settings.edit_mode() else None,
+            NEXT_LEVEL:         lambda: self.next_level() if self.settings.edit_mode() else None
         })
-       
-        if self.settings.dev_mode():
-            self.keydown_action_map.update({
-                RESET_LEVEL_SOFT:   lambda: self.reset_level(False, reset_ghost=False),
-                TOGGLE_EDIT_MODE:   lambda: self.state_manager.set_current_state(GameStateManager.EDITING_STATE),
-                INVINCIBLE_MODE:    lambda: self.settings.set_invincible_mode(not self.settings.invincible_mode()),
-                NEXT_LEVEL:         lambda: self.next_level()
-            })
         
         self.keyup_action_map.update({
             MOVE_LEFT:  lambda: self.set_keystate("left", False),

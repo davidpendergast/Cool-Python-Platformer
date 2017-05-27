@@ -73,6 +73,7 @@ DONE    buffer jump inputs
             
     Code Quality:
         standardize privatization of vars and methods
+        remove dev mode now that level editor is integrated
     
     Testing:
         level loading
@@ -87,7 +88,7 @@ DONE    buffer jump inputs
         
     
     Level Editor:
-        Make editor mode accessable from main menu
+DONE    Make editor mode accessable from main menu
         ability to: 
             place blocks
             edit block attributes (just edit their json?)
