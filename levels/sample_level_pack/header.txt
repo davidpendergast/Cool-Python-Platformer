@@ -5,3 +5,4 @@
 04_twisted_metal.json
 05_crushing_caves.json
 06_burnt_metal.json
+07_abandoned_mine.json
