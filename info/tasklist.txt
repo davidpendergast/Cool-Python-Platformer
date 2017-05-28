@@ -19,9 +19,9 @@
     Main Menu:
         options
 DONE        start full run
-            single level grind mode
+DONE        single level grind mode
                 -- need
-            edit mode
+DONE        edit mode
                 -- a little complicated, should flip on dev mode and start game?
                 -- weird that editing window is a different size
                     -- will need to either standardize or expand/contract when starting/finishing edit mode
@@ -51,9 +51,12 @@ DONE    buffer jump inputs
     Entities:
         new blocks:
             normal block with no collision if player moving vertically upward
+                -- how to distinguish from normal blocks?
+                -- is this even necessary? player can already move upwards by walljumping
             scenery block, no collisions at all
                 -- how to avoid being confusing?
                 -- could be useful for distinguishing caves from open areas
+                -- seems pointless
         
     Optimizations:
         collision detection
@@ -73,7 +76,7 @@ DONE    buffer jump inputs
             
     Code Quality:
         standardize privatization of vars and methods
-        remove dev mode now that level editor is integrated
+DONE    remove dev mode now that level editor is integrated
     
     Testing:
         level loading
@@ -89,7 +92,7 @@ DONE    buffer jump inputs
     
     Level Editor:
 DONE    Make editor mode accessable from main menu
-        ability to: 
+DONE    ability to: 
             place blocks
             edit block attributes (just edit their json?)
                 paaaaaaths
@@ -130,6 +133,9 @@ DONE    revive void level and make it appear on level load fail instead of crash
             -- should be removed, or made easier to perform
 !!!     when falling quickly, if player lands on a thin block it may treat it as a horizontal 
                 collision instead of vertical
+        player can jump/walljump off of badblocks if actor is perfectly adjacent. 
+                probably required for many optimal runs so this should be removed 
+                (or made easier to perform?)
 IGNORE? friction affected by fps
             -- character slides farther when fps is lower
 IGNORE? pretty much everything affected by fps
@@ -155,7 +161,9 @@ IGNORE? pretty much everything affected by fps
             -- would have to make sure it doesn't look like shit
             
     3D:
-        draw blocks with perspective lol
+DONE!  draw blocks with perspective lol
         
     Music/Sound:
         -- adds a lot to the atmosphere, also to the annoyance
+        
+
