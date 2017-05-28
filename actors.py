@@ -290,11 +290,36 @@ class Ghost(Actor):
                 "y_points":ghost.y_points,
                 "color":[c[0], c[1], c[2]]
             }
+            
+class Particle(blocks.Box):
+    def __init__(self, x, y, size, v, color, lifespan=100):
+        print "creating particle"
+        blocks.Box.__init__(self, size, size)
+        self.set_xy(x, y)
+        self.set_vx(v[0])
+        self.set_vy(v[1])
+        self.is_solid = True
+        self.has_physics = True
+        self.is_visible = True
+        self.is_pushable = True
+        self.is_alive = True
+        self.color = color
+        self.lifespan = lifespan
+        
+    def update(self, dt):
+        blocks.Box.update(self, dt)
+        self.lifespan -= dt
+        if self.lifespan <= 0:
+            self.is_alive = False
+            
+    def is_particle(self):
+        return True
+        
 
 class SpawnPoint(blocks.Box):
     def __init__(self, x, y, actor):
         blocks.Box.__init__(self, 10, 10)
-        self.set_xy(x,y)
+        self.set_xy(x, y)
         self.actor = actor
         self.is_solid = False
         self.is_pushable = False

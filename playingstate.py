@@ -4,6 +4,7 @@ import pygame
 import sys
 import json
 import os
+import random
 
 from gamestate import GameState, GameStateManager
 
@@ -105,7 +106,9 @@ class PlayingState(InGameState):
         self.death_count = 0
         
         self.total_time = 0
-        self.level_time = 0 
+        self.level_time = 0
+        
+        self.player_already_had_blood = False
         
         self.pusher = collisions.CollisionFixer()
         self.rf_fixer = collisions.ReferenceFrameFixer()
@@ -142,9 +145,9 @@ class PlayingState(InGameState):
         
     def pre_event_update(self):
         player = self.get_player()
-        if player.is_crushed == True:
+        if player.is_crushed:
             player.is_alive = False
-        if player.is_alive == False and not self.settings.invincible_mode():
+        if not player.is_alive and not self.settings.invincible_mode():
             player.is_alive = True
             self.death_count += 1
             self.reset_level(reset_ghost=True)
@@ -188,19 +191,36 @@ class PlayingState(InGameState):
         self.rf_fixer.solve_rfs(self.get_entities())
         timer.end("collisions")
         
-        self.platformer_instance.current_level().bring_out_yer_dead()
+        dead = self.platformer_instance.current_level().bring_out_yer_dead()
+        for x in dead:
+            if x.is_actor() and (x is not self.get_player() or not self.player_already_had_blood):
+                self.add_blood(x)
+                if x is self.get_player():
+                    self.player_already_had_blood = True
     
     def draw(self, screen):
-        self.get_drawer().update_camera(self.get_player(), screen.get_width(), screen.get_height())
+        w = screen.get_width()
+        h = screen.get_height()
+        self.get_drawer().update_camera(self.get_player(), w, h)
         self.get_drawer().draw_level(screen, self.get_current_level())
         self.draw_gui(screen)
      
     def add_time(self, t):
         self.total_time += 1
         self.level_time += 1
+        
+    def add_blood(self, entity):
+        lifespan = 100
+        color = entity.color
+        num = 10
+        for _ in xrange(0, num):
+            v = ((0.5 - random.random())*10, (0.5 - random.random())*10)
+            blood = actors.Particle(entity.x(), entity.y(), 10, v, color, lifespan)
+            self.get_current_level().add_object(blood)
     
     def reset_level(self, reset_player=True, death_increment=0, reset_ghost=True):
         self.death_count += death_increment
+        self.player_already_had_blood = False
         player = self.get_player()
         x = player.x()
         y = player.y()
@@ -217,6 +237,7 @@ class PlayingState(InGameState):
     def full_reset(self):
         self.get_player().reset()
         self.ghost_recorder.clear()
+        self.player_already_had_blood = False
         
         if self.settings.single_level_mode():
             start_level = self.settings.single_level_num()

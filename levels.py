@@ -63,7 +63,18 @@ class Level:
         return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]
         
     def bring_out_yer_dead(self):
-        self.entity_list = filter(lambda x : not (hasattr(x, "is_alive") and not x.is_alive) or x is self.actor, self.entity_list)
+        """Removes all dead non-player Boxes from the level. 
+           Returns the list of removed items (and the player if the player
+           is dead). """
+        dead = filter(lambda x : (hasattr(x, "is_alive") and not x.is_alive) and x is not self.actor, self.entity_list)
+        
+        if len(dead) > 0:
+            self.entity_list = [x for x in self.entity_list if x not in dead]
+            
+        if self.actor != None and not self.actor.is_alive:
+            dead.append(self.actor)
+        
+        return dead
         
     def _find_player(self):
         for elem in self.entity_list:

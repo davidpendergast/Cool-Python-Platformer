@@ -176,6 +176,7 @@ class Box(pygame.sprite.Sprite):
     def is_enemy(self): return False
     def is_ghost(self): return False
     def is_spawn_point(self): return False
+    def is_particle(self): return False
     
     def get_update_priority(self):
         if self.is_actor():
