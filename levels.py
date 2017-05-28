@@ -260,7 +260,7 @@ class LevelManager:
         if actor is not None:
             level.set_actor(actor)
         
-        if self.ghosts[num] != None:
+        if self.ghosts[num] != None and not self.settings.edit_mode():
             if reset_ghost:
                 self.ghosts[num].reset()
             level.add_object(self.ghosts[num])
