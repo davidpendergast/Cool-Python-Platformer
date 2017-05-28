@@ -62,8 +62,6 @@ class Settings:
         self._show_grid = False
         self._invincible_mode = False
         self._frozen_mode = False  
-        self._show_spawns = self.dev_mode()
-        self._show_paths = self.dev_mode()
         self._draw_3d = self._get_attribute("add_whole_new_dimension_of_gameplay")
         
         self._single_level_mode = False
@@ -89,8 +87,6 @@ class Settings:
             self.local_settings[outer_key][inner_key] = value
         else:
             self.local_settings[outer_key] = value
-    def dev_mode(self):
-        return self._get_attribute("dev_mode")
     def level_path(self):
         return self._get_attribute("level_path")
     def show_grid(self):
@@ -99,10 +95,6 @@ class Settings:
         return self._draw_3d
     def edit_mode(self):
         return self._edit_mode
-    def show_spawns(self):
-        return self._show_spawns
-    def show_paths(self):
-        return self._show_paths
     def set_draw_3d(self, val):
         self._draw_3d = val
     def set_edit_mode(self, val):
@@ -112,12 +104,12 @@ class Settings:
     def invincible_mode(self):
         self._invincible_mode
     def set_invincible_mode(self, val):
-        if self.dev_mode():
+        if self.edit_mode():
             self._invincible_mode = val
     def frozen_mode(self):
         return self._frozen_mode
     def set_frozen_mode(self, val):
-        if self.dev_mode():
+        if self.edit_mode():
             self._frozen_mode = val   
     def get_color(self):
         return self._get_attribute("color")

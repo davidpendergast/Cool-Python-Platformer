@@ -35,8 +35,6 @@ gamestate_manager.set_state(GameStateManager.SELECT_SINGLE_LEVEL_STATE, single_l
 gamestate_manager.set_current_state(GameStateManager.MAIN_MENU_STATE)
 
 size = options.standard_size()
-if settings.dev_mode():
-    size = options.dev_size()
 screen = pygame.display.set_mode(size)
 
 still_running = True

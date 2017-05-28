@@ -32,11 +32,10 @@ class Drawer:
         
         self.draw_entities(screen, entity_list)  
         
-        if self.settings.show_spawns():
-            self.draw_entities(screen, level.spawn_list)
-        
-        if self.settings.show_paths():
-            for entity in entity_list:
+        if self.settings.edit_mode():
+            self.draw_entities(screen, level.spawn_list) # draw spawn points
+            
+            for entity in entity_list:  # draw moving block paths
                 if entity.is_moving_block():
                     self.draw_path(screen, entity.get_path(), entity.xy_initial(), (255,255,0))      
             

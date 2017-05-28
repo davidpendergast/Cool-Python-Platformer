@@ -88,12 +88,10 @@ class InGameState(GameState):
         return GameState.handle_event(self, event)
     
     def switching_to(self, prev_state_id):
-        print "prev_state_id = "+prev_state_id
         for key in self.keystate:
             self.keystate[key] = False
         if prev_state_id != GameStateManager.EDITING_STATE and prev_state_id != GameStateManager.PLAYING_STATE:
             if self.settings.edit_mode():
-                print "setting resizable to true in 'switching_to'"
                 options.set_resizable(True, size=options.dev_size())
             else:
                 options.set_resizable(False, size=options.standard_size())
@@ -253,7 +251,7 @@ class PlayingState(InGameState):
             return
             
         level_num = self.get_level_num()
-        if not self.settings.dev_mode() and level_num == 0:
+        if not self.settings.edit_mode() and level_num == 0:
             return
         self.platformer_instance.set_level_num((level_num - 1) % self.get_level_manager().get_num_levels())
         self.platformer_instance.load_level()

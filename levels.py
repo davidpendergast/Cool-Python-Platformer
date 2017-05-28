@@ -319,8 +319,8 @@ class LevelManager:
         
     def dump_highscores_to_file(self, suppress_printing=0):
         "0 = print nothing, 1 = print message, 2 = print entire file"
-        if self.settings.dev_mode():
-            utilities.log("Not saving high scores because we're in dev mode")
+        if self.settings.edit_mode():
+            utilities.log("Not saving high scores because we're in edit mode")
             return
         
         if suppress_printing > 0:
