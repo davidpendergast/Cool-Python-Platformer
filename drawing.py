@@ -41,7 +41,7 @@ class Drawer:
             
     def draw_entities(self, screen, entity_list):
         timer.start("filtering offscreen entities", "drawing")
-        entity_list = self._filter_onscreen_entities(screen, entity_list, 50)
+        entity_list = self._filter_onscreen_and_alive_entities(screen, entity_list, 50)
         timer.end("filtering offscreen entities")
         paths = []
         if self.settings.draw_3d():
@@ -272,8 +272,8 @@ class Drawer:
                 
         return res
         
-    def _filter_onscreen_entities(self, screen, entity_list, icing=0):
-        return [x for x in entity_list if self._is_onscreen(screen, x, icing)]
+    def _filter_onscreen_and_alive_entities(self, screen, entity_list, icing=0):
+        return [x for x in entity_list if self._is_onscreen(screen, x, icing) and x.alive()]
     
     def _is_onscreen(self, screen, entity, icing):
         screen_x = self.camera_pos[0] - icing
@@ -384,7 +384,7 @@ class _Rect:
         return self
     
     def set_from_entity(self, entity):
-        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() or entity.is_ghost() else .1
+        depth = 0.02 if entity.is_spawn_point() or entity.is_finish_block() or entity.is_ghost() or entity.is_particle() else .1
         return self.set(entity.x(), entity.y(), entity.width(), entity.height(), entity.color, depth)
                 
     def corners(self):

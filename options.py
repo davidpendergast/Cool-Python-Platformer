@@ -21,7 +21,6 @@ def get_font(size):
     return pygame.font.Font(None, size)
     
 def set_resizable(val, size=None):
-        print "Setting resizable to: "+str(val)
         if size == None:
             size = (0, 0) # leave size unchanged
         pygame.display.set_mode(size, pygame.RESIZABLE)

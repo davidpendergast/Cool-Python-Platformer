@@ -10,7 +10,7 @@ class ReferenceFrameFixer:
         for box in group:
             to_delete.clear()
             for kid in box.rf_children:
-                if not kid.is_still_rf_child_of(box):
+                if not kid.is_still_rf_child_of(box) or not kid.alive():
                     to_delete.add(kid)
             for kid in to_delete:
                 box.remove_from_rf(kid)
@@ -25,7 +25,7 @@ class CollisionFixer:
         actors = []
         
         for sprite in group:
-            if sprite.is_solid == False:
+            if sprite.is_solid == False or not sprite.alive():
                 continue
             elif sprite.is_pushable:
                 movables.append(sprite)

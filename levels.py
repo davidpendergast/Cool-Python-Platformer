@@ -66,7 +66,7 @@ class Level:
         """Removes all dead non-player Boxes from the level. 
            Returns the list of removed items (and the player if the player
            is dead). """
-        dead = filter(lambda x : (hasattr(x, "is_alive") and not x.is_alive) and x is not self.actor, self.entity_list)
+        dead = filter(lambda x : not x.alive() and x is not self.actor, self.entity_list)
         
         if len(dead) > 0:
             self.entity_list = [x for x in self.entity_list if x not in dead]

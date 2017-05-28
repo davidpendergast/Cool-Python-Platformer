@@ -31,6 +31,9 @@ class Box(pygame.sprite.Sprite):
     def update(self, dt):
         if self.has_physics:
             self.apply_physics(dt)
+    
+    def alive(self):
+        return not hasattr(self, "is_alive") or self.is_alive
         
     def apply_physics(self, dt):
         vx = self.v[0] + self.a[0]*dt

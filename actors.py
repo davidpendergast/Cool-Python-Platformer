@@ -293,7 +293,6 @@ class Ghost(Actor):
             
 class Particle(blocks.Box):
     def __init__(self, x, y, size, v, color, lifespan=100):
-        print "creating particle"
         blocks.Box.__init__(self, size, size)
         self.set_xy(x, y)
         self.set_vx(v[0])

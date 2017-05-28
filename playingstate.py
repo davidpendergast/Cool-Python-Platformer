@@ -108,7 +108,7 @@ class PlayingState(InGameState):
         self.total_time = 0
         self.level_time = 0
         
-        self.player_already_had_blood = False
+        self.death_countdown = 0
         
         self.pusher = collisions.CollisionFixer()
         self.rf_fixer = collisions.ReferenceFrameFixer()
@@ -129,7 +129,7 @@ class PlayingState(InGameState):
             MOVE_RIGHT:         lambda: self.set_keystate("right", True),
             QUIT:               lambda: self.state_manager.set_current_state(GameStateManager.MAIN_MENU_STATE),
             PAUSE:              lambda: None,
-            RESET_LEVEL:        lambda: self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
+            RESET_LEVEL:        lambda: self.get_player().kill("spontaneous combustion."),#self.reset_level(reset_player=True, death_increment=1, reset_ghost=True),
             RESET_RUN:          lambda: self.full_reset(),
             PREVIOUS_LEVEL:     lambda: self.prev_level(),
             RESET_LEVEL_SOFT:   lambda: self.reset_level(False, reset_ghost=False) if self.settings.edit_mode() else None,
@@ -147,13 +147,23 @@ class PlayingState(InGameState):
         player = self.get_player()
         if player.is_crushed:
             player.is_alive = False
-        if not player.is_alive and not self.settings.invincible_mode():
-            player.is_alive = True
-            self.death_count += 1
-            self.reset_level(reset_ghost=True)
-        if self.get_player().finished_level:
+        if not player.is_alive and not self.settings.invincible_mode() and self.death_countdown == 0:
+            self.initiate_death_sequence()  
+        elif self.get_player().finished_level:
             self.next_level(True)
+            
+        if self.death_countdown == 1:
+            self.finalize_death_sequence()
     
+    def initiate_death_sequence(self):
+        self.death_count += 1
+        self.death_countdown = 100
+        self.add_blood(self.get_player(), 100)
+    
+    def finalize_death_sequence(self):
+        self.get_player().is_alive = True
+        self.reset_level(reset_ghost=True)
+        
     def handle_event(self, event):
         done = InGameState.handle_event(self, event)
         return done                
@@ -173,8 +183,9 @@ class PlayingState(InGameState):
         else:
             self.get_player().apply_friction(dt)
         
-        self.ghost_recorder.update(dt)
-        self.get_player().update(dt) 
+        if self.death_countdown == 0:
+            self.ghost_recorder.update(dt)
+            self.get_player().update(dt) 
         
         if self.settings.frozen_mode():
             dt = 0
@@ -193,10 +204,8 @@ class PlayingState(InGameState):
         
         dead = self.platformer_instance.current_level().bring_out_yer_dead()
         for x in dead:
-            if x.is_actor() and (x is not self.get_player() or not self.player_already_had_blood):
+            if x.is_actor() and x is not self.get_player():
                 self.add_blood(x)
-                if x is self.get_player():
-                    self.player_already_had_blood = True
     
     def draw(self, screen):
         w = screen.get_width()
@@ -208,9 +217,10 @@ class PlayingState(InGameState):
     def add_time(self, t):
         self.total_time += 1
         self.level_time += 1
+        if self.death_countdown > 1:
+            self.death_countdown -= 1
         
-    def add_blood(self, entity):
-        lifespan = 100
+    def add_blood(self, entity, lifespan=100):
         color = entity.color
         num = 10
         for _ in xrange(0, num):
@@ -220,7 +230,7 @@ class PlayingState(InGameState):
     
     def reset_level(self, reset_player=True, death_increment=0, reset_ghost=True):
         self.death_count += death_increment
-        self.player_already_had_blood = False
+        self.death_countdown = 0
         player = self.get_player()
         x = player.x()
         y = player.y()
@@ -237,7 +247,7 @@ class PlayingState(InGameState):
     def full_reset(self):
         self.get_player().reset()
         self.ghost_recorder.clear()
-        self.player_already_had_blood = False
+        self.death_countdown = 0
         
         if self.settings.single_level_mode():
             start_level = self.settings.single_level_num()
