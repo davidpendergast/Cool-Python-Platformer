@@ -26,7 +26,6 @@
         {"type": "normal", "x": 1228, "y": -576, "width": 8, "height": 640},
         {"type": "normal", "x": 1324, "y": -608, "width": 8, "height": 640},
         {"type": "normal", "x": 1420, "y": -608, "width": 8, "height": 640},
-        {"type": "normal", "x": 1516, "y": -576, "width": 8, "height": 640},
         {"type": "normal", "x": 672, "y": -544, "width": 480, "height": 256},
         {"type": "normal", "x": 992, "y": -992, "width": 480, "height": 128},
         {"type": "normal", "x": 1024, "y": -864, "width": 448, "height": 64},
