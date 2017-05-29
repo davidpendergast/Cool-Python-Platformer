@@ -36,15 +36,13 @@ class Box(pygame.sprite.Sprite):
         return not hasattr(self, "is_alive") or self.is_alive
         
     def apply_physics(self, dt):
-        vx = self.v[0] + self.a[0]*dt
-        if vx > self.max_vx:
-            vx = self.max_vx
-        elif vx < -self.max_vx:
-            vx = -self.max_vx
-        self.v = (vx, self.v[1] + self.a[1]*dt) 
+        vx = self.vx() + self.a[0]*dt
+        vy = self.vy() + self.a[1]*dt
+        self.set_vx(vx)
+        self.set_vy(vy)
         if abs(vx) < 1:
             vx = 0
-        self.move(vx*dt, self.v[1]*dt, True)
+        self.move(vx*dt, self.vy()*dt, True)
         
     def move(self, dx, dy, move_at_least_1=False):
         "Moves this object and all children in reference frame"
