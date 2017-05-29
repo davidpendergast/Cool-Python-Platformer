@@ -118,7 +118,7 @@ class Actor(blocks.Box):
         blocks.Box.update(self, dt)
         
         #fall detection
-        if self.y() >= 2048:
+        if self.y() >= 1024:
             self.kill("falling too far.")
 
     def collided_with(self, obj, dir="NONE"):

@@ -21,7 +21,7 @@ class Box(pygame.sprite.Sprite):
         self.v = (0, 0)
         self.a = (0, 0.3)
         
-        self.max_vy = 10
+        self.max_vy = 15
         self.max_vx = 5
         
         self.rf_parent = None           # physics reference frame information. For example, when an actor stands on a moving platform

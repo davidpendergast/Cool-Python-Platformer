@@ -5,3 +5,4 @@ saved_levels/
 *highscores.json
 configs/settings.json
 screenshots/
+.DS_Store
