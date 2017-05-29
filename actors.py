@@ -294,6 +294,7 @@ class Ghost(Actor):
 class Particle(blocks.Box):
     def __init__(self, x, y, size, v, color, lifespan=100):
         blocks.Box.__init__(self, size, size)
+        
         self.set_xy(x, y)
         self.set_vx(v[0])
         self.set_vy(v[1])
@@ -310,6 +311,10 @@ class Particle(blocks.Box):
         self.lifespan -= dt
         if self.lifespan <= 0:
             self.is_alive = False
+        else:
+            # hacked in some friction
+            if abs(self.vy()) < 1:
+                self.set_vx(self.vx()*0.95)
             
     def is_particle(self):
         return True
