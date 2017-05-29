@@ -57,6 +57,8 @@ DONE    buffer jump inputs
                 -- how to avoid being confusing?
                 -- could be useful for distinguishing caves from open areas
                 -- seems pointless
+        give particles friction
+        make particles crushable
         
     Optimizations:
         collision detection
@@ -148,7 +150,7 @@ IGNORE? pretty much everything affected by fps
             
     Art:
         animations?
-            -- would at least benefit from death animations
+DONE        -- would at least benefit from death animations
             -- player/enemy animations of some kind would help too, even if the box just leans or
                 stretches when moving, jumping, hanging on walls, etc.
         sprites?
