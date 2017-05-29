@@ -324,9 +324,9 @@ class Drawer:
         if self.camera_pos[1] < 512:
             return background_color
         else:
-            redness = (self.camera_pos[1] - 512) / (2048.0 - 512.0)
+            redness = (self.camera_pos[1] - 512) / (1024.0 - 512.0)
             max_red = 192
-            ## want r,g,b -> 192,0,0 as y -> 2048
+            ## want r,g,b -> 192,0,0 as y -> 1024
             return (
                 int(background_color[0] + redness*(max_red - background_color[0])),
                 int(background_color[1] * (1 - redness)),
