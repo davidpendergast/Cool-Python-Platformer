@@ -23,7 +23,10 @@ def get_font(size):
 def set_resizable(val, size=None):
         if size == None:
             size = (0, 0) # leave size unchanged
-        pygame.display.set_mode(size, pygame.RESIZABLE)
+        if val:
+            pygame.display.set_mode(size, pygame.RESIZABLE)
+        else:
+            pygame.display.set_mode(size)
     
 _edgy_titles = [
         "Block Traversing Simulator 500",
