@@ -1,5 +1,4 @@
 import time
-import sets
 import utilities
 
 
@@ -18,7 +17,7 @@ def _add_to_group(group_name, child_name):
     _PARENTS[child_name] = group_name
     if group_name is not None:
         if group_name not in _GROUPS:
-            _GROUPS[group_name] = sets.Set()
+            _GROUPS[group_name] = set()
         _GROUPS[group_name].add(child_name)
        
 def group_time(group_name):

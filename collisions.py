@@ -1,12 +1,11 @@
 import pygame 
-import sets 
 
 class ReferenceFrameFixer:
     def __init__(self):
         pass
         
     def solve_rfs(self, group):
-        to_delete = sets.Set()
+        to_delete = set()
         for box in group:
             to_delete.clear()
             for kid in box.rf_children:

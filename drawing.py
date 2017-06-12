@@ -1,5 +1,4 @@
 import pygame 
-import sets
 import blocks
 import utilities
 import random
@@ -261,7 +260,7 @@ class Drawer:
         min_y.sort(key=lambda p: p[0])
         max_x.sort(key=lambda p: p[1])
         max_y.sort(key=lambda p: -p[0])
-        dupes = sets.Set([])
+        dupes = set()
         res = []
         for point in min_x + min_y + max_x + max_y:
             if point in dupes:

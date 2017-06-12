@@ -1,5 +1,4 @@
 import pygame 
-import sets 
 import math
 
 import paths
@@ -25,7 +24,7 @@ class Box(pygame.sprite.Sprite):
         self.max_vx = 5
         
         self.rf_parent = None           # physics reference frame information. For example, when an actor stands on a moving platform
-        self.rf_children = sets.Set()   # or is stuck to another object, it will enter that object's reference frame.
+        self.rf_children = set()   # or is stuck to another object, it will enter that object's reference frame.
         self.theme_id = "default"
         
     def update(self, dt):
