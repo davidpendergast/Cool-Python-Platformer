@@ -40,8 +40,7 @@ class Level:
         self.sort_if_dirty()
     
     def _sort_entities(self):
-        sorter = lambda x,y: x.get_update_priority() - y.get_update_priority()
-        self.entity_list.sort(cmp=sorter)
+        self.entity_list.sort(key=lambda x: x.get_update_priority())
         self._entity_list_dirty = False
     
     def add_object(self, obj, sort_now=True):
@@ -59,14 +58,15 @@ class Level:
         index = self.entity_list.index(obj)
         del self.entity_list[index]
         
-    def get_objects_at(self, (x, y)):
+    def get_objects_at(self, xy):
+        x, y = xy
         return [obj for obj in self.entity_list if obj.rect.collidepoint(x,y)]
         
     def bring_out_yer_dead(self):
         """Removes all dead non-player Boxes from the level. 
            Returns the list of removed items (and the player if the player
            is dead). """
-        dead = filter(lambda x : not x.alive() and x is not self.actor, self.entity_list)
+        dead = [x for x in self.entity_list if not x.alive() and x is not self.actor]
         
         if len(dead) > 0:
             self.entity_list = [x for x in self.entity_list if x not in dead]
@@ -173,7 +173,7 @@ class Theme:
     
     @staticmethod
     def from_json(data):
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             return BUILT_IN_THEMES[data]
         else:
             result = Theme()

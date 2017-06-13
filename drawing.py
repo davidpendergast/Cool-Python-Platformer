@@ -565,10 +565,10 @@ if __name__ == "__main__":
     r2 = _Rect(1024, -864, 448, 64)
     r3 = _Rect(1260, -608, 8, 640)
     r4 = _Rect(672, -544, 480, 256)
-    print "r1 -> r2: "+str(r1.overlapped_by_in_3D(r2, c))
-    print "r2 -> r3: "+str(r2.overlapped_by_in_3D(r3, c))
-    print "r3 -> r4: "+str(r3.overlapped_by_in_3D(r4, c))
-    print "r4 -> r1: "+str(r4.overlapped_by_in_3D(r1, c))
+    print(f'r1 -> r2: {r1.overlapped_by_in_3D(r2, c)}')
+    print(f'r2 -> r3: {r2.overlapped_by_in_3D(r3, c)}')
+    print(f'r3 -> r4: {r3.overlapped_by_in_3D(r4, c)}')
+    print(f'r4 -> r1: {r4.overlapped_by_in_3D(r1, c)}')
     
 
-    print str(r1.subtract(r2))
+    print(r1.subtract(r2))

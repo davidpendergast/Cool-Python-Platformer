@@ -223,7 +223,7 @@ class PlayingState(InGameState):
     def add_blood(self, entity, lifespan=100):
         color = entity.color
         num = 10
-        for _ in xrange(0, num):
+        for _ in range(0, num):
             v = ((0.5 - random.random())*10, (0.5 - random.random())*10)
             blood = actors.Particle(entity.x(), entity.y(), 10, v, color, lifespan)
             self.get_current_level().add_object(blood)
