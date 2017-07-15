@@ -21,7 +21,7 @@ def load(filename):
             else:
                 raise ValueError("Unsupported version number: "+str(version_num))
     except:
-        print "Error while loading "+filename+":"
+        print(f'Error while loading {filename}:')
         traceback.print_exc()
         return None
 

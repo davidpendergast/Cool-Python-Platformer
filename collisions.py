@@ -1,4 +1,5 @@
-import pygame 
+import pygame
+from blocks import Block
 
 class ReferenceFrameFixer:
     def __init__(self):
@@ -172,7 +173,7 @@ class CollisionFixer:
 
     def rect_collide(self, rect, sprite_list):
         "Finds all the sprites in Group (or list) spritegroup that collide with given rect. Returns a list of those sprites."
-        return sorted([sprite for sprite in sprite_list if rect.colliderect(sprite.rect)])
+        return sorted([sprite for sprite in sprite_list if rect.colliderect(sprite.rect)], key=Block.__cmp__)
         
     def h_box(self, rect, thresh):
         h_box = rect.copy()

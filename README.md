@@ -17,3 +17,7 @@ Here are some screenshots:
 ![pic4](readme_screenshots/red_blocks.png)
 
 ![pic5](readme_screenshots/level_editor.png)
+
+## Running
+
+This game runs in `Python 3.6`. Before running, install dependencies with `pip install -r requirements.txt`.

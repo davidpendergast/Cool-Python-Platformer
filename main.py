@@ -1,8 +1,4 @@
-#!/usr/bin/env python2.7
-
-import sys
-# don't create .pyc files in directory
-sys.dont_write_bytecode = True
+#!/usr/bin/env python3.6
 
 import pygame
 pygame.init()

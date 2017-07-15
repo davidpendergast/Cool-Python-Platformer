@@ -149,12 +149,13 @@ class Box(pygame.sprite.Sprite):
     
     def repaint(self):
         self.image.fill(self.color, (0, 0, self.image.get_width(), self.image.get_height()))
-        
-    def __cmp__(self, other):
-        if isinstance(other, Box):
-            return self.get_update_priority() - other.get_update_priority() 
+
+    @staticmethod
+    def __cmp__(x):
+        if isinstance(x, Box):
+            return x.get_update_priority()
         else:
-            return 1
+            return -1
     
     def __eq__(self, other):
         return self is other
@@ -187,6 +188,9 @@ class Box(pygame.sprite.Sprite):
             return 4
         else:
             return 5
+
+    def __hash__(self):
+        return id(self)
     
     
 class Block(Box):

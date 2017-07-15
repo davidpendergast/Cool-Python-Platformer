@@ -101,11 +101,9 @@ KEY_ORDER = KEY_ORDER + ["type", "x", "y", "path", "width", "height"]   # block 
 KEY_ORDER = KEY_ORDER + ["x_points", "x_path", "y_points", "y_path", "speed", "offset"] # path stuff
 KEY_COMPARE_DICT = {key: KEY_ORDER.index(key) for key in KEY_ORDER}
 
-def key_cmp(key1, key2):
-    KEY_COMPARE_DICT.setdefault(key1, -1)
-    KEY_COMPARE_DICT.setdefault(key2, -1)
-    
-    return KEY_COMPARE_DICT[key1] - KEY_COMPARE_DICT[key2]
+def key_f(key):
+    KEY_COMPARE_DICT.setdefault(key, -1)
+    return KEY_COMPARE_DICT[key]
     
 
 def level_json_to_string(json_data, indent_spaces=4, sort_the_keys=True):
@@ -154,7 +152,7 @@ def _sort_keys_recursively(json_item):
     if isinstance(json_item, list):
         return [_sort_keys_recursively(x) for x in json_item]
     elif isinstance(json_item, dict):
-        return OrderedDict((key, _sort_keys_recursively(json_item[key])) for key in sorted(json_item.keys(), cmp=key_cmp))
+        return OrderedDict((key, _sort_keys_recursively(json_item[key])) for key in sorted(json_item.keys(), key=key_f))
     else:
         return json_item
     
@@ -183,7 +181,7 @@ def find_close_paren(string, index, open='(', closed=')'):
 def log(message, also_print=True):
     # todo - actual logging
     if also_print:
-        print str(message)
+        print(message)
         
 def take_screenshot(screen):
     log("Taking screenshot...")
@@ -229,7 +227,7 @@ if __name__ == "__main__":
         ]
     }
     
-    print level_json_to_string(json_datas)
+    print(level_json_to_string(json_datas))
     
 def extend_to(text, length):
     text = str(text)
